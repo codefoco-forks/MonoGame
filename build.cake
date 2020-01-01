@@ -236,9 +236,9 @@ Task("BuildAll")
     .IsDependentOn("BuildWindowsDX")
     .IsDependentOn("BuildAndroid")
     .IsDependentOn("BuildiOS")
-    .IsDependentOn("BuildUWP")
-    .IsDependentOn("BuildContentPipeline")
-    .IsDependentOn("BuildTools");
+    .IsDependentOn("BuildUWP");
+   // .IsDependentOn("BuildContentPipeline")
+   // .IsDependentOn("BuildTools");
 
 Task("Pack")
     .IsDependentOn("BuildAll")
