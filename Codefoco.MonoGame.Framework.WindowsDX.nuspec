@@ -44,12 +44,12 @@ This package provides you with MonoGame Framework that works on Windows (Direct 
     <file src="MonoGame.Framework\bin\WindowsDX\Release\net45\MonoGame.Framework.pdb" target="lib\net45\MonoGame.Framework.pdb" />
 
     <!-- UWP -->
-    <file src="MonoGame.Framework\MonoGame.Framework.WindowsUniversal.targets" target="build\uap10\Codefoco.MonoGame.Framework.WindowsDX.targets" />
+    <file src="MonoGame.Framework\MonoGame.Framework.WindowsUniversal.targets" target="build\uap10.0\Codefoco.MonoGame.Framework.WindowsDX.targets" />
     
     <!-- C# Assemblies -->
-    <file src="MonoGame.Framework\bin\WindowsUniversal\Release\uap10\MonoGame.Framework.dll" target="lib\uap10\MonoGame.Framework.dll" />
-    <file src="MonoGame.Framework\bin\WindowsUniversal\Release\uap10\MonoGame.Framework.xml" target="lib\uap10\MonoGame.Framework.xml" />
-    <file src="MonoGame.Framework\bin\WindowsUniversal\Release\uap10\MonoGame.Framework.pdb" target="lib\uap10\MonoGame.Framework.pdb" />
-    <file src="MonoGame.Framework\bin\WindowsUniversal\Release\uap10\MonoGame.Framework.pri" target="lib\uap10\MonoGame.Framework.pri" />
+    <file src="MonoGame.Framework\bin\WindowsUniversal\Release\uap10.0\MonoGame.Framework.dll" target="lib\uap10.0\MonoGame.Framework.dll" />
+    <file src="MonoGame.Framework\bin\WindowsUniversal\Release\uap10.0\MonoGame.Framework.xml" target="lib\uap10.0\MonoGame.Framework.xml" />
+    <file src="MonoGame.Framework\bin\WindowsUniversal\Release\uap10.0\MonoGame.Framework.pdb" target="lib\uap10.0\MonoGame.Framework.pdb" />
+    <file src="MonoGame.Framework\bin\WindowsUniversal\Release\uap10.0\MonoGame.Framework.pri" target="lib\uap10.0\MonoGame.Framework.pri" />
   </files>
 </package>
