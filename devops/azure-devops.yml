@@ -150,17 +150,6 @@ jobs:
     displayName: 'Set NuGet API Key'
 
   - task: PowerShell@2
-    displayName: 'Package Codefoco.MonoGame.Framework.WindowsDX.nuget NuGet'
-    inputs:
-      targetType: filePath
-      filePath: ./devops/Package.ps1
-      arguments: 'Codefoco.MonoGame.Framework.WindowsDX'
-      pwsh: true
-
-  - script: 'rename Codefoco.MonoGame.Framework.WindowsDX.*.nupkg Codefoco.MonoGame.Framework.WindowsDX.nupkg'
-    displayName: 'Rename Fantas.MonoGame.WindowsDX Nuget Package'
-
-  - task: PowerShell@2
     displayName: 'Package Codefoco.MonoGame.Framework.nuget NuGet'
     inputs:
       targetType: filePath
@@ -171,11 +160,28 @@ jobs:
   - script: 'rename Codefoco.MonoGame.Framework.*.nupkg Codefoco.MonoGame.Framework.nupkg'
     displayName: 'Rename Fantas.MonoGame Nuget Package'
 
+  - task: PowerShell@2
+    displayName: 'Package Codefoco.MonoGame.Framework.WindowsDX.nuget NuGet'
+    inputs:
+      targetType: filePath
+      filePath: ./devops/Package.ps1
+      arguments: 'Codefoco.MonoGame.Framework.WindowsDX'
+      pwsh: true
+
+  - script: 'rename Codefoco.MonoGame.Framework.WindowsDX.*.nupkg Codefoco.MonoGame.Framework.WindowsDX.nupkg'
+    displayName: 'Rename Fantas.MonoGame.WindowsDX Nuget Package'
+
   - task: PublishBuildArtifacts@1
     displayName: 'Save Codefoco.MonoGame.Framework.nupkg Artifact'
     inputs:
       PathtoPublish: Codefoco.MonoGame.Framework.nupkg
       ArtifactName: Codefoco.MonoGame.Framework.nupkg
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Save Codefoco.MonoGame.Framework.WindowsDX.nupkg Artifact'
+    inputs:
+      PathtoPublish: Codefoco.MonoGame.Framework.WindowsDX.nupkg
+      ArtifactName: Codefoco.MonoGame.Framework.WindowsDX.nupkg
 
   - task: PowerShell@2
     displayName: 'Publish Codefoco.MonoGame.Framework NuGet'
@@ -192,6 +198,5 @@ jobs:
       filePath: ./devops/Publish.ps1
       arguments: Codefoco.MonoGame.Framework
       pwsh: true
-
 
   - template: send-telegram.yml@templates
