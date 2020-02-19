@@ -115,6 +115,15 @@ jobs:
       errorActionPreference: 'silentlyContinue'
       pwsh: true
 
+  - task: PowerShell@2
+    displayName: 'PreBuild Script MonoGame.DX'
+    inputs:
+      targetType: filePath
+      filePath: ./devops/PreBuild.ps1
+      arguments: 'Codefoco.MonoGame.Framework.WindowsDX'
+      errorActionPreference: 'silentlyContinue'
+      pwsh: true
+
   - task: MSBuild@1
     displayName: 'Build csproj ./MonoGame.Framework/MonoGame.Framework.AndroidCore.csproj'
     inputs:
