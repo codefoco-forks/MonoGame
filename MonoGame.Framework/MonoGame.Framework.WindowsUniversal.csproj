@@ -70,7 +70,6 @@ This package provides you with MonoGame Framework that works on Windows 10, Wind
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="MonoGame.Framework.WindowsUniversal.targets" PackagePath="build;lib\uap10.0\MonoGame.Framework" />
   </ItemGroup>
 
   <ItemGroup>
