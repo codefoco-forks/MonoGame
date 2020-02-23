@@ -3,7 +3,7 @@
 	url = https://github.com/MonoGame/MonoGame.Dependencies.git
 [submodule "ThirdParty/NVorbis"]
 	path = ThirdParty/NVorbis
-url=https://github.com/MrHelmut/NVorbis.git
+	url=https://github.com/MrHelmut/NVorbis.git
 [submodule "ThirdParty/StbImageSharp"]
 	path = ThirdParty/StbImageSharp
 	url = https://github.com/StbSharp/StbImageSharp.git
