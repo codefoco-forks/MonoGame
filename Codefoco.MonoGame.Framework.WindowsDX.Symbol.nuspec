@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd">
   <metadata>
     <id>Codefoco.MonoGame.Framework.WindowsDX</id>
-    <version>3.8.0.0</version>
+    <version>3.8.5</version>
     <title>Codefoco.MonoGame.Framework.WindowsDX</title>
     <authors>MonoGame Team</authors>
     <owners>MonoGame Team</owners>
@@ -15,9 +15,12 @@
 This package provides you with MonoGame Framework that works on Windows (Direct X).</description>
     <summary>This package is a Windows DX package of MonoGame. Created by Vinicius Jarina to make it easier to work with MonoGame as a dependency</summary>
     <copyright>Copyright © 2009-2020 The MonoGame Team</copyright>
-    <releaseNotes>Release: ff4cb0697</releaseNotes>
-    <repository type="git" url="https://github.com/codefoco/MonoGame" commit="ff4cb06978a5757ffaf267ce7b79c2f5b859590d" />
     <language>en-US</language>
+    <packageTypes>
+      <packageType name="SymbolsPackage" />
+    </packageTypes>
+    <releaseNotes>Release: a03c49d0e</releaseNotes>
+    <repository type="git" url="https://github.com/codefoco/MonoGame" commit="a03c49d0e7b49df6c789a0d55683477b6bd69604" />
     <dependencies>
       <dependency id="SharpDX" version="4.0.1" />
       <dependency id="SharpDX.Direct2D1" version="4.0.1" />
@@ -31,20 +34,14 @@ This package provides you with MonoGame Framework that works on Windows (Direct 
   </metadata>
   <files>
     <!-- .NET Core-->
-    <file src="MonoGame.Framework\MonoGame.Framework.WindowsDX.targets" target="build\netcoreapp3.1\Codefoco.MonoGame.Framework.WindowsDX.targets" />
     <!-- C# Assemblies -->
     <file src="MonoGame.Framework\bin\WindowsDX\Release\netcoreapp3.1\MonoGame.Framework.dll" target="lib\netcoreapp3.1\MonoGame.Framework.dll" />
-    <file src="MonoGame.Framework\bin\WindowsDX\Release\netcoreapp3.1\MonoGame.Framework.xml" target="lib\netcoreapp3.1\MonoGame.Framework.xml" />
-    <!-- .NET 4.5 -->
-    <file src="MonoGame.Framework\MonoGame.Framework.WindowsDX.targets" target="build\net45\Codefoco.MonoGame.Framework.WindowsDX.targets" />
+    <file src="MonoGame.Framework\bin\WindowsDX\Release\netcoreapp3.1\MonoGame.Framework.pdb" target="lib\netcoreapp3.1\MonoGame.Framework.pdb" />
     <!-- C# Assemblies -->
     <file src="MonoGame.Framework\bin\WindowsDX\Release\net45\MonoGame.Framework.dll" target="lib\net45\MonoGame.Framework.dll" />
-    <file src="MonoGame.Framework\bin\WindowsDX\Release\net45\MonoGame.Framework.xml" target="lib\net45\MonoGame.Framework.xml" />
-    <!-- UWP -->
-    <file src="MonoGame.Framework\MonoGame.Framework.WindowsUniversal.targets" target="build\uap10.0\Codefoco.MonoGame.Framework.WindowsDX.targets" />
+    <file src="MonoGame.Framework\bin\WindowsDX\Release\net45\MonoGame.Framework.pdb" target="lib\net45\MonoGame.Framework.pdb" />
     <!-- C# Assemblies -->
     <file src="MonoGame.Framework\bin\WindowsUniversal\Release\uap10.0\MonoGame.Framework.dll" target="lib\uap10.0\MonoGame.Framework.dll" />
-    <file src="MonoGame.Framework\bin\WindowsUniversal\Release\uap10.0\MonoGame.Framework.xml" target="lib\uap10.0\MonoGame.Framework.xml" />
-    <file src="MonoGame.Framework\bin\WindowsUniversal\Release\uap10.0\MonoGame.Framework.pri" target="lib\uap10.0\MonoGame.Framework.pri" />
+    <file src="MonoGame.Framework\bin\WindowsUniversal\Release\uap10.0\MonoGame.Framework.pdb" target="lib\uap10.0\MonoGame.Framework.pdb" />
   </files>
 </package>
