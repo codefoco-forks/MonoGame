@@ -28,20 +28,12 @@ jobs:
       restoreSolution: ./MonoGame.Framework/MonoGame.Framework.iOSCore.csproj
 
   - task: PowerShell@2
-    displayName: 'PreBuild Codefoco.MonoGame.Framework'
+    displayName: 'PreBuild'
     inputs:
       targetType: filePath
       filePath: ./devops/PreBuild.ps1
-      arguments: 'Codefoco.MonoGame.Framework'
       pwsh: true
 
-  - task: PowerShell@2
-    displayName: 'PreBuild Codefoco.MonoGame.Framework.WindowsDX'
-    inputs:
-      targetType: filePath
-      filePath: ./devops/PreBuild.ps1
-      arguments: 'Codefoco.MonoGame.Framework.WindowsDX'
-      pwsh: true
   # Build  MonoGame
 
   - task: MSBuild@1 # Fantas.MonoGame.sln
@@ -111,16 +103,6 @@ jobs:
     inputs:
       targetType: filePath
       filePath: ./devops/PreBuild.ps1
-      arguments: 'Codefoco.MonoGame.Framework'
-      errorActionPreference: 'silentlyContinue'
-      pwsh: true
-
-  - task: PowerShell@2
-    displayName: 'PreBuild Script MonoGame.DX'
-    inputs:
-      targetType: filePath
-      filePath: ./devops/PreBuild.ps1
-      arguments: 'Codefoco.MonoGame.Framework.WindowsDX'
       errorActionPreference: 'silentlyContinue'
       pwsh: true
 
@@ -173,9 +155,6 @@ jobs:
       arguments: 'Codefoco.MonoGame.Framework'
       pwsh: true
 
-  - script: 'rename Codefoco.MonoGame.Framework.*.nupkg Codefoco.MonoGame.Framework.nupkg'
-    displayName: 'Rename Fantas.MonoGame Nuget Package'
-
   - task: PowerShell@2
     displayName: 'Package Codefoco.MonoGame.Framework.WindowsDX.nuget NuGet'
     inputs:
@@ -184,9 +163,6 @@ jobs:
       arguments: 'Codefoco.MonoGame.Framework.WindowsDX'
       pwsh: true
 
-  - script: 'rename Codefoco.MonoGame.Framework.WindowsDX.*.nupkg Codefoco.MonoGame.Framework.WindowsDX.nupkg'
-    displayName: 'Rename Fantas.MonoGame.WindowsDX Nuget Package'
-
   - task: PublishBuildArtifacts@1
     displayName: 'Save Codefoco.MonoGame.Framework.nupkg Artifact'
     inputs:
@@ -194,10 +170,22 @@ jobs:
       ArtifactName: Codefoco.MonoGame.Framework.nupkg
 
   - task: PublishBuildArtifacts@1
+    displayName: 'Save Codefoco.MonoGame.Framework.snupkg Artifact'
+    inputs:
+      PathtoPublish: Codefoco.MonoGame.Framework.snupkg
+      ArtifactName: Codefoco.MonoGame.Framework.snupkg
+
+  - task: PublishBuildArtifacts@1
     displayName: 'Save Codefoco.MonoGame.Framework.WindowsDX.nupkg Artifact'
     inputs:
       PathtoPublish: Codefoco.MonoGame.Framework.WindowsDX.nupkg
       ArtifactName: Codefoco.MonoGame.Framework.WindowsDX.nupkg
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Save Codefoco.MonoGame.Framework.WindowsDX.snupkg Artifact'
+    inputs:
+      PathtoPublish: Codefoco.MonoGame.Framework.WindowsDX.snupkg
+      ArtifactName: Codefoco.MonoGame.Framework.WindowsDX.snupkg
 
   - task: PowerShell@2
     displayName: 'Publish Codefoco.MonoGame.Framework NuGet'
