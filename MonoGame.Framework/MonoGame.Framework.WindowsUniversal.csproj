@@ -80,7 +80,12 @@ This package provides you with MonoGame Framework that works on Windows 10, Wind
     <PackageReference Include="SharpDX.MediaFoundation" Version="$(SharpDXVersion)" />
     <PackageReference Include="SharpDX.XAudio2" Version="$(SharpDXVersion)" />
   </ItemGroup>
-
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
   <Import Project="Platform\DirectX.targets" />
   <Import Project="Platform\XAudio.targets" />
   <Import Project="MonoGame.Sign.targets" />

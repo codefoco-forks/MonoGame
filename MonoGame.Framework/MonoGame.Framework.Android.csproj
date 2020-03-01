@@ -94,7 +94,12 @@ This package provides you with MonoGame Framework that works on Android.</Descri
       <Link>libs\x86_64\libopenal32.so</Link>
     </EmbeddedNativeLibrary>
   </ItemGroup>
-
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
   <Import Project="Platform\OpenGL.targets" />
   <Import Project="Platform\OpenAL.targets" />
   <Import Project="Platform\Microsoft.Devices.Sensors.targets" />
