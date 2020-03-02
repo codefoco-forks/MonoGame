@@ -5,7 +5,6 @@
     <MonoGamePlatform>$(MSBuildProjectName.Substring(15))</MonoGamePlatform>
     <BaseIntermediateOutputPath>obj\$(MonoGamePlatform)</BaseIntermediateOutputPath>
     <BaseOutputPath>..\Artifacts\Tests\$(MonoGamePlatform)</BaseOutputPath>
-    <AppendTargetFrameworkToOutputPath>False</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
 
 </Project>
