@@ -35,13 +35,13 @@ This package provides you with MonoGame Framework that works on Windows (Direct 
   <files>
     <!-- .NET Core-->
     <!-- C# Assemblies -->
-    <file src="MonoGame.Framework\bin\WindowsDX\Release\netcoreapp3.1\MonoGame.Framework.dll" target="lib\netcoreapp3.1\MonoGame.Framework.dll" />
-    <file src="MonoGame.Framework\bin\WindowsDX\Release\netcoreapp3.1\MonoGame.Framework.pdb" target="lib\netcoreapp3.1\MonoGame.Framework.pdb" />
+    <file src="Artifacts\MonoGame.Framework\WindowsDX\Release\netcoreapp3.1\MonoGame.Framework.dll" target="lib\netcoreapp3.1\MonoGame.Framework.dll" />
+    <file src="Artifacts\MonoGame.Framework\WindowsDX\Release\netcoreapp3.1\MonoGame.Framework.pdb" target="lib\netcoreapp3.1\MonoGame.Framework.pdb" />
     <!-- C# Assemblies -->
-    <file src="MonoGame.Framework\bin\WindowsDX\Release\net45\MonoGame.Framework.dll" target="lib\net45\MonoGame.Framework.dll" />
-    <file src="MonoGame.Framework\bin\WindowsDX\Release\net45\MonoGame.Framework.pdb" target="lib\net45\MonoGame.Framework.pdb" />
+    <file src="Artifacts\MonoGame.Framework\WindowsDX\Release\net45\MonoGame.Framework.dll" target="lib\net45\MonoGame.Framework.dll" />
+    <file src="Artifacts\MonoGame.Framework\WindowsDX\Release\net45\MonoGame.Framework.pdb" target="lib\net45\MonoGame.Framework.pdb" />
     <!-- C# Assemblies -->
-    <file src="MonoGame.Framework\bin\WindowsUniversal\Release\uap10.0\MonoGame.Framework.dll" target="lib\uap10.0\MonoGame.Framework.dll" />
-    <file src="MonoGame.Framework\bin\WindowsUniversal\Release\uap10.0\MonoGame.Framework.pdb" target="lib\uap10.0\MonoGame.Framework.pdb" />
+    <file src="Artifacts\MonoGame.Framework\WindowsUniversal\Release\uap10.0\MonoGame.Framework.dll" target="lib\uap10.0\MonoGame.Framework.dll" />
+    <file src="Artifacts\MonoGame.Framework\WindowsUniversal\Release\uap10.0\MonoGame.Framework.pdb" target="lib\uap10.0\MonoGame.Framework.pdb" />
   </files>
 </package>

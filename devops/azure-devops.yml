@@ -45,14 +45,14 @@ jobs:
   - task: PublishPipelineArtifact@1
     displayName: 'Publish Pipeline Artifact: Xamarin.iOS.MonoGame.Frawework'
     inputs:
-      targetPath: ./MonoGame.Framework/bin/iOS/Release/xamarinios10/
+      targetPath: ./Artifacts/MonoGame.Framework/iOS/Release/xamarinios10/
       artifact: 'Xamarin.iOS.MonoGame.Frawework'
       publishLocation: 'pipeline'
 
   - task: PublishPipelineArtifact@1
     displayName: 'Publish Pipeline Artifact: Xamarin.tvOS.MonoGame.Frawework'
     inputs:
-      targetPath: ./MonoGame.Framework/bin/iOS/Release/xamarintvos10/
+      targetPath: ./Artifacts/MonoGame.Framework/iOS/Release/xamarintvos10/
       artifact: 'Xamarin.tvOS.MonoGame.Frawework'
       publishLocation: 'pipeline'
 
@@ -79,9 +79,9 @@ jobs:
   - template: common-win.yml@templates
 
   - task: NuGetCommand@2
-    displayName: 'NuGet restore  MonoGame.Framework.AndroidCore.csproj'
+    displayName: 'NuGet restore  MonoGame.Framework.Android.csproj'
     inputs:
-      restoreSolution: ./MonoGame.Framework/MonoGame.Framework.AndroidCore.csproj
+      restoreSolution: ./MonoGame.Framework/MonoGame.Framework.Android.csproj
 
   - task: NuGetCommand@2
     displayName: 'NuGet restore MonoGame.Framework.DesktopGL.csproj'
@@ -107,9 +107,9 @@ jobs:
       pwsh: true
 
   - task: MSBuild@1
-    displayName: 'Build csproj ./MonoGame.Framework/MonoGame.Framework.AndroidCore.csproj'
+    displayName: 'Build csproj ./MonoGame.Framework/MonoGame.Framework.Android.csproj'
     inputs:
-      solution: ./MonoGame.Framework/MonoGame.Framework.AndroidCore.csproj
+      solution: ./MonoGame.Framework/MonoGame.Framework.Android.csproj
       configuration: Release
 
   - task: MSBuild@1
@@ -135,14 +135,14 @@ jobs:
     inputs:
       buildType: 'current'
       artifactName: 'Xamarin.iOS.MonoGame.Frawework'
-      targetPath: './MonoGame.Framework/bin/iOS/Release/xamarinios10/'
+      targetPath: './Artifacts/MonoGame.Framework/iOS/Release/xamarinios10/'
 
   - task: DownloadPipelineArtifact@2
     displayName: 'Download Build Xamarin.tvOS'
     inputs:
       buildType: 'current'
       artifactName: 'Xamarin.tvOS.MonoGame.Frawework'
-      targetPath: './MonoGame.Framework/bin/iOS/Release/xamarintvos10/'
+      targetPath: './Artifacts/MonoGame.Framework/iOS/Release/xamarintvos10/'
 
   - script: 'nuget setapikey $(apikey)'
     displayName: 'Set NuGet API Key'
