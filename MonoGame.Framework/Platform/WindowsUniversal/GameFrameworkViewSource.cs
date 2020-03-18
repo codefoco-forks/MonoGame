@@ -10,20 +10,19 @@ using Windows.ApplicationModel.Core;
 
 namespace MonoGame.Framework
 {
-    public class GameFrameworkViewSource<T> : IFrameworkViewSource
-        where T : Game, new()
+    public class GameFrameworkViewSource : IFrameworkViewSource
     {
-        private Action<T, IActivatedEventArgs> _gameConstructorCustomizationDelegate = null;
+        private Game _game;
 
-        public GameFrameworkViewSource(Action<T, IActivatedEventArgs> gameConstructorCustomizationDelegate = null)
+        public GameFrameworkViewSource(Game game)
         {
-            this._gameConstructorCustomizationDelegate = gameConstructorCustomizationDelegate;
+            this._game = game;
         }
 
         [CLSCompliant(false)]
         public IFrameworkView CreateView()
         {
-            return new UAPFrameworkView<T>(_gameConstructorCustomizationDelegate);
+            return new UAPFrameworkView(_game);
         }
     }
 }

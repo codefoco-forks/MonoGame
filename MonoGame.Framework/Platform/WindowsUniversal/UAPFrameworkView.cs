@@ -13,17 +13,15 @@ using Windows.ApplicationModel.Activation;
 
 namespace Microsoft.Xna.Framework
 {
-    class UAPFrameworkView<T> : IFrameworkView
-        where T : Game, new()
+    class UAPFrameworkView: IFrameworkView
     {
-        public UAPFrameworkView(Action<T, IActivatedEventArgs> gameConstructorCustomizationDelegate)
+        public UAPFrameworkView(Game game)
         {
-            this._gameConstructorCustomizationDelegate = gameConstructorCustomizationDelegate;
+            this._game = game;
         }
 
-        private Action<T, IActivatedEventArgs> _gameConstructorCustomizationDelegate = null;
         private CoreApplicationView _applicationView;
-        private T _game;
+        private Game _game;
 
         public void Initialize(CoreApplicationView applicationView)
         {
@@ -39,14 +37,6 @@ namespace Microsoft.Xna.Framework
                 // Save any launch parameters to be parsed by the platform.
                 UAPGamePlatform.LaunchParameters = ((LaunchActivatedEventArgs)args).Arguments;
                 UAPGamePlatform.PreviousExecutionState = ((LaunchActivatedEventArgs)args).PreviousExecutionState;
-
-                // Construct the game.                
-                _game = new T();
-
-                //Initializes it, if delegate was provided
-                if (_gameConstructorCustomizationDelegate != null)
-                    _gameConstructorCustomizationDelegate(_game, args);
-
             }
             else if (args.Kind == ActivationKind.Protocol)
             {
@@ -54,17 +44,6 @@ namespace Microsoft.Xna.Framework
                 var protocolArgs = args as ProtocolActivatedEventArgs;
                 UAPGamePlatform.LaunchParameters = protocolArgs.Uri.AbsoluteUri;
                 UAPGamePlatform.PreviousExecutionState = protocolArgs.PreviousExecutionState;
-
-                // Construct the game if it does not exist
-                // Protocol can be used to reactivate a suspended game
-                if (_game == null)
-                {
-                    _game = new T();
-
-                    //Initializes it, if delegate was provided
-                    if (_gameConstructorCustomizationDelegate != null)
-                        _gameConstructorCustomizationDelegate(_game, args);
-                }
             }
         }
 
