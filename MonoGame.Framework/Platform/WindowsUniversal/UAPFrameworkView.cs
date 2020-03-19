@@ -3,10 +3,6 @@
 // file 'LICENSE.txt', which is part of this source code package.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Windows.ApplicationModel.Core;
 using Windows.UI.Core;
 using Windows.ApplicationModel.Activation;
@@ -15,9 +11,11 @@ namespace Microsoft.Xna.Framework
 {
     class UAPFrameworkView: IFrameworkView
     {
-        public UAPFrameworkView(Game game)
+        Func<IFrameworkView, Game> _onGetFrameworkViewGame;
+
+        public UAPFrameworkView(Func<IFrameworkView, Game> onGetFrameworkViewGame)
         {
-            this._game = game;
+            _onGetFrameworkViewGame = onGetFrameworkViewGame;
         }
 
         private CoreApplicationView _applicationView;
@@ -26,7 +24,6 @@ namespace Microsoft.Xna.Framework
         public void Initialize(CoreApplicationView applicationView)
         {
             _applicationView = applicationView;
-
             _applicationView.Activated += ViewActivated;
         }
 
@@ -37,6 +34,8 @@ namespace Microsoft.Xna.Framework
                 // Save any launch parameters to be parsed by the platform.
                 UAPGamePlatform.LaunchParameters = ((LaunchActivatedEventArgs)args).Arguments;
                 UAPGamePlatform.PreviousExecutionState = ((LaunchActivatedEventArgs)args).PreviousExecutionState;
+
+                _game = _onGetFrameworkViewGame(this);
             }
             else if (args.Kind == ActivationKind.Protocol)
             {
@@ -44,12 +43,18 @@ namespace Microsoft.Xna.Framework
                 var protocolArgs = args as ProtocolActivatedEventArgs;
                 UAPGamePlatform.LaunchParameters = protocolArgs.Uri.AbsoluteUri;
                 UAPGamePlatform.PreviousExecutionState = protocolArgs.PreviousExecutionState;
+
+                if (_game == null)
+                {
+                    _game = _onGetFrameworkViewGame(this);
+                }
             }
         }
 
         public void Load(string entryPoint)
         {
         }
+
 
         public void Run()
         {
