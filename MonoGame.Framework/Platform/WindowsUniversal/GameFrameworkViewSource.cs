@@ -4,25 +4,35 @@
 
 using System;
 using Microsoft.Xna.Framework;
-using Windows.ApplicationModel.Activation;
 using Windows.ApplicationModel.Core;
 
 
 namespace MonoGame.Framework
 {
+    /// <summary>
+    /// UWP FrameworkViewSource
+    /// </summary>
     public class GameFrameworkViewSource : IFrameworkViewSource
     {
-        private Game _game;
-
-        public GameFrameworkViewSource(Game game)
+        Func<IFrameworkView, Game> _onGetFrameworkViewGame;
+        /// <summary>
+        /// ctor
+        /// </summary>
+        public GameFrameworkViewSource(Func<IFrameworkView, Game> onGetFrameworkViewGame)
         {
-            this._game = game;
+            if(onGetFrameworkViewGame == null)
+                throw new ArgumentNullException("onSetFrameworkViewGame");
+
+            this._onGetFrameworkViewGame = onGetFrameworkViewGame;
         }
 
-        [CLSCompliant(false)]
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public IFrameworkView CreateView()
         {
-            return new UAPFrameworkView(_game);
+            return new UAPFrameworkView(_onGetFrameworkViewGame);
         }
     }
 }
