@@ -244,7 +244,10 @@ namespace Microsoft.Xna.Framework.Graphics
 #if WINDOWS_UAP
             SaveAsImage(Windows.Graphics.Imaging.BitmapEncoder.JpegEncoderId, stream, width, height);
 #else
-            throw new NotImplementedException();
+            var textureData = new uint[Width * Height];
+            GetData(textureData);
+
+            ImageWriter.SaveAsImage(textureData, Width, Height, stream, width, height, ImageWriter.ImageWriterFormat.Jpg);
 #endif
         }
 
@@ -253,7 +256,10 @@ namespace Microsoft.Xna.Framework.Graphics
 #if WINDOWS_UAP
             SaveAsImage(Windows.Graphics.Imaging.BitmapEncoder.PngEncoderId, stream, width, height);
 #else
-            throw new NotImplementedException();
+            var textureData = new uint[Width * Height];
+            GetData(textureData);
+
+            ImageWriter.SaveAsImage(textureData, Width, Height, stream, width, height, ImageWriter.ImageWriterFormat.Png);
 #endif
         }
 
