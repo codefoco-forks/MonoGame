@@ -255,19 +255,16 @@ namespace Microsoft.Xna.Framework.Graphics
         }
 
 #if (__IOS__ || __TVOS__)
-        [CLSCompliant(false)]
         public static Texture2D FromStream(GraphicsDevice graphicsDevice, UIImage uiImage)
         {
             return PlatformFromStream(graphicsDevice, uiImage.CGImage);
         }
 #elif ANDROID
-        [CLSCompliant(false)]
         public static Texture2D FromStream(GraphicsDevice graphicsDevice, Bitmap bitmap)
         {
             return PlatformFromStream(graphicsDevice, bitmap);
         }
 
-        [CLSCompliant(false)]
         public void Reload(Bitmap image)
         {
             var width = image.Width;

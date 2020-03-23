@@ -14,7 +14,7 @@ namespace Microsoft.Xna.Framework.Graphics.PackedVector
 		/// <summary>
 		/// Gets and sets the packed value.
 		/// </summary>
-		[CLSCompliant(false)]
+		
 		public ulong PackedValue
 		{
 			get

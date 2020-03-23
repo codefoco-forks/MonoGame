@@ -11,7 +11,6 @@ namespace Microsoft.Devices.Sensors
 		where TSensorReading : ISensorReading
 	{
 #if __IOS__ && !__TVOS__
-        [CLSCompliant(false)]
         protected static readonly CoreMotion.CMMotionManager motionManager = new CoreMotion.CMMotionManager();
 #endif
         bool disposed;
