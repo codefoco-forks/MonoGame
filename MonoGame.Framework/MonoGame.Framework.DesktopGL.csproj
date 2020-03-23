@@ -33,10 +33,11 @@ This package provides you with MonoGame Framework that uses OpenGL for rendering
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="Platform\Graphics\ImageWriter.System.Drawing.cs" />
     <Compile Include="Platform\TitleContainer.Desktop.cs" />
     <Compile Include="Platform\Audio\OggStream.cs" />
     <Compile Include="Platform\Graphics\OpenGL.Common.cs" />
-    <Compile Include="Platform\Graphics\Texture2D.StbSharp.cs" />    
+    <Compile Include="Platform\Graphics\Texture2D.System.Drawing.cs" />    
     <Compile Include="Platform\SDL\SDL2.cs" />
     <Compile Include="Platform\SDL\SDLGamePlatform.cs" />
     <Compile Include="Platform\SDL\SDLGameWindow.cs" />
@@ -62,9 +63,6 @@ This package provides you with MonoGame Framework that uses OpenGL for rendering
     <Compile Include="Platform\Graphics\GraphicsAdapter.Legacy.cs" />
     <Compile Include="Platform\GamePlatform.Desktop.cs" />
     <Compile Include="Platform\GraphicsDeviceManager.SDL.cs" />
-    
-    <Compile Include="..\ThirdParty\StbImageSharp\src\StbImageSharp\**\*.cs" LinkBase="Utilities\StbImageSharp" />
-    <Compile Include="..\ThirdParty\StbImageWriteSharp\src\StbImageWriteSharp\**\*.cs" LinkBase="Utilities\StbImageWriteSharp" />
 
     <Compile Include="..\ThirdParty\NVorbis\NVorbis\**\*.cs" LinkBase="ThirdParty\NVorbis" />
     <Compile Remove="..\ThirdParty\NVorbis\NVorbis\Properties\AssemblyInfo.cs" />
