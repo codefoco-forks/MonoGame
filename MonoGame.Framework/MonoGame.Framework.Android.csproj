@@ -54,6 +54,7 @@ This package provides you with MonoGame Framework that works on Android.</Descri
     <Compile Include="Platform\Graphics\OpenGL.Android.cs" />
     <Compile Include="Platform\Graphics\OpenGL.Common.cs" />
     <Compile Include="Platform\GraphicsDeviceManager.Legacy.cs" />
+    <Compile Include="Platform\Graphics\Texture2D.Android.cs" />
     <Compile Include="Platform\Input\GamePad.Android.cs" />
     <Compile Include="Platform\Input\Joystick.Default.cs" />
     <Compile Include="Platform\Input\KeyboardInput.Android.cs" />
