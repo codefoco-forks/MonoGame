@@ -5,8 +5,10 @@
 using System;
 using System.IO;
 
+#if !NETSTANDARD
 using System.Drawing.Imaging;
 using System.Drawing;
+#endif
 
 namespace Microsoft.Xna.Framework.Graphics
 {
@@ -14,6 +16,9 @@ namespace Microsoft.Xna.Framework.Graphics
     {
         private static Texture2D PlatformFromStream(GraphicsDevice graphicsDevice, Stream stream)
         {
+#if  NETSTANDARD
+            throw new NotSupportedException("PlatformFromStream is not supported on NET Standard");
+#else
             // Rewind stream if it is at end
             if (stream.CanSeek && stream.Length == stream.Position)
             {
@@ -29,18 +34,19 @@ namespace Microsoft.Xna.Framework.Graphics
             BitmapData data = bitmap.LockBits(bitmapRectangle,
                                               ImageLockMode.ReadOnly,
                                               PixelFormat.Format32bppPArgb);
-            unsafe {
+            unsafe
+            {
 
                 uint* byteData = (uint*)data.Scan0;
-                fixed (uint * baseAddress = &textureData[0])
+                fixed (uint* baseAddress = &textureData[0])
                 {
-                    uint * pData = baseAddress;
+                    uint* pData = baseAddress;
 
                     for (int i = 0; i < textureDataLength; i++)
                     {
-                        uint pixel = (byteData[i] & 0x000000FF) << 16   |
+                        uint pixel = (byteData[i] & 0x000000FF) << 16 |
                                      (byteData[i] & 0x0000FF00) |
-                                     (byteData[i] & 0x00FF0000) >> 16|
+                                     (byteData[i] & 0x00FF0000) >> 16 |
                                      (byteData[i] & 0xFF000000);
                         *pData = pixel;
                         pData++;
@@ -57,16 +63,25 @@ namespace Microsoft.Xna.Framework.Graphics
             data = null;
 
             return texture;
+#endif
         }
 
         private void PlatformSaveAsJpeg(Stream stream, int width, int height)
         {
+#if NETSTANDARD
+            throw new NotSupportedException("PlatformSaveAsJpeg not implemented in NET Standard"); ;
+#else
             ImageWriter.SaveAsImage(stream, width, height, ImageWriter.ImageWriterFormat.Jpg);
+#endif
         }
 
         private void PlatformSaveAsPng(Stream stream, int width, int height)
         {
+#if NETSTANDARD
+            throw new NotSupportedException("PlatformSaveAsPng not implemented in NET Standard"); ;
+#else
             ImageWriter.SaveAsImage(stream, width, height, ImageWriter.ImageWriterFormat.Png);
+#endif
         }
     }
 }

@@ -6,9 +6,10 @@ using System;
 using System.IO;
 
 
-
+#if !NETSTANDARD
 using System.Drawing.Imaging;
 using System.Drawing;
+
 
 namespace Microsoft.Xna.Framework.Graphics
 {
@@ -95,3 +96,5 @@ namespace Microsoft.Xna.Framework.Graphics
         }
     }
 }
+
+#endif
