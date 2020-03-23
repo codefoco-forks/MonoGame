@@ -49,7 +49,6 @@ This package provides you with MonoGame Framework that works on iOS.</Descriptio
     <Compile Include="Platform\GamePlatform.Mobile.cs" />
     <Compile Include="Platform\Graphics\GraphicsAdapter.Legacy.cs" />
     <Compile Include="Platform\Graphics\OpenGL.iOS.cs" />
-    <Compile Include="Platform\Graphics\Texture2D.StbSharp.cs" />
     <Compile Include="Platform\GraphicsDeviceManager.Legacy.cs" />
     <Compile Include="Platform\Input\GamePad.iOS.cs" />
     <Compile Include="Platform\Input\Joystick.Default.cs" />
@@ -67,9 +66,7 @@ This package provides you with MonoGame Framework that works on iOS.</Descriptio
     <Compile Include="Platform\Utilities\FuncLoader.iOS.cs" />
     <Compile Include="Platform\Utilities\InteropHelpers.cs" />
     <Compile Include="Platform\Utilities\ReflectionHelpers.Default.cs" />
-
-    <Compile Include="..\ThirdParty\StbImageSharp\src\StbImageSharp\**\*.cs" LinkBase="Utilities\StbImageSharp"/>
-    <Compile Include="..\ThirdParty\StbImageWriteSharp\src\StbImageWriteSharp\**\*.cs" LinkBase="Utilities\StbImageWriteSharp"/>
+    <Compile Include="Platform\Graphics\Texture2D.iOS.cs" />
   </ItemGroup>
 
   <ItemGroup>
