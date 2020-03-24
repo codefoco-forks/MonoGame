@@ -14,11 +14,11 @@ namespace MonoGame.Framework
     /// </summary>
     public class GameFrameworkViewSource : IFrameworkViewSource
     {
-        Func<IFrameworkView, Game> _onGetFrameworkViewGame;
+        Action<IFrameworkView> _onGetFrameworkViewGame;
         /// <summary>
         /// ctor
         /// </summary>
-        public GameFrameworkViewSource(Func<IFrameworkView, Game> onGetFrameworkViewGame)
+        public GameFrameworkViewSource(Action<IFrameworkView> onGetFrameworkViewGame)
         {
             if(onGetFrameworkViewGame == null)
                 throw new ArgumentNullException("onSetFrameworkViewGame");

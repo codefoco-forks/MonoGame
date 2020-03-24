@@ -11,9 +11,9 @@ namespace Microsoft.Xna.Framework
 {
     class UAPFrameworkView: IFrameworkView
     {
-        Func<IFrameworkView, Game> _onGetFrameworkViewGame;
+        Action<IFrameworkView> _onGetFrameworkViewGame;
 
-        public UAPFrameworkView(Func<IFrameworkView, Game> onGetFrameworkViewGame)
+        public UAPFrameworkView(Action<IFrameworkView> onGetFrameworkViewGame)
         {
             _onGetFrameworkViewGame = onGetFrameworkViewGame;
         }
@@ -35,7 +35,9 @@ namespace Microsoft.Xna.Framework
                 UAPGamePlatform.LaunchParameters = ((LaunchActivatedEventArgs)args).Arguments;
                 UAPGamePlatform.PreviousExecutionState = ((LaunchActivatedEventArgs)args).PreviousExecutionState;
 
-                _game = _onGetFrameworkViewGame(this);
+                _onGetFrameworkViewGame(this);
+
+                _game = UAPGameWindow.Instance.Game;
             }
             else if (args.Kind == ActivationKind.Protocol)
             {
@@ -46,7 +48,9 @@ namespace Microsoft.Xna.Framework
 
                 if (_game == null)
                 {
-                    _game = _onGetFrameworkViewGame(this);
+                    _onGetFrameworkViewGame(this);
+
+                    _game = UAPGameWindow.Instance.Game;
                 }
             }
         }
