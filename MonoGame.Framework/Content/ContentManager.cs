@@ -362,18 +362,7 @@ namespace Microsoft.Xna.Framework.Content
             Stream decompressedStream = null;
             if (compressedLzx || compressedLz4)
             {
-                // Decompress the xnb
-                int decompressedSize = xnbReader.ReadInt32();
-
-                if (compressedLzx)
-                {
-                    int compressedSize = xnbLength - 14;
-                    decompressedStream = new LzxDecoderStream(stream, decompressedSize, compressedSize);
-                }
-                else if (compressedLz4)
-                {
-                    decompressedStream = new Lz4DecoderStream(stream);
-                }
+                throw new NotSupportedException("Compressed XNB is not supported by this version of MonoGame");
             }
             else
             {
