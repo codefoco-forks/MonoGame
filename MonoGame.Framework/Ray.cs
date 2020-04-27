@@ -8,16 +8,16 @@ using System.Runtime.Serialization;
 
 namespace Microsoft.Xna.Framework
 {
-    [DataContract]
+    //[DataContract]
     [DebuggerDisplay("{DebugDisplayString,nq}")]
     public struct Ray : IEquatable<Ray>
     {
         #region Public Fields
 
-        [DataMember]
+        //[DataMember]
         public Vector3 Direction;
       
-        [DataMember]
+        //[DataMember]
         public Vector3 Position;
 
         #endregion

@@ -12,7 +12,7 @@ namespace Microsoft.Xna.Framework
     /// <summary>
     /// Describes a 32-bit packed color.
     /// </summary>
-    [DataContract]
+    //[DataContract]
     [DebuggerDisplay("{DebugDisplayString,nq}")]
     public struct Color : IEquatable<Color>
     {
@@ -315,7 +315,7 @@ namespace Microsoft.Xna.Framework
         /// <summary>
         /// Gets or sets the blue component.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public byte B
         {
             get
@@ -334,7 +334,7 @@ namespace Microsoft.Xna.Framework
         /// <summary>
         /// Gets or sets the green component.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public byte G
         {
             get
@@ -353,7 +353,7 @@ namespace Microsoft.Xna.Framework
         /// <summary>
         /// Gets or sets the red component.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public byte R
         {
             get
@@ -372,7 +372,7 @@ namespace Microsoft.Xna.Framework
         /// <summary>
         /// Gets or sets the alpha component.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public byte A
         {
             get
