@@ -35,6 +35,7 @@ namespace MonoGame.Framework
         private bool _isBorderless;
         private bool _isMouseHidden;
         private bool _isMouseInBounds;
+        private byte _clickCount;
 
         private Point _locationBeforeFullScreen;
         // flag to indicate that we're switching to/from full screen and should ignore resize events
@@ -143,7 +144,14 @@ namespace MonoGame.Framework
             Game = platform.Game;
 
             Form = new WinFormsGameForm(this);
-            ChangeClientSize(new Size(GraphicsDeviceManager.DefaultBackBufferWidth, GraphicsDeviceManager.DefaultBackBufferHeight));
+
+            int width  = GraphicsDeviceManager.DefaultBackBufferWidth;
+            int height = GraphicsDeviceManager.DefaultBackBufferHeight;
+
+            width  = (int)(width  * ScreenScale);
+            height = (int)(height * ScreenScale);
+
+            ChangeClientSize(new Size(width, height));
 
             SetIcon();
             Title = MonoGame.Framework.Utilities.AssemblyHelper.GetDefaultWindowTitle();
@@ -157,7 +165,9 @@ namespace MonoGame.Framework
             Form.MouseWheel += OnMouseScroll;
             Form.MouseHorizontalWheel += OnMouseHorizontalScroll;
             Form.MouseEnter += OnMouseEnter;
-            Form.MouseLeave += OnMouseLeave;            
+            Form.MouseLeave += OnMouseLeave;
+            Form.MouseDoubleClick += OnMouseDoubleClick;
+            Form.MouseClick += OnMouseClick;
 
             _resizeTickTimer = new System.Timers.Timer(1) { SynchronizingObject = Form, AutoReset = false };
             _resizeTickTimer.Elapsed += OnResizeTick;
@@ -184,7 +194,7 @@ namespace MonoGame.Framework
         private static extern IntPtr ExtractIcon(IntPtr hInst, string exeFileName, int iconIndex);
         
         [DllImport("user32.dll", ExactSpelling=true, CharSet=CharSet.Auto)]
-        [return: MarshalAsAttribute(System.Runtime.InteropServices.UnmanagedType.Bool)]
+        [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool GetCursorPos(out POINTSTRUCT pt);
         
         [DllImport("user32.dll", ExactSpelling=true, CharSet=CharSet.Auto)]
@@ -291,7 +301,7 @@ namespace MonoGame.Framework
             MouseState.RightButton = (buttons & MouseButtons.Right) == MouseButtons.Right ? ButtonState.Pressed : ButtonState.Released;
             MouseState.XButton1 = (buttons & MouseButtons.XButton1) == MouseButtons.XButton1 ? ButtonState.Pressed : ButtonState.Released;
             MouseState.XButton2 = (buttons & MouseButtons.XButton2) == MouseButtons.XButton2 ? ButtonState.Pressed : ButtonState.Released;
-
+            MouseState.ClickCount = _clickCount;
             // Don't process touch state if we're not active 
             // and the mouse is within the client area.
             if (!_platform.IsActive || !withinClient)
@@ -338,6 +348,15 @@ namespace MonoGame.Framework
                 Cursor.Show();
             }
         }
+        private void OnMouseClick(object sender, MouseEventArgs e)
+        {
+            _clickCount = 1;
+        }
+
+        private void OnMouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            _clickCount = 2;
+        }
 
         [DllImport("user32.dll")]
         private static extern short VkKeyScanEx(char ch, IntPtr dwhkl);
@@ -355,7 +374,10 @@ namespace MonoGame.Framework
 
         internal void Initialize(PresentationParameters pp)
         {
-            ChangeClientSize(new Size(pp.BackBufferWidth, pp.BackBufferHeight));
+            int width  = pp.BackBufferWidth;
+            int height = pp.BackBufferHeight;
+
+            ChangeClientSize(new Size(width, height));
 
             if (pp.IsFullScreen)
             {
@@ -448,6 +470,93 @@ namespace MonoGame.Framework
             Form.Text = title;
         }
 
+        /// <summary>
+        /// Identifies the dots per inch (dpi) setting for a monitor.
+        /// </summary>
+        enum MONITOR_DPI_TYPE
+        {
+            /// <summary>
+            /// The effective DPI. This value should be used when determining the correct scale factor for scaling UI elements. This incorporates the scale factor set by the user for this specific display.
+            /// </summary>
+            MDT_EFFECTIVE_DPI = 0,
+            /// <summary>
+            /// The angular DPI. This DPI ensures rendering at a compliant angular resolution on the screen. This does not include the scale factor set by the user for this specific display.
+            /// </summary>
+            MDT_ANGULAR_DPI = 1,
+            /// <summary>
+            /// The raw DPI. This value is the linear DPI of the screen as measured on the screen itself. Use this value when you want to read the pixel density and not the recommended scaling setting. This does not include the scale factor set by the user for this specific display and is not guaranteed to be a supported DPI value.
+            /// </summary>
+            MDT_RAW_DPI = 2,
+            /// <summary>
+            /// Same as <see cref="MDT_EFFECTIVE_DPI"/>.
+            /// </summary>
+            MDT_DEFAULT = MDT_EFFECTIVE_DPI
+        }
+
+        [System.Security.SuppressUnmanagedCodeSecurity]
+        [DllImport("Shcore.dll")]
+        static extern int GetDpiForMonitor(IntPtr hmonitor, MONITOR_DPI_TYPE dpiType, out uint dpiX, out uint dpiY);
+
+        enum MonitorFlags : uint {
+            MONITOR_DEFAULTTONULL = 0,
+            MONITOR_DEFAULTTOPRIMARY = 1,
+            MONITOR_DEFAULTTONEAREST = 2
+        }
+
+        [System.Security.SuppressUnmanagedCodeSecurity]
+        [DllImport("user32.dll")]
+        static extern IntPtr MonitorFromWindow(IntPtr hwnd, MonitorFlags dwFlags);
+
+        [System.Security.SuppressUnmanagedCodeSecurity]
+        [DllImport("user32.dll")]
+        static extern IntPtr GetDC(IntPtr hwnd);
+
+        [System.Security.SuppressUnmanagedCodeSecurity]
+        [DllImport("user32.dll")]
+        static extern int ReleaseDC(IntPtr hWnd, IntPtr hDC);
+
+        enum DeviceCap
+        {
+            /// <summary>
+            /// Logical pixels inch in X
+            /// </summary>
+            LOGPIXELSX = 88,
+        }
+
+
+        [System.Security.SuppressUnmanagedCodeSecurity]
+        [DllImport("gdi32.dll")]
+        static extern int GetDeviceCaps(IntPtr hdc, DeviceCap nIndex);
+
+        public override bool GetDeviceDPI(out float dpi)
+        {
+            dpi = 0;
+            uint dpiX;
+            uint dpiY;
+
+            if (Environment.OSVersion.Version >= new Version(6, 3))
+            {
+                IntPtr hmonitor = MonitorFromWindow(Handle, MonitorFlags.MONITOR_DEFAULTTOPRIMARY);
+                if (hmonitor == IntPtr.Zero)
+                    return false;
+                if (GetDpiForMonitor(hmonitor, MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI, out dpiX, out dpiY) != 0)
+                    return false;
+                dpi = dpiX;
+                return true;
+            }
+
+            IntPtr hdc = GetDC(IntPtr.Zero);
+
+            if (hdc == IntPtr.Zero)
+                return false;
+
+            dpiX = (uint)GetDeviceCaps(hdc, DeviceCap.LOGPIXELSX);
+            dpi = dpiX;
+
+            ReleaseDC(IntPtr.Zero, hdc);
+            return dpi != 0;
+        }
+
         internal void RunLoop()
         {
             Application.Idle += TickOnIdle;
@@ -532,6 +641,7 @@ namespace MonoGame.Framework
 
         [System.Security.SuppressUnmanagedCodeSecurity] // We won't use this maliciously
         [DllImport("User32.dll", CharSet = CharSet.Auto)]
+        [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool PeekMessage(out NativeMessage msg, IntPtr hWnd, uint messageFilterMin, uint messageFilterMax, uint flags);
 
         #region Public Methods
@@ -645,6 +755,7 @@ namespace MonoGame.Framework
 
 
         [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
         static extern bool RedrawWindow(IntPtr hWnd, IntPtr lprcUpdate, IntPtr hrgnUpdate, uint flags);
 
         private void ExitFullScreen()
