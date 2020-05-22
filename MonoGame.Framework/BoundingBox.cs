@@ -9,17 +9,17 @@ using System.Runtime.Serialization;
 
 namespace Microsoft.Xna.Framework
 {
-    [DataContract]
+    //[DataContract]
     [DebuggerDisplay("{DebugDisplayString,nq}")]
     public struct BoundingBox : IEquatable<BoundingBox>
     {
 
         #region Public Fields
 
-        [DataMember]
+        //[DataMember]
         public Vector3 Min;
       
-        [DataMember]
+        //[DataMember]
         public Vector3 Max;
 
         public const int CornerCount = 8;
