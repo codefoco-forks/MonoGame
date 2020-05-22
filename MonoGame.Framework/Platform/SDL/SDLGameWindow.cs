@@ -138,7 +138,8 @@ namespace Microsoft.Xna.Framework
                 Sdl.Window.State.OpenGL |
                 Sdl.Window.State.Hidden |
                 Sdl.Window.State.InputFocus |
-                Sdl.Window.State.MouseFocus;
+                Sdl.Window.State.MouseFocus |
+                Sdl.Window.State.AllowHighDPI;
 
             if (_handle != IntPtr.Zero)
                 Sdl.Window.Destroy(_handle);

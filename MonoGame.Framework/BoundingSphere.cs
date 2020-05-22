@@ -12,7 +12,7 @@ namespace Microsoft.Xna.Framework
     /// <summary>
     /// Describes a sphere in 3D-space for bounding operations.
     /// </summary>
-    [DataContract]
+    //[DataContract]
     [DebuggerDisplay("{DebugDisplayString,nq}")]
     public struct BoundingSphere : IEquatable<BoundingSphere>
     {
@@ -21,13 +21,13 @@ namespace Microsoft.Xna.Framework
         /// <summary>
         /// The sphere center.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public Vector3 Center;
 
         /// <summary>
         /// The sphere radius.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public float Radius;
 
         #endregion

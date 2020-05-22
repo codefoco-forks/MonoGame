@@ -1,8 +1,9 @@
 <Project Sdk="MSBuild.Sdk.Extras">
 
   <PropertyGroup>
-    <TargetFramework>xamarinios10</TargetFramework>
-    <DefineConstants>IOS;GLES;STBSHARP_INTERNAL</DefineConstants>
+    <TargetFrameworks>xamarinios10;xamarintvos10</TargetFrameworks>
+    <DefineConstants>IOS;GLES</DefineConstants>
+    
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <MGOpenGL>GLES</MGOpenGL>
 
@@ -11,7 +12,11 @@
 This package provides you with MonoGame Framework that works on iOS.</Description>
     <PackageTags>monogame;.net core;core;.net standard;standard;ios</PackageTags>
     <PackageId>MonoGame.Framework.iOS</PackageId>
-    <AppendTargetFrameworkToOutputPath>False</AppendTargetFrameworkToOutputPath>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="  '$(TargetFramework)' == 'xamarintvos10' ">
+    <DefineConstants>$(DefineConstants);TVOS</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -49,7 +54,6 @@ This package provides you with MonoGame Framework that works on iOS.</Descriptio
     <Compile Include="Platform\GamePlatform.Mobile.cs" />
     <Compile Include="Platform\Graphics\GraphicsAdapter.Legacy.cs" />
     <Compile Include="Platform\Graphics\OpenGL.iOS.cs" />
-    <Compile Include="Platform\Graphics\Texture2D.StbSharp.cs" />
     <Compile Include="Platform\GraphicsDeviceManager.Legacy.cs" />
     <Compile Include="Platform\Input\GamePad.iOS.cs" />
     <Compile Include="Platform\Input\Joystick.Default.cs" />
@@ -67,17 +71,21 @@ This package provides you with MonoGame Framework that works on iOS.</Descriptio
     <Compile Include="Platform\Utilities\FuncLoader.iOS.cs" />
     <Compile Include="Platform\Utilities\InteropHelpers.cs" />
     <Compile Include="Platform\Utilities\ReflectionHelpers.Default.cs" />
-
-    <Compile Include="..\ThirdParty\StbImageSharp\src\StbImageSharp\**\*.cs" LinkBase="Utilities\StbImageSharp" />
-    <Compile Include="..\ThirdParty\StbImageWriteSharp\src\StbImageWriteSharp\**\*.cs" LinkBase="Utilities\StbImageWriteSharp" />
+    <Compile Include="Platform\Graphics\Texture2D.iOS.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Include="MonoGame.Framework.iOS.targets" PackagePath="build" />
   </ItemGroup>
-
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
   <Import Project="Platform\OpenGL.targets" />
   <Import Project="Platform\OpenAL.targets" />
   <Import Project="Platform\Microsoft.Devices.Sensors.targets" />
+  <Import Project="MonoGame.Sign.targets" />
 </Project>
 

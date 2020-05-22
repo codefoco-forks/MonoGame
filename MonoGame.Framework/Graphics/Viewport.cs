@@ -10,7 +10,7 @@ namespace Microsoft.Xna.Framework.Graphics
     /// <summary>
     /// Describes the view bounds for render-target surface.
     /// </summary>
-    [DataContract]
+    //[DataContract]
     public struct Viewport
     {
 		private int x;
@@ -25,7 +25,7 @@ namespace Microsoft.Xna.Framework.Graphics
         /// <summary>
         /// The height of the bounds in pixels.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public int Height
         {
 			get {
@@ -39,7 +39,7 @@ namespace Microsoft.Xna.Framework.Graphics
         /// <summary>
         /// The upper limit of depth of this viewport.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public float MaxDepth
         {
 			get {
@@ -53,7 +53,7 @@ namespace Microsoft.Xna.Framework.Graphics
         /// <summary>
         /// The lower limit of depth of this viewport.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public float MinDepth
         {
 			get {
@@ -67,7 +67,7 @@ namespace Microsoft.Xna.Framework.Graphics
         /// <summary>
         /// The width of the bounds in pixels.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public int Width
         {
 			get {
@@ -81,7 +81,7 @@ namespace Microsoft.Xna.Framework.Graphics
         /// <summary>
         /// The y coordinate of the beginning of this viewport.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public int Y
         {
 			get {
@@ -96,7 +96,7 @@ namespace Microsoft.Xna.Framework.Graphics
         /// <summary>
         /// The x coordinate of the beginning of this viewport.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public int X 
 		{
 			get{ return x;}
