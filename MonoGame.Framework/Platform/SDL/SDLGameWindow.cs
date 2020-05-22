@@ -70,6 +70,49 @@ namespace Microsoft.Xna.Framework
             get { return _screenDeviceName; }
         }
 
+        private bool GetDeviceDPIFromDrawableSize(out float dpi)
+        {
+            int widthPixels;
+            int heightPixels;
+            int widthPoints;
+            int heightPoints;
+
+            Sdl.GL.GetDrawableSize(Handle, out widthPixels, out heightPixels);
+            Sdl.Window.GetSize(Handle, out widthPoints, out heightPoints);
+
+            if (widthPoints == 0)
+            {
+                dpi = 0f;
+                return false;
+            }
+
+            dpi = (DEFAULT_DPI * widthPixels) / widthPoints;
+            return true;
+        }
+
+        public override bool GetDeviceDPI(out float dpi)
+        {
+            float ddpi;
+            float hdpi;
+            float vdpi;
+
+            // SDL_GetDeviceDPI:
+            // MacOS: We use the GetDrawableSize to figure the current scale * 96
+            // Linux: TODO check Hight-DPI support on X11
+            if (CurrentPlatform.OS == OS.MacOSX)
+                return GetDeviceDPIFromDrawableSize(out dpi);
+
+            int displayIndex = Sdl.Window.GetDisplayIndex(Handle);
+            if (Sdl.Display.GetDisplayDPI(displayIndex, out ddpi, out hdpi, out vdpi) < 0)
+            {
+                dpi = 0f;
+                return false;
+            }
+
+            dpi = hdpi;
+            return true;
+        }
+
         public override bool IsBorderless
         {
             get { return _borderless; }
@@ -127,18 +170,25 @@ namespace Microsoft.Xna.Framework
                 }
             }
 
+            int width  = GraphicsDeviceManager.DefaultBackBufferWidth;
+            int height = GraphicsDeviceManager.DefaultBackBufferHeight;
+
             _handle = Sdl.Window.Create("", 0, 0,
-                GraphicsDeviceManager.DefaultBackBufferWidth, GraphicsDeviceManager.DefaultBackBufferHeight,
-                Sdl.Window.State.Hidden | Sdl.Window.State.FullscreenDesktop);
+                width,
+                height,
+                Sdl.Window.State.Hidden |
+                Sdl.Window.State.FullscreenDesktop |
+                Sdl.Window.State.AllowHighDPI);
         }
 
         internal void CreateWindow()
         {
             var initflags =
                 Sdl.Window.State.OpenGL |
-                Sdl.Window.State.Hidden |
                 Sdl.Window.State.InputFocus |
-                Sdl.Window.State.MouseFocus;
+                Sdl.Window.State.MouseFocus |
+                Sdl.Window.State.AllowHighDPI |
+                Sdl.Window.State.Resizable;
 
             if (_handle != IntPtr.Zero)
                 Sdl.Window.Destroy(_handle);
@@ -153,7 +203,7 @@ namespace Microsoft.Xna.Framework
                 winy |= GetMouseDisplay();
             }
 
-            _width = GraphicsDeviceManager.DefaultBackBufferWidth;
+            _width  = GraphicsDeviceManager.DefaultBackBufferWidth;
             _height = GraphicsDeviceManager.DefaultBackBufferHeight;
 
             _handle = Sdl.Window.Create(
@@ -167,7 +217,6 @@ namespace Microsoft.Xna.Framework
                 Sdl.Window.SetIcon(_handle, _icon);
 
             Sdl.Window.SetBordered(_handle, _borderless ? 0 : 1);
-            Sdl.Window.SetResizable(_handle, _resizable);
 
             SetCursorVisible(_mouseVisible);
         }
@@ -234,8 +283,18 @@ namespace Microsoft.Xna.Framework
 
             if (!_willBeFullScreen || _game.graphicsDeviceManager.HardwareModeSwitch)
             {
+                // On Windows if we are under high-DPI we need to scale the
+                // window size, otherwise the DefaultBackBuffer size will be too small
+                // 800 x 480, so we multiply by the current monitor scale
+                if (CurrentPlatform.OS == OS.Windows)
+                {
+                    float scale = ScreenScale;
+                    clientWidth  = (int)(clientWidth * scale);
+                    clientHeight = (int)(clientHeight * scale);
+                }
+
                 Sdl.Window.SetSize(Handle, clientWidth, clientHeight);
-                _width = clientWidth;
+                _width  = clientWidth;
                 _height = clientHeight;
             }
             else
@@ -292,15 +351,30 @@ namespace Microsoft.Xna.Framework
         {
             // SDL reports many resize events even if the Size didn't change.
             // Only call the code below if it actually changed.
-            if (_game.GraphicsDevice.PresentationParameters.BackBufferWidth == width &&
-                _game.GraphicsDevice.PresentationParameters.BackBufferHeight == height) {
+            if (CurrentPlatform.OS != OS.MacOSX &&
+                _game.GraphicsDevice.PresentationParameters.BackBufferWidth == width &&
+                _game.GraphicsDevice.PresentationParameters.BackBufferHeight == height)
+            {
                 return;
             }
-            _game.GraphicsDevice.PresentationParameters.BackBufferWidth = width;
-            _game.GraphicsDevice.PresentationParameters.BackBufferHeight = height;
-            _game.GraphicsDevice.Viewport = new Viewport(0, 0, width, height);
 
-            Sdl.Window.GetSize(Handle, out _width, out _height);
+            Sdl.GL.GetDrawableSize(Handle, out _width, out _height);
+
+            if (CurrentPlatform.OS == OS.MacOSX)
+            {
+                _game.GraphicsDevice.Viewport = new Viewport(0, -height, _width, _height);
+
+                _width = width;
+                _height = height;
+            }
+            else
+            {
+                _game.GraphicsDevice.Viewport = new Viewport(0, 0, _width, _height);
+            }
+
+            _game.GraphicsDevice.PresentationParameters.BackBufferWidth = _width;
+            _game.GraphicsDevice.PresentationParameters.BackBufferHeight = _height;
+
 
             OnClientSizeChanged();
         }

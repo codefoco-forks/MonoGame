@@ -2,18 +2,17 @@
 
   <PropertyGroup>
     <TargetFramework>monoandroid90</TargetFramework>
-    <DefineConstants>ANDROID;GLES;STBSHARP_INTERNAL</DefineConstants>
+    <DefineConstants>ANDROID;GLES</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <MGOpenGL>GLES</MGOpenGL>
     <Description>The MonoGame runtime for Android which supports Android 4.2 and newer.</Description>
     <PackageTags>monogame;.net core;core;.net standard;standard;android</PackageTags>
     <PackageId>MonoGame.Framework.Android</PackageId>
-    <AppendTargetFrameworkToOutputPath>False</AppendTargetFrameworkToOutputPath>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.Numerics" />
   </ItemGroup>
 
   <ItemGroup>
@@ -52,8 +51,8 @@
     <Compile Include="Platform\Graphics\GraphicsAdapter.Legacy.cs" />
     <Compile Include="Platform\Graphics\OpenGL.Android.cs" />
     <Compile Include="Platform\Graphics\OpenGL.Common.cs" />
-    <Compile Include="Platform\Graphics\Texture2D.StbSharp.cs" />
     <Compile Include="Platform\GraphicsDeviceManager.Legacy.cs" />
+    <Compile Include="Platform\Graphics\Texture2D.Android.cs" />
     <Compile Include="Platform\Input\GamePad.Android.cs" />
     <Compile Include="Platform\Input\Joystick.Default.cs" />
     <Compile Include="Platform\Input\KeyboardInput.Android.cs" />
@@ -70,9 +69,6 @@
     <Compile Include="Platform\Utilities\FuncLoader.Android.cs" />
     <Compile Include="Platform\Utilities\InteropHelpers.cs" />
     <Compile Include="Platform\Utilities\ReflectionHelpers.Default.cs" />
-    
-    <Compile Include="..\ThirdParty\StbImageSharp\src\**\*.cs" LinkBase="Utilities\StbImageSharp"/>
-    <Compile Include="..\ThirdParty\StbImageWriteSharp\src\**\*.cs" LinkBase="Utilities\StbImageWriteSharp"/>
   </ItemGroup>
 
   <ItemGroup>
@@ -93,8 +89,15 @@
       <Link>libs\x86_64\libopenal32.so</Link>
     </EmbeddedNativeLibrary>
   </ItemGroup>
-
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
   <Import Project="Platform\OpenGL.targets" />
+  <Import Project="Platform\OpenGLES.EmbeddedShaders.targets" />
   <Import Project="Platform\OpenAL.targets" />
   <Import Project="Platform\Microsoft.Devices.Sensors.targets" />
+  <Import Project="MonoGame.Sign.targets" />
 </Project>
