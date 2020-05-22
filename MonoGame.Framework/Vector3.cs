@@ -15,7 +15,7 @@ namespace Microsoft.Xna.Framework
 #if XNADESIGNPROVIDED
     [System.ComponentModel.TypeConverter(typeof(Microsoft.Xna.Framework.Design.Vector3TypeConverter))]
 #endif
-    [DataContract]
+    //[DataContract]
     [DebuggerDisplay("{DebugDisplayString,nq}")]
     public struct Vector3 : IEquatable<Vector3>
     {
@@ -40,19 +40,19 @@ namespace Microsoft.Xna.Framework
         /// <summary>
         /// The x coordinate of this <see cref="Vector3"/>.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public float X;
 
         /// <summary>
         /// The y coordinate of this <see cref="Vector3"/>.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public float Y;
 
         /// <summary>
         /// The z coordinate of this <see cref="Vector3"/>.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public float Z;
 
         #endregion

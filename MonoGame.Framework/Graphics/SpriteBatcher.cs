@@ -130,11 +130,11 @@ namespace Microsoft.Xna.Framework.Graphics
                      */
                     // Triangle 1
                     *(indexPtr + 0) = (short)(i * 4);
-                    *(indexPtr + 1) = (short)(i * 4 + 1);
-                    *(indexPtr + 2) = (short)(i * 4 + 2);
+                    *(indexPtr + 2) = (short)(i * 4 + 1);
+                    *(indexPtr + 1) = (short)(i * 4 + 2);
                     // Triangle 2
-                    *(indexPtr + 3) = (short)(i * 4 + 1);
-                    *(indexPtr + 4) = (short)(i * 4 + 3);
+                    *(indexPtr + 4) = (short)(i * 4 + 1);
+                    *(indexPtr + 3) = (short)(i * 4 + 3);
                     *(indexPtr + 5) = (short)(i * 4 + 2);
                 }
             }
