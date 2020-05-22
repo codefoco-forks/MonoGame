@@ -188,10 +188,6 @@ namespace Microsoft.Xna.Framework
                         {
                             ControllerUserInteractionEnabled = true;
                         }
-                        else
-                        {
-                            Microsoft.Xna.Framework.Input.GamePad.MenuPressed = true;
-                        }
                     }
                     else
                     {
