@@ -7,8 +7,8 @@ using System.IO;
 using Microsoft.Xna.Framework.Content.Pipeline.Graphics;
 using Microsoft.Xna.Framework.Graphics.PackedVector;
 using FreeImageAPI;
-using MonoGame.Framework.Utilities;
-using StbImageSharp;
+using MonoGame.Utilities;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace Microsoft.Xna.Framework.Content.Pipeline
 {
@@ -196,16 +196,15 @@ namespace Microsoft.Xna.Framework.Content.Pipeline
         {
             var output = new Texture2DContent { Identity = new ContentIdentity(filename) };
 
-            ImageResult result;
-            using (var stream = File.Open(filename, FileMode.Open, FileAccess.Read, FileShare.Read))
-            {
-                var imageLoader = new ImageStreamLoader();
-                result = imageLoader.Load(stream, ColorComponents.RedGreenBlueAlpha);
-            }
+            //Texture2D result;
+            //using (var stream = File.Open(filename, FileMode.Open, FileAccess.Read, FileShare.Read))
+            //{
+            //    result = Texture2D.FromStream(stream);
+            //}
 
-            var face = new PixelBitmapContent<Color>(result.Width, result.Height);
-            face.SetPixelData(result.Data);
-            output.Faces[0].Add(face);
+            //var face = new PixelBitmapContent<Color>(result.Width, result.Height);
+            //face.SetPixelData(result.Data);
+            //output.Faces[0].Add(face);
 
             return output;
         }
