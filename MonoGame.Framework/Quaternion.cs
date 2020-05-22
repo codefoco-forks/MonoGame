@@ -11,7 +11,7 @@ namespace Microsoft.Xna.Framework
     /// <summary>
     /// An efficient mathematical representation for three dimensional rotations.
     /// </summary>
-    [DataContract]
+    //[DataContract]
     [DebuggerDisplay("{DebugDisplayString,nq}")]
     public struct Quaternion : IEquatable<Quaternion>
     {
@@ -26,25 +26,25 @@ namespace Microsoft.Xna.Framework
         /// <summary>
         /// The x coordinate of this <see cref="Quaternion"/>.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public float X;
 
         /// <summary>
         /// The y coordinate of this <see cref="Quaternion"/>.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public float Y;
 
         /// <summary>
         /// The z coordinate of this <see cref="Quaternion"/>.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public float Z;
 
         /// <summary>
         /// The rotation component of this <see cref="Quaternion"/>.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public float W;
 
         #endregion

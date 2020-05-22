@@ -34,6 +34,25 @@ namespace Microsoft.Xna.Framework.Graphics
         EffectParameter worldInverseTransposeParam;
         EffectParameter worldViewProjParam;
 
+        /// <summary>
+        /// Options to do smooth edge on primitive
+        /// </summary>
+        public enum SmoothEdgeOption : byte
+        {
+            /// <summary>
+            /// No smooth on primitives
+            /// </summary>
+            None = 0,
+            /// <summary>
+            /// Smooth only one edge of the primitive
+            /// </summary>
+            Edge = 1,
+            /// <summary>
+            /// Smooth both edges (simitrically)
+            /// </summary>
+            BothEdges = 2
+        }
+
         #endregion
 
         #region Fields
@@ -44,12 +63,13 @@ namespace Microsoft.Xna.Framework.Graphics
         bool fogEnabled;
         bool textureEnabled;
         bool vertexColorEnabled;
+        SmoothEdgeOption smoothEdgeOption;
 
         Matrix world = Matrix.Identity;
         Matrix view = Matrix.Identity;
         Matrix projection = Matrix.Identity;
 
-        Matrix worldView;
+        Matrix _cachedViewProjection = Matrix.Identity;
 
         Vector3 diffuseColor = Vector3.One;
         Vector3 emissiveColor = Vector3.Zero;
@@ -64,7 +84,7 @@ namespace Microsoft.Xna.Framework.Graphics
         float fogStart = 0;
         float fogEnd = 1;
 
-        EffectDirtyFlags dirtyFlags = EffectDirtyFlags.All;
+        EffectDirtyFlags dirtyFlags = EffectDirtyFlags.ShaderIndex;
 
         #endregion
         
@@ -81,7 +101,7 @@ namespace Microsoft.Xna.Framework.Graphics
             set
             {
                 world = value;
-                dirtyFlags |= EffectDirtyFlags.World | EffectDirtyFlags.WorldViewProj | EffectDirtyFlags.Fog;
+                dirtyFlags |= EffectDirtyFlags.World;
             }
         }
 
@@ -96,7 +116,23 @@ namespace Microsoft.Xna.Framework.Graphics
             set
             {
                 view = value;
-                dirtyFlags |= EffectDirtyFlags.WorldViewProj | EffectDirtyFlags.EyePosition | EffectDirtyFlags.Fog;
+                dirtyFlags |= EffectDirtyFlags.WorldViewProj | EffectDirtyFlags.EyePosition;
+
+                Matrix.Multiply(ref view, ref projection, out _cachedViewProjection);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the view matrix.
+        /// </summary>
+        public Matrix ViewProjection
+        {
+            get { return _cachedViewProjection; }
+
+            set
+            {
+                _cachedViewProjection = value;
+                dirtyFlags |= EffectDirtyFlags.WorldViewProj | EffectDirtyFlags.EyePosition;
             }
         }
 
@@ -112,6 +148,8 @@ namespace Microsoft.Xna.Framework.Graphics
             {
                 projection = value;
                 dirtyFlags |= EffectDirtyFlags.WorldViewProj;
+
+                Matrix.Multiply(ref view, ref projection, out _cachedViewProjection);
             }
         }
 
@@ -334,6 +372,22 @@ namespace Microsoft.Xna.Framework.Graphics
             }
         }
 
+        /// <summary>
+        /// Gets or sets whether vertex alpha is enabled.
+        /// </summary>
+        public SmoothEdgeOption Smooth
+        {
+            get { return smoothEdgeOption; }
+
+            set
+            {
+                if (smoothEdgeOption != value)
+                {
+                    smoothEdgeOption = value;
+                    dirtyFlags |= EffectDirtyFlags.ShaderIndex;
+                }
+            }
+        }
 
         #endregion
 
@@ -350,6 +404,7 @@ namespace Microsoft.Xna.Framework.Graphics
             DirectionalLight0.Enabled = true;
             SpecularColor = Vector3.One;
             SpecularPower = 16;
+            smoothEdgeOption = SmoothEdgeOption.None;
         }
 
         /// <summary>
@@ -378,6 +433,8 @@ namespace Microsoft.Xna.Framework.Graphics
 
             fogStart = cloneSource.fogStart;
             fogEnd = cloneSource.fogEnd;
+
+            smoothEdgeOption = cloneSource.smoothEdgeOption;
         }
 
 
@@ -438,9 +495,30 @@ namespace Microsoft.Xna.Framework.Graphics
         /// </summary>
         protected internal override void OnApply()
         {
-            // Recompute the world+view+projection matrix or fog vector?
-            dirtyFlags = EffectHelpers.SetWorldViewProjAndFog(dirtyFlags, ref world, ref view, ref projection, ref worldView, fogEnabled, fogStart, fogEnd, worldViewProjParam, fogVectorParam);
-            
+            // Pass View (which should be already multiplied by projection)
+            if ((dirtyFlags & EffectDirtyFlags.WorldViewProj) != 0)
+            {
+                worldViewProjParam.SetValue(_cachedViewProjection);
+
+                dirtyFlags &= ~EffectDirtyFlags.WorldViewProj;
+            }
+
+            // Pass world transform
+            if ((dirtyFlags & EffectDirtyFlags.World) != 0)
+            {
+                worldParam.SetValue(world);
+
+                dirtyFlags &= ~EffectDirtyFlags.World;
+            }
+
+            // Recompute Fog vector?
+            if ((dirtyFlags & (EffectDirtyFlags.Fog | EffectDirtyFlags.FogEnable)) != 0)
+            {
+                EffectHelpers.SetFogVector(ref _cachedViewProjection, fogEnabled, fogStart, fogEnd, fogVectorParam);
+
+                dirtyFlags &= ~(EffectDirtyFlags.Fog | EffectDirtyFlags.FogEnable);
+            }
+
             // Recompute the diffuse/emissive/alpha material color parameters?
             if ((dirtyFlags & EffectDirtyFlags.MaterialColor) != 0)
             {
@@ -468,6 +546,23 @@ namespace Microsoft.Xna.Framework.Graphics
             // Recompute the shader index?
             if ((dirtyFlags & EffectDirtyFlags.ShaderIndex) != 0)
             {
+                dirtyFlags &= ~EffectDirtyFlags.ShaderIndex;
+
+                if (smoothEdgeOption == SmoothEdgeOption.Edge)
+                {
+                    // VertexAlpha should be only used alone
+                    // This flag was added to draw shapes
+                    // using only Difuse color,
+                    // No Fog, No lighting, No Texture, No Vertex Color
+                    CurrentTechnique = Techniques[32];
+                    return;
+                }
+                if (smoothEdgeOption == SmoothEdgeOption.BothEdges)
+                {
+                    CurrentTechnique = Techniques[33];
+                    return;
+                }
+
                 int shaderIndex = 0;
                 
                 if (!fogEnabled)
@@ -488,8 +583,6 @@ namespace Microsoft.Xna.Framework.Graphics
                     else
                         shaderIndex += 8;
                 }
-
-                dirtyFlags &= ~EffectDirtyFlags.ShaderIndex;
 
                 CurrentTechnique = Techniques[shaderIndex];
             }

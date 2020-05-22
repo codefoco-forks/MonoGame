@@ -38,7 +38,6 @@ namespace Microsoft.Xna.Framework
     /// <summary>
     /// A plane in 3d space, represented by its normal away from the origin and its distance from the origin, D.
     /// </summary>
-    [DataContract]
     [DebuggerDisplay("{DebugDisplayString,nq}")]
     public struct Plane : IEquatable<Plane>
     {
@@ -47,13 +46,11 @@ namespace Microsoft.Xna.Framework
         /// <summary>
         /// The distance of the <see cref="Plane"/> to the origin.
         /// </summary>
-        [DataMember]
         public float D;
 
         /// <summary>
         /// The normal of the <see cref="Plane"/>.
         /// </summary>
-        [DataMember]
         public Vector3 Normal;
 
         #endregion Public Fields

@@ -1,13 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
 
   <PropertyGroup>
-    <TargetFrameworks>net452;netcoreapp3.1</TargetFrameworks>
-    <DefineConstants>WINDOWS;XNADESIGNPROVIDED;STBSHARP_INTERNAL</DefineConstants>
+    <TargetFrameworks>net45;netcoreapp3.1</TargetFrameworks>
+    <DefineConstants>WINDOWS;XNADESIGNPROVIDED</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <UseWindowsForms>true</UseWindowsForms>
     <Description>The MonoGame runtime for Windows using DirectX API's.</Description>
     <PackageTags>monogame;.net core;core;.net standard;standard;windowsdx</PackageTags>
     <PackageId>MonoGame.Framework.WindowsDX</PackageId>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,8 +24,8 @@
 
   <ItemGroup>
     <Compile Include="Platform\GamePlatform.Desktop.cs" />
+    <Compile Include="Platform\Graphics\ImageWriter.System.Drawing.cs" />
     <Compile Include="Platform\Graphics\SwapChainRenderTarget.cs" />
-    <Compile Include="Platform\Graphics\Texture2D.StbSharp.cs" />
     <Compile Include="Platform\Input\GamePad.XInput.cs" />
     <Compile Include="Platform\Input\InputKeyEventArgs.cs" />
     <Compile Include="Platform\Input\Joystick.Default.cs" />
@@ -54,11 +55,6 @@
   </ItemGroup> 
 
   <ItemGroup>
-    <Compile Include="..\ThirdParty\StbImageSharp\src\**\*.cs" LinkBase="Utilities\StbImageSharp" />
-    <Compile Include="..\ThirdParty\StbImageWriteSharp\src\**\*.cs" LinkBase="Utilities\StbImageWriteSharp" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Content Include="MonoGame.Framework.WindowsDX.targets" PackagePath="build" />
   </ItemGroup>
 
@@ -79,7 +75,13 @@
     <PackageReference Version="4.0.1" Include="SharpDX.XAudio2" />
     <PackageReference Version="4.0.1" Include="SharpDX.XInput" />
   </ItemGroup>
-
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
   <Import Project="Platform\DirectX.targets" />
   <Import Project="Platform\XAudio.targets" />
+  <Import Project="MonoGame.Sign.targets" />
 </Project>
