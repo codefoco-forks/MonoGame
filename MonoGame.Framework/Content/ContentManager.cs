@@ -316,7 +316,10 @@ namespace Microsoft.Xna.Framework.Content
 			object result = null;
 
             // Try to load as XNB file
-            var stream = OpenStream(assetName);
+            Stream stream = OpenStream(assetName);
+            if (stream == null)
+                throw new ContentLoadException("Could not load " + originalAssetName + " asset!");
+
             using (var xnbReader = new BinaryReader(stream))
             {
                 using (var reader = GetContentReaderFromXnb(assetName, stream, xnbReader, recordDisposableObject))
@@ -363,18 +366,7 @@ namespace Microsoft.Xna.Framework.Content
             Stream decompressedStream = null;
             if (compressedLzx || compressedLz4)
             {
-                // Decompress the xnb
-                int decompressedSize = xnbReader.ReadInt32();
-
-                if (compressedLzx)
-                {
-                    int compressedSize = xnbLength - 14;
-                    decompressedStream = new LzxDecoderStream(stream, decompressedSize, compressedSize);
-                }
-                else if (compressedLz4)
-                {
-                    decompressedStream = new Lz4DecoderStream(stream);
-                }
+                throw new NotSupportedException("Compressed XNB is not supported by this version of MonoGame");
             }
             else
             {
