@@ -12,7 +12,6 @@ namespace Microsoft.Xna.Framework
     /// <summary>
     /// Represents an axis-aligned bounding box (AABB) in 3D space.
     /// </summary>
-    [DataContract]
     [DebuggerDisplay("{DebugDisplayString,nq}")]
     public struct BoundingBox : IEquatable<BoundingBox>
     {
@@ -22,13 +21,11 @@ namespace Microsoft.Xna.Framework
         /// <summary>
         ///   The minimum extent of this <see cref="BoundingBox"/>.
         /// </summary>
-        [DataMember]
         public Vector3 Min;
       
         /// <summary>
         ///   The maximum extent of this <see cref="BoundingBox"/>.
         /// </summary>
-        [DataMember]
         public Vector3 Max;
 
         /// <summary>

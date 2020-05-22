@@ -34,6 +34,25 @@ namespace Microsoft.Xna.Framework.Graphics
         EffectParameter worldInverseTransposeParam;
         EffectParameter worldViewProjParam;
 
+        /// <summary>
+        /// Options to do smooth edge on primitive
+        /// </summary>
+        public enum SmoothEdgeOption : byte
+        {
+            /// <summary>
+            /// No smooth on primitives
+            /// </summary>
+            None = 0,
+            /// <summary>
+            /// Smooth only one edge of the primitive
+            /// </summary>
+            Edge = 1,
+            /// <summary>
+            /// Smooth both edges (simitrically)
+            /// </summary>
+            BothEdges = 2
+        }
+
         #endregion
 
         #region Fields
@@ -44,6 +63,7 @@ namespace Microsoft.Xna.Framework.Graphics
         bool fogEnabled;
         bool textureEnabled;
         bool vertexColorEnabled;
+        SmoothEdgeOption smoothEdgeOption;
 
         Matrix world = Matrix.Identity;
         Matrix view = Matrix.Identity;
@@ -334,6 +354,22 @@ namespace Microsoft.Xna.Framework.Graphics
             }
         }
 
+        /// <summary>
+        /// Gets or sets whether vertex alpha is enabled.
+        /// </summary>
+        public SmoothEdgeOption Smooth
+        {
+            get { return smoothEdgeOption; }
+
+            set
+            {
+                if (smoothEdgeOption != value)
+                {
+                    smoothEdgeOption = value;
+                    dirtyFlags |= EffectDirtyFlags.ShaderIndex;
+                }
+            }
+        }
 
         #endregion
 
@@ -350,6 +386,7 @@ namespace Microsoft.Xna.Framework.Graphics
             DirectionalLight0.Enabled = true;
             SpecularColor = Vector3.One;
             SpecularPower = 16;
+            smoothEdgeOption = SmoothEdgeOption.None;
         }
 
         /// <summary>
@@ -378,6 +415,8 @@ namespace Microsoft.Xna.Framework.Graphics
 
             fogStart = cloneSource.fogStart;
             fogEnd = cloneSource.fogEnd;
+
+            smoothEdgeOption = cloneSource.smoothEdgeOption;
         }
 
 
@@ -487,6 +526,19 @@ namespace Microsoft.Xna.Framework.Graphics
                         shaderIndex += 16;
                     else
                         shaderIndex += 8;
+                }
+
+                if (smoothEdgeOption == SmoothEdgeOption.Edge)
+                {
+                    // VertexAlpha should be only used alone
+                    // This flag was added to draw shapes
+                    // using only Difuse color,
+                    // No Fog, No lighting, No Texture, No Vertex Color
+                    shaderIndex = 32;
+                }
+                if (smoothEdgeOption == SmoothEdgeOption.BothEdges)
+                {
+                    shaderIndex = 33;
                 }
 
                 dirtyFlags &= ~EffectDirtyFlags.ShaderIndex;
