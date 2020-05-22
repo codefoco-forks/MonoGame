@@ -8,14 +8,20 @@ namespace MonoGame.Effect
 {
 	internal partial class ShaderData
 	{
-        public static ShaderData CreateGLSL(byte[] byteCode, bool isVertexShader, List<ConstantBufferData> cbuffers, int sharedIndex, Dictionary<string, SamplerStateInfo> samplerStates, bool debug)
+		public static ShaderData CreateGLSL(byte[] byteCode, bool isVertexShader, List<ConstantBufferData> cbuffers, int sharedIndex, Dictionary<string, SamplerStateInfo> samplerStates, bool debug, bool useGLES)
 		{
-            var dxshader = new ShaderData(isVertexShader, sharedIndex, byteCode);
+			var dxshader = new ShaderData(isVertexShader, sharedIndex, byteCode);
 
 			// Use MojoShader to convert the HLSL bytecode to GLSL.
+			string profile;
+			if (useGLES)
+				profile = "glsles";
+			else
+				profile = "glsl120";
 
 			var parseDataPtr = MojoShader.NativeMethods.MOJOSHADER_parse (
-				"glsl",
+				profile,
+				IntPtr.Zero,
 				byteCode,
 				byteCode.Length,
 				IntPtr.Zero,
@@ -67,9 +73,9 @@ namespace MonoGame.Effect
 			}
 			);//(a, b) => ((int)(a.info.elements > 1))a.register_index.CompareTo(b.register_index));
 
-            // NOTE: It seems the latest versions of MojoShader only 
-            // output vec4 register sets.  We leave the code below, but
-            // the runtime has been optimized for this case.
+			// NOTE: It seems the latest versions of MojoShader only 
+			// output vec4 register sets.  We leave the code below, but
+			// the runtime has been optimized for this case.
 
 			// For whatever reason the register indexing is 
 			// incorrect from MojoShader.
@@ -103,38 +109,38 @@ namespace MonoGame.Effect
 					parseData.samplers, parseData.sampler_count);
 			dxshader._samplers = new Sampler[samplers.Length];
 			for (var i = 0; i < samplers.Length; i++) 
-            {
-                // We need the original sampler name... look for that in the symbols.
-                var originalSamplerName =
-                    symbols.First(e => e.register_set == MojoShader.MOJOSHADER_symbolRegisterSet.MOJOSHADER_SYMREGSET_SAMPLER &&
-                    e.register_index == samplers[i].index
-                ).name;
+			{
+				// We need the original sampler name... look for that in the symbols.
+				var originalSamplerName =
+					symbols.First(e => e.register_set == MojoShader.MOJOSHADER_symbolRegisterSet.MOJOSHADER_SYMREGSET_SAMPLER &&
+					e.register_index == samplers[i].index
+				).name;
 
-                var sampler = new Sampler
-                {
-                    //sampler mapping to parameter is unknown atm
-                    parameter = -1,
-                                      
-                    // GLSL needs the MojoShader mangled sampler name.
-                    samplerName = samplers[i].name,
+				var sampler = new Sampler
+				{
+					//sampler mapping to parameter is unknown atm
+					parameter = -1,
+									  
+					// GLSL needs the MojoShader mangled sampler name.
+					samplerName = samplers[i].name,
 
-                    // By default use the original sampler name for the parameter name.
-                    parameterName = originalSamplerName,
+					// By default use the original sampler name for the parameter name.
+					parameterName = originalSamplerName,
 
-                    textureSlot = samplers[i].index,
-                    samplerSlot = samplers[i].index,
-                    type = samplers[i].type,
-                };
+					textureSlot = samplers[i].index,
+					samplerSlot = samplers[i].index,
+					type = samplers[i].type,
+				};
 
-                SamplerStateInfo state;
-                if (samplerStates.TryGetValue(originalSamplerName, out state))
-                {
-                    sampler.state = state.State;
-                    sampler.parameterName = state.TextureName ?? originalSamplerName;
-                }
+				SamplerStateInfo state;
+				if (samplerStates.TryGetValue(originalSamplerName, out state))
+				{
+					sampler.state = state.State;
+					sampler.parameterName = state.TextureName ?? originalSamplerName;
+				}
 
-                // Store the sampler.
-			    dxshader._samplers[i] = sampler;
+				// Store the sampler.
+				dxshader._samplers[i] = sampler;
 			}
 
 			// Gather all the parameters used by this shader.
@@ -161,33 +167,9 @@ namespace MonoGame.Effect
 			}
 			dxshader._cbuffers = cbuffer_index.ToArray ();
 
-			var glslCode = parseData.output;
+			string code = parseData.output;
 
-			// TODO: This sort of sucks... why does MojoShader not produce
-			// code valid for GLES out of the box?
-
-			// GLES platforms do not like this.
-			glslCode = glslCode.Replace ("#version 110", "");
-
-			// Add the required precision specifiers for GLES.
-
-            var floatPrecision = dxshader.IsVertexShader ? "precision highp float;\r\n" : "precision mediump float;\r\n";
-
-			glslCode = "#ifdef GL_ES\r\n" +
-                 floatPrecision +
-				"precision mediump int;\r\n" +
-				"#endif\r\n" +
-				glslCode;
-
-			// Enable standard derivatives extension as necessary
-			if ((glslCode.IndexOf("dFdx", StringComparison.InvariantCulture) >= 0)
-				|| (glslCode.IndexOf("dFdy", StringComparison.InvariantCulture) >= 0))
-			{
-				glslCode = "#extension GL_OES_standard_derivatives : enable\r\n" + glslCode;
-			}
-
-			// Store the code for serialization.
-			dxshader.ShaderCode = Encoding.ASCII.GetBytes (glslCode);
+			dxshader.ShaderCode = Encoding.ASCII.GetBytes (code);
 
 			return dxshader;
 		}

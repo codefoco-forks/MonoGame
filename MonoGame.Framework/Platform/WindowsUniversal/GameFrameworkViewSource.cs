@@ -4,26 +4,35 @@
 
 using System;
 using Microsoft.Xna.Framework;
-using Windows.ApplicationModel.Activation;
 using Windows.ApplicationModel.Core;
 
 
 namespace MonoGame.Framework
 {
-    public class GameFrameworkViewSource<T> : IFrameworkViewSource
-        where T : Game, new()
+    /// <summary>
+    /// UWP FrameworkViewSource
+    /// </summary>
+    public class GameFrameworkViewSource : IFrameworkViewSource
     {
-        private Action<T, IActivatedEventArgs> _gameConstructorCustomizationDelegate = null;
-
-        public GameFrameworkViewSource(Action<T, IActivatedEventArgs> gameConstructorCustomizationDelegate = null)
+        Action<IFrameworkView> _onGetFrameworkViewGame;
+        /// <summary>
+        /// ctor
+        /// </summary>
+        public GameFrameworkViewSource(Action<IFrameworkView> onGetFrameworkViewGame)
         {
-            this._gameConstructorCustomizationDelegate = gameConstructorCustomizationDelegate;
+            if(onGetFrameworkViewGame == null)
+                throw new ArgumentNullException("onSetFrameworkViewGame");
+
+            this._onGetFrameworkViewGame = onGetFrameworkViewGame;
         }
 
-        [CLSCompliant(false)]
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public IFrameworkView CreateView()
         {
-            return new UAPFrameworkView<T>(_gameConstructorCustomizationDelegate);
+            return new UAPFrameworkView(_onGetFrameworkViewGame);
         }
     }
 }
