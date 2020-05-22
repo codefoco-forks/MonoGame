@@ -116,8 +116,8 @@ namespace Microsoft.Xna.Framework.Graphics
         static readonly float[] _posFixup = new float[4];
 
         private static BufferBindingInfo[] _bufferBindingInfos;
-        private static bool[] _newEnabledVertexAttributes;
-        internal static readonly List<int> _enabledVertexAttributes = new List<int>();
+        private static int _newEnabledVertexAttributes;
+        private static int _enabledVertexAttributes;
         internal static bool _attribsDirty;
 
         internal FramebufferHelper framebufferHelper;
@@ -143,7 +143,7 @@ namespace Microsoft.Xna.Framework.Graphics
         {
             get
             {
-                if (_vertexShader == null && _pixelShader == null)
+                if (_vertexShader == null || _pixelShader == null)
                     throw new InvalidOperationException("There is no shader bound!");
                 if (_vertexShader == null)
                     return _pixelShader.HashKey;
@@ -153,22 +153,25 @@ namespace Microsoft.Xna.Framework.Graphics
             }
         }
 
-        internal void SetVertexAttributeArray(bool[] attrs)
+        internal void SetVertexAttributeArray(int attrs, int maxAttributes)
         {
-            for (var x = 0; x < attrs.Length; x++)
+            for (int x = 0; x < maxAttributes && attrs != _enabledVertexAttributes; x++)
             {
-                if (attrs[x] && !_enabledVertexAttributes.Contains(x))
+                int flag = 1 << x;
+
+                if ((attrs & flag) == flag && (_enabledVertexAttributes & flag) != flag )
                 {
-                    _enabledVertexAttributes.Add(x);
+                    _enabledVertexAttributes |= flag;
                     GL.EnableVertexAttribArray(x);
                     GraphicsExtensions.CheckGLError();
                 }
-                else if (!attrs[x] && _enabledVertexAttributes.Contains(x))
+                else if ((attrs & flag) != flag && (_enabledVertexAttributes & flag) == flag)
                 {
-                    _enabledVertexAttributes.Remove(x);
+                    _enabledVertexAttributes &= ~flag;
                     GL.DisableVertexAttribArray(x);
                     GraphicsExtensions.CheckGLError();
                 }
+
             }
         }
 
@@ -202,8 +205,9 @@ namespace Microsoft.Xna.Framework.Graphics
                 if (!GraphicsCapabilities.SupportsInstancing && vertexBufferBinding.InstanceFrequency > 0)
                     throw new PlatformNotSupportedException("Instanced geometry drawing requires at least OpenGL 3.2 or GLES 3.2. Try upgrading your graphics drivers.");
 
-                foreach (var element in attrInfo.Elements)
+                for (int i = 0; i < attrInfo.Elements.Count; i++)
                 {
+                    var element = attrInfo.Elements[i];
                     GL.VertexAttribPointer(element.AttributeLocation,
                         element.NumberOfElements,
                         element.VertexAttribPointerType,
@@ -228,14 +232,18 @@ namespace Microsoft.Xna.Framework.Graphics
 
             if (bindingsChanged)
             {
-                Array.Clear(_newEnabledVertexAttributes, 0, _newEnabledVertexAttributes.Length);
+                _newEnabledVertexAttributes = 0;
+
                 for (var slot = 0; slot < _vertexBuffers.Count; slot++)
                 {
-                    foreach (var element in _bufferBindingInfos[slot].AttributeInfo.Elements)
-                        _newEnabledVertexAttributes[element.AttributeLocation] = true;
+                    for (int i = 0; i < _bufferBindingInfos[slot].AttributeInfo.Elements.Count; i++)
+                    {
+                        var element = _bufferBindingInfos[slot].AttributeInfo.Elements[i];
+                        _newEnabledVertexAttributes |= 1 << element.AttributeLocation;
+                    }
                 }
             }
-            SetVertexAttributeArray(_newEnabledVertexAttributes);
+            SetVertexAttributeArray(_newEnabledVertexAttributes, _maxVertexBufferSlots);
         }
 
         private void PlatformSetup()
@@ -264,7 +272,7 @@ namespace Microsoft.Xna.Framework.Graphics
             GraphicsExtensions.CheckGLError();
 
             _maxVertexBufferSlots = MaxVertexAttributes;
-            _newEnabledVertexAttributes = new bool[MaxVertexAttributes];
+            _newEnabledVertexAttributes = 0;
 
 
             // try getting the context version
@@ -333,7 +341,7 @@ namespace Microsoft.Xna.Framework.Graphics
             _viewport = new Viewport(0, 0, PresentationParameters.BackBufferWidth, PresentationParameters.BackBufferHeight);
 
             // Ensure the vertex attributes are reset
-            _enabledVertexAttributes.Clear();
+            _enabledVertexAttributes = 0;
 
             // Free all the cached shader programs. 
             _programCache.Clear();
@@ -683,20 +691,17 @@ namespace Microsoft.Xna.Framework.Graphics
 #endif
                 }
 
-                if (depthInternalFormat != 0)
+                this.framebufferHelper.GenRenderbuffer(out depth);
+                this.framebufferHelper.BindRenderbuffer(depth);
+                this.framebufferHelper.RenderbufferStorageMultisample(preferredMultiSampleCount, (int)depthInternalFormat, width, height);
+                if (preferredDepthFormat == DepthFormat.Depth24Stencil8)
                 {
-                    this.framebufferHelper.GenRenderbuffer(out depth);
-                    this.framebufferHelper.BindRenderbuffer(depth);
-                    this.framebufferHelper.RenderbufferStorageMultisample(preferredMultiSampleCount, (int)depthInternalFormat, width, height);
-                    if (preferredDepthFormat == DepthFormat.Depth24Stencil8)
+                    stencil = depth;
+                    if (stencilInternalFormat != 0)
                     {
-                        stencil = depth;
-                        if (stencilInternalFormat != 0)
-                        {
-                            this.framebufferHelper.GenRenderbuffer(out stencil);
-                            this.framebufferHelper.BindRenderbuffer(stencil);
-                            this.framebufferHelper.RenderbufferStorageMultisample(preferredMultiSampleCount, (int)stencilInternalFormat, width, height);
-                        }
+                        this.framebufferHelper.GenRenderbuffer(out stencil);
+                        this.framebufferHelper.BindRenderbuffer(stencil);
+                        this.framebufferHelper.RenderbufferStorageMultisample(preferredMultiSampleCount, (int)stencilInternalFormat, width, height);
                     }
                 }
             }

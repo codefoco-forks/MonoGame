@@ -91,7 +91,6 @@ namespace Microsoft.Xna.Framework
                 }
                 else if (_game.GraphicsDevice != null)
                 {
-                    _game.GraphicsDevice.Clear(Color.Black);
                     if (GameView.IsResuming && Resumer != null)
                     {
                         Resumer.Draw();
