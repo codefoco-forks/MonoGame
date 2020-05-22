@@ -35,16 +35,16 @@ namespace Microsoft.Xna.Framework
         }
     }
 	
-    [DataContract]
+    //[DataContract]
     [DebuggerDisplay("{DebugDisplayString,nq}")]
     public struct Plane : IEquatable<Plane>
     {
         #region Public Fields
 
-        [DataMember]
+        //[DataMember]
         public float D;
 
-        [DataMember]
+        //[DataMember]
         public Vector3 Normal;
 
         #endregion Public Fields
