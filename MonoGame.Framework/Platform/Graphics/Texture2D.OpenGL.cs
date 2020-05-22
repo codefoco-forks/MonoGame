@@ -14,6 +14,12 @@ using Foundation;
 using System.Drawing;
 #endif
 
+#if MACOS
+using AppKit;
+using CoreGraphics;
+using System.Drawing;
+#endif
+
 #if OPENGL
 using MonoGame.OpenGL;
 using GLPixelFormat = MonoGame.OpenGL.PixelFormat;
@@ -260,6 +266,11 @@ namespace Microsoft.Xna.Framework.Graphics
         {
             return PlatformFromStream(graphicsDevice, uiImage.CGImage);
         }
+#elif MACOS
+        public static Texture2D FromStream(GraphicsDevice graphicsDevice, NSImage nsImage)
+        {
+            return PlatformFromStream(graphicsDevice, nsImage.CGImage);
+        }
 #elif ANDROID
         [CLSCompliant(false)]
         public static Texture2D FromStream(GraphicsDevice graphicsDevice, Bitmap bitmap)
@@ -296,7 +307,7 @@ namespace Microsoft.Xna.Framework.Graphics
         }
 #endif
 
-#if IOS
+#if IOS || MACOS
         private static Texture2D PlatformFromStream(GraphicsDevice graphicsDevice, CGImage cgImage)
         {
 			var width = cgImage.Width;
