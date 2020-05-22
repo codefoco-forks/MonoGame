@@ -143,7 +143,7 @@ namespace Microsoft.Xna.Framework.Graphics
         {
             get
             {
-                if (_vertexShader == null && _pixelShader == null)
+                if (_vertexShader == null || _pixelShader == null)
                     throw new InvalidOperationException("There is no shader bound!");
                 if (_vertexShader == null)
                     return _pixelShader.HashKey;
@@ -683,20 +683,17 @@ namespace Microsoft.Xna.Framework.Graphics
 #endif
                 }
 
-                if (depthInternalFormat != 0)
+                this.framebufferHelper.GenRenderbuffer(out depth);
+                this.framebufferHelper.BindRenderbuffer(depth);
+                this.framebufferHelper.RenderbufferStorageMultisample(preferredMultiSampleCount, (int)depthInternalFormat, width, height);
+                if (preferredDepthFormat == DepthFormat.Depth24Stencil8)
                 {
-                    this.framebufferHelper.GenRenderbuffer(out depth);
-                    this.framebufferHelper.BindRenderbuffer(depth);
-                    this.framebufferHelper.RenderbufferStorageMultisample(preferredMultiSampleCount, (int)depthInternalFormat, width, height);
-                    if (preferredDepthFormat == DepthFormat.Depth24Stencil8)
+                    stencil = depth;
+                    if (stencilInternalFormat != 0)
                     {
-                        stencil = depth;
-                        if (stencilInternalFormat != 0)
-                        {
-                            this.framebufferHelper.GenRenderbuffer(out stencil);
-                            this.framebufferHelper.BindRenderbuffer(stencil);
-                            this.framebufferHelper.RenderbufferStorageMultisample(preferredMultiSampleCount, (int)stencilInternalFormat, width, height);
-                        }
+                        this.framebufferHelper.GenRenderbuffer(out stencil);
+                        this.framebufferHelper.BindRenderbuffer(stencil);
+                        this.framebufferHelper.RenderbufferStorageMultisample(preferredMultiSampleCount, (int)stencilInternalFormat, width, height);
                     }
                 }
             }

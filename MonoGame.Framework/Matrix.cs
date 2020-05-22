@@ -11,7 +11,7 @@ namespace Microsoft.Xna.Framework
     /// <summary>
     /// Represents the right-handed 4x4 floating point matrix, which can store translation, scale and rotation information.
     /// </summary>
-    [DataContract]
+    //[DataContract]
     [DebuggerDisplay("{DebugDisplayString,nq}")]
     public struct Matrix : IEquatable<Matrix>
     {
@@ -91,97 +91,97 @@ namespace Microsoft.Xna.Framework
         /// <summary>
         /// A first row and first column value.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public float M11;
 
         /// <summary>
         /// A first row and second column value.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public float M12;
 
         /// <summary>
         /// A first row and third column value.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public float M13;
 
         /// <summary>
         /// A first row and fourth column value.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public float M14;
 
         /// <summary>
         /// A second row and first column value.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public float M21;
 
         /// <summary>
         /// A second row and second column value.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public float M22;
 
         /// <summary>
         /// A second row and third column value.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public float M23;
 
         /// <summary>
         /// A second row and fourth column value.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public float M24;
 
         /// <summary>
         /// A third row and first column value.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public float M31;
 
         /// <summary>
         /// A third row and second column value.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public float M32;
 
         /// <summary>
         /// A third row and third column value.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public float M33;
 
         /// <summary>
         /// A third row and fourth column value.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public float M34;
 
         /// <summary>
         /// A fourth row and first column value.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public float M41;
 
         /// <summary>
         /// A fourth row and second column value.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public float M42;
 
         /// <summary>
         /// A fourth row and third column value.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public float M43;
 
         /// <summary>
         /// A fourth row and fourth column value.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public float M44;
 
         #endregion
