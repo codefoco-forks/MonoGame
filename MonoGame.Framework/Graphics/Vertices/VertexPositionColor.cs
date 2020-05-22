@@ -4,14 +4,14 @@ using System.Runtime.InteropServices;
 
 namespace Microsoft.Xna.Framework.Graphics
 {
-    [DataContract]
+    //[DataContract]
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
 	public struct VertexPositionColor : IVertexType
 	{
-        [DataMember]
+        //[DataMember]
 		public Vector3 Position;
         
-        [DataMember]
+        //[DataMember]
 		public Color Color;
 
 		public static readonly VertexDeclaration VertexDeclaration;

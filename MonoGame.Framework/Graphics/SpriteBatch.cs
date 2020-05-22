@@ -61,7 +61,61 @@ namespace Microsoft.Xna.Framework.Graphics
             _batcher = new SpriteBatcher(graphicsDevice, capacity);
 
             _beginCalled = false;
-		}
+        }
+
+        /// <summary>
+        /// Constructs a <see cref="SpriteBatch"/>.
+        /// </summary>
+        /// <param name="graphicsDevice">The <see cref="GraphicsDevice"/>, which will be used for sprite rendering.</param>
+        /// <param name="capacity">The initial capacity of the internal array holding batch items (the value will be rounded to the next multiple of 64).</param>
+        /// <param name="projection">The initial projection matrix.</param>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="graphicsDevice"/> is null.</exception>
+        public SpriteBatch (GraphicsDevice graphicsDevice, int capacity, ref Matrix projection)
+		{
+			if (graphicsDevice == null)
+            {
+                throw new ArgumentNullException ("graphicsDevice", FrameworkResources.ResourceCreationWhenDeviceIsNull);
+            }
+
+            GraphicsDevice = graphicsDevice;
+
+            _spriteEffect = new SpriteEffect(graphicsDevice, ref projection);
+            _spritePass = _spriteEffect.CurrentTechnique.Passes[0];
+
+            _batcher = new SpriteBatcher(graphicsDevice, capacity);
+
+            _beginCalled = false;
+        }
+
+        /// <summary>
+        /// World matrix for this SpriteBatch
+        /// </summary>
+        public Matrix World
+        {
+            get
+            {
+                return _spriteEffect.World;
+            }
+            set
+            {
+                _spriteEffect.World = value;
+            }
+        }
+
+        /// <summary>
+        /// Projection matrix for this SpriteBatch
+        /// </summary>
+        public Matrix Projection
+        {
+            get
+            {
+                return _spriteEffect.Projection;
+            }
+            set
+            {
+                _spriteEffect.Projection = value;
+            }
+        }
 
         /// <summary>
         /// Begins a new sprite and text batch with the specified render state.
@@ -72,7 +126,6 @@ namespace Microsoft.Xna.Framework.Graphics
         /// <param name="depthStencilState">State of the depth-stencil buffer. Uses <see cref="DepthStencilState.None"/> if null.</param>
         /// <param name="rasterizerState">State of the rasterization. Uses <see cref="RasterizerState.CullCounterClockwise"/> if null.</param>
         /// <param name="effect">A custom <see cref="Effect"/> to override the default sprite effect. Uses default sprite effect if null.</param>
-        /// <param name="transformMatrix">An optional matrix used to transform the sprite geometry. Uses <see cref="Matrix.Identity"/> if null.</param>
         /// <exception cref="InvalidOperationException">Thrown if <see cref="Begin"/> is called next time without previous <see cref="End"/>.</exception>
         /// <remarks>This method uses optional parameters.</remarks>
         /// <remarks>The <see cref="Begin"/> Begin should be called before drawing commands, and you cannot call it again before subsequent <see cref="End"/>.</remarks>
@@ -83,8 +136,7 @@ namespace Microsoft.Xna.Framework.Graphics
              SamplerState samplerState = null,
              DepthStencilState depthStencilState = null,
              RasterizerState rasterizerState = null,
-             Effect effect = null,
-             Matrix? transformMatrix = null
+             Effect effect = null
         )
         {
             if (_beginCalled)
@@ -97,7 +149,6 @@ namespace Microsoft.Xna.Framework.Graphics
             _depthStencilState = depthStencilState ?? DepthStencilState.None;
             _rasterizerState = rasterizerState ?? RasterizerState.CullCounterClockwise;
             _effect = effect;
-            _spriteEffect.TransformMatrix = transformMatrix;
 
             // Setup things now so a user can change them.
             if (sortMode == SpriteSortMode.Immediate)

@@ -44,6 +44,8 @@ namespace Microsoft.Xna.Framework.Graphics
         bool fogEnabled;
         bool textureEnabled;
         bool vertexColorEnabled;
+        bool vertexSmoothEdge;
+        bool vertexSmoothBothEdges;
 
         Matrix world = Matrix.Identity;
         Matrix view = Matrix.Identity;
@@ -334,6 +336,40 @@ namespace Microsoft.Xna.Framework.Graphics
             }
         }
 
+        /// <summary>
+        /// Gets or sets whether vertex alpha is enabled.
+        /// </summary>
+        public bool VertexSmoothEdge
+        {
+            get { return vertexSmoothEdge; }
+
+            set
+            {
+                if (vertexSmoothEdge != value)
+                {
+                    vertexSmoothEdge = value;
+                    dirtyFlags |= EffectDirtyFlags.ShaderIndex;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets whether vertex alpha is enabled.
+        /// </summary>
+        public bool VertexSmoothBothEdges
+        {
+            get { return vertexSmoothBothEdges; }
+
+            set
+            {
+                if (vertexSmoothBothEdges != value)
+                {
+                    vertexSmoothBothEdges = value;
+                    dirtyFlags |= EffectDirtyFlags.ShaderIndex;
+                }
+            }
+        }
+
 
         #endregion
 
@@ -487,6 +523,19 @@ namespace Microsoft.Xna.Framework.Graphics
                         shaderIndex += 16;
                     else
                         shaderIndex += 8;
+                }
+
+                if (vertexSmoothEdge)
+                {
+                    // VertexAlpha should be only used alone
+                    // This flag was added to draw shapes
+                    // using only Difuse color,
+                    // No Fog, No lighting, No Texture, No Vertex Color
+                    shaderIndex = 32;
+                }
+                if (vertexSmoothBothEdges)
+                {
+                    shaderIndex = 33;
                 }
 
                 dirtyFlags &= ~EffectDirtyFlags.ShaderIndex;
