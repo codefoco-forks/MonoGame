@@ -11,7 +11,6 @@ namespace Microsoft.Xna.Framework
     /// <summary>
     /// Represents a ray with an origin and a direction in 3D space.
     /// </summary>
-    [DataContract]
     [DebuggerDisplay("{DebugDisplayString,nq}")]
     public struct Ray : IEquatable<Ray>
     {
@@ -20,13 +19,10 @@ namespace Microsoft.Xna.Framework
         /// <summary>
         /// The direction of this <see cref="Ray"/>.
         /// </summary>
-        [DataMember]
         public Vector3 Direction;
-      
         /// <summary>
         /// The origin of this <see cref="Ray"/>.
         /// </summary>
-        [DataMember]
         public Vector3 Position;
 
         #endregion

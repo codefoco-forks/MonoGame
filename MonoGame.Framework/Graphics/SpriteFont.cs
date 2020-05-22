@@ -266,11 +266,11 @@ namespace Microsoft.Xna.Framework.Graphics
             {
                 // Get region Index 
                 int regionIdx = -1;
-                var l = 0;
-                var r = _regions.Length - 1;
+                int l = 0;
+                int r = _regions.Length - 1;
+                int m = (c * r) / (pRegions[0].Start + pRegions[r].Start);
                 while (l <= r)
                 {
-                    var m = (l + r) >> 1;                    
                     Debug.Assert(m >= 0 && m < _regions.Length, "Index was outside the bounds of the array.");
                     if (pRegions[m].End < c)
                     {
@@ -285,6 +285,8 @@ namespace Microsoft.Xna.Framework.Graphics
                         regionIdx = m;
                         break;
                     }
+
+                    m = (l + r) >> 1;
                 }
 
                 if (regionIdx == -1)

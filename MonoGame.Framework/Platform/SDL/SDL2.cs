@@ -501,6 +501,15 @@ internal static class Sdl
         {
             return GetError(SDL_GetWindowDisplayIndex(window));
         }
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate int d_sdl_getdisplaydpi(int displayIndex, out float ddpi, out float hdpi, out float vdpi);
+        private static d_sdl_getdisplaydpi SDL_GetDisplayDPI = FuncLoader.LoadFunction<d_sdl_getdisplaydpi>(NativeLibrary, "SDL_GetDisplayDPI");
+
+        public static int GetDisplayDPI(int displayIndex, out float ddpi, out float hdpi, out float vdpi)
+        {
+            return GetError(SDL_GetDisplayDPI(displayIndex, out ddpi, out hdpi, out vdpi));
+        }
     }
 
     public static class GL
@@ -567,6 +576,10 @@ internal static class Sdl
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate int d_sdl_gl_makecurrent(IntPtr window, IntPtr context);
         public static d_sdl_gl_makecurrent MakeCurrent = FuncLoader.LoadFunction<d_sdl_gl_makecurrent>(NativeLibrary, "SDL_GL_MakeCurrent");
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate void sdl_gl_getdrawablesize(IntPtr window, out int width, out int height);
+        public static sdl_gl_getdrawablesize GetDrawableSize = FuncLoader.LoadFunction<sdl_gl_getdrawablesize>(NativeLibrary, "SDL_GL_GetDrawableSize");
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         private delegate int d_sdl_gl_setattribute(Attribute attr, int value);
