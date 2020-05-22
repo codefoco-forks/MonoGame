@@ -61,7 +61,61 @@ namespace Microsoft.Xna.Framework.Graphics
             _batcher = new SpriteBatcher(graphicsDevice, capacity);
 
             _beginCalled = false;
-		}
+        }
+
+        /// <summary>
+        /// Constructs a <see cref="SpriteBatch"/>.
+        /// </summary>
+        /// <param name="graphicsDevice">The <see cref="GraphicsDevice"/>, which will be used for sprite rendering.</param>
+        /// <param name="capacity">The initial capacity of the internal array holding batch items (the value will be rounded to the next multiple of 64).</param>
+        /// <param name="projection">The initial projection matrix.</param>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="graphicsDevice"/> is null.</exception>
+        public SpriteBatch (GraphicsDevice graphicsDevice, int capacity, ref Matrix projection)
+		{
+			if (graphicsDevice == null)
+            {
+                throw new ArgumentNullException ("graphicsDevice", FrameworkResources.ResourceCreationWhenDeviceIsNull);
+            }
+
+            GraphicsDevice = graphicsDevice;
+
+            _spriteEffect = new SpriteEffect(graphicsDevice, ref projection);
+            _spritePass = _spriteEffect.CurrentTechnique.Passes[0];
+
+            _batcher = new SpriteBatcher(graphicsDevice, capacity);
+
+            _beginCalled = false;
+        }
+
+        /// <summary>
+        /// World matrix for this SpriteBatch
+        /// </summary>
+        public Matrix World
+        {
+            get
+            {
+                return _spriteEffect.World;
+            }
+            set
+            {
+                _spriteEffect.World = value;
+            }
+        }
+
+        /// <summary>
+        /// Projection matrix for this SpriteBatch
+        /// </summary>
+        public Matrix Projection
+        {
+            get
+            {
+                return _spriteEffect.Projection;
+            }
+            set
+            {
+                _spriteEffect.Projection = value;
+            }
+        }
 
         /// <summary>
         /// Begins a new sprite and text batch with the specified render state.
@@ -72,7 +126,6 @@ namespace Microsoft.Xna.Framework.Graphics
         /// <param name="depthStencilState">State of the depth-stencil buffer. Uses <see cref="DepthStencilState.None"/> if null.</param>
         /// <param name="rasterizerState">State of the rasterization. Uses <see cref="RasterizerState.CullCounterClockwise"/> if null.</param>
         /// <param name="effect">A custom <see cref="Effect"/> to override the default sprite effect. Uses default sprite effect if null.</param>
-        /// <param name="transformMatrix">An optional matrix used to transform the sprite geometry. Uses <see cref="Matrix.Identity"/> if null.</param>
         /// <exception cref="InvalidOperationException">Thrown if <see cref="Begin"/> is called next time without previous <see cref="End"/>.</exception>
         /// <remarks>This method uses optional parameters.</remarks>
         /// <remarks>The <see cref="Begin"/> Begin should be called before drawing commands, and you cannot call it again before subsequent <see cref="End"/>.</remarks>
@@ -83,8 +136,7 @@ namespace Microsoft.Xna.Framework.Graphics
              SamplerState samplerState = null,
              DepthStencilState depthStencilState = null,
              RasterizerState rasterizerState = null,
-             Effect effect = null,
-             Matrix? transformMatrix = null
+             Effect effect = null
         )
         {
             if (_beginCalled)
@@ -97,7 +149,6 @@ namespace Microsoft.Xna.Framework.Graphics
             _depthStencilState = depthStencilState ?? DepthStencilState.None;
             _rasterizerState = rasterizerState ?? RasterizerState.CullCounterClockwise;
             _effect = effect;
-            _spriteEffect.TransformMatrix = transformMatrix;
 
             // Setup things now so a user can change them.
             if (sortMode == SpriteSortMode.Immediate)
@@ -537,6 +588,105 @@ namespace Microsoft.Xna.Framework.Graphics
 		}
 
         /// <summary>
+        /// Draw a texture with given top, left, bottom, right vetices
+        /// </summary>
+        /// <param name="texture"></param>
+        /// <param name="topLeft"></param>
+        /// <param name="bottomLeft"></param>
+        /// <param name="bottomRight"></param>
+        /// <param name="topRight"></param>
+        /// <param name="colorTL"></param>
+        /// <param name="colorBL"></param>
+        /// <param name="colorBR"></param>
+        /// <param name="colorTR"></param>
+        public void Draw(Texture2D texture,
+                         ref Vector3 topLeft,
+                         ref Vector3 bottomLeft,
+                         ref Vector3 bottomRight,
+                         ref Vector3 topRight,
+                         Color colorTL,
+                         Color colorBL,
+                         Color colorBR,
+                         Color colorTR)
+        {
+            var item = _batcher.CreateBatchItem();
+            item.Texture = texture;
+
+            item.vertexTL.Position = topLeft;
+            item.vertexTL.Color = colorTL;
+            item.vertexTL.TextureCoordinate.X = 0;
+            item.vertexTL.TextureCoordinate.Y = 1;
+
+            item.vertexBL.Position = bottomLeft;
+            item.vertexBL.Color = colorBL;
+            item.vertexBL.TextureCoordinate.X = 0;
+            item.vertexBL.TextureCoordinate.Y = 0;
+
+            item.vertexBR.Position = bottomRight;
+            item.vertexBR.Color = colorBR;
+            item.vertexBR.TextureCoordinate.X = 1;
+            item.vertexBR.TextureCoordinate.Y = 0;
+
+            item.vertexTR.Position = topRight;
+            item.vertexTR.Color = colorTR;
+            item.vertexTR.TextureCoordinate.X = 1;
+            item.vertexTR.TextureCoordinate.Y = 1;
+        }
+
+        /// <summary>
+        /// Draw a texture with given top, left, bottom, right vetices
+        /// </summary>
+        /// <param name="texture"></param>
+        /// <param name="topLeft"></param>
+        /// <param name="bottomLeft"></param>
+        /// <param name="bottomRight"></param>
+        /// <param name="topRight"></param>
+        /// <param name="sourceRect"></param>
+        /// <param name="colorTL"></param>
+        /// <param name="colorBL"></param>
+        /// <param name="colorBR"></param>
+        /// <param name="colorTR"></param>
+        public void Draw(Texture2D texture,
+                         ref Vector3 topLeft,
+                         ref Vector3 bottomLeft,
+                         ref Vector3 bottomRight,
+                         ref Vector3 topRight,
+                         ref Rectangle sourceRect,
+                         Color colorTL,
+                         Color colorBL,
+                         Color colorBR,
+                         Color colorTR)
+        {
+            var item = _batcher.CreateBatchItem();
+            item.Texture = texture;
+
+            _texCoordTL.X = sourceRect.X * texture.TexelWidth;
+            _texCoordTL.Y = (sourceRect.Y + sourceRect.Height) * texture.TexelHeight;
+            _texCoordBR.X = (sourceRect.X + sourceRect.Width) * texture.TexelWidth;
+            _texCoordBR.Y = sourceRect.Y * texture.TexelHeight;
+
+            item.vertexTL.Position = topLeft;
+            item.vertexTL.Color = colorTL;
+            item.vertexTL.TextureCoordinate.X = _texCoordTL.X;
+            item.vertexTL.TextureCoordinate.Y = _texCoordTL.Y;
+
+            item.vertexBL.Position = bottomLeft;
+            item.vertexBL.Color = colorBL;
+            item.vertexBL.TextureCoordinate.X = _texCoordTL.X;
+            item.vertexBL.TextureCoordinate.Y = _texCoordBR.Y;
+
+            item.vertexBR.Position = bottomRight;
+            item.vertexBR.Color = colorBR;
+            item.vertexBR.TextureCoordinate.X = _texCoordBR.X;
+            item.vertexBR.TextureCoordinate.Y = _texCoordBR.Y;
+
+            item.vertexTR.Position = topRight;
+            item.vertexTR.Color = colorTR;
+            item.vertexTR.TextureCoordinate.X = _texCoordBR.X;
+            item.vertexTR.TextureCoordinate.Y = _texCoordTL.Y;
+        }
+
+        /// <summary>
         /// Submit a sprite for drawing in the current batch.
         /// </summary>
         /// <param name="texture">A texture.</param>
@@ -846,6 +996,117 @@ namespace Microsoft.Xna.Framework.Graphics
 			// We need to flush if we're using Immediate sort mode.
 			FlushIfNeeded();
 		}
+
+        /// <summary>
+        /// Submit a text string of sprites for drawing in the current batch.
+        /// </summary>
+        /// <param name="spriteFont"></param>
+        /// <param name="text"></param>
+        /// <param name="lineHeight"></param>
+        /// <param name="origin"></param>
+        /// <param name="renderTransform"></param>
+        /// <param name="colorTopLeft"></param>
+        /// <param name="colorBottomLeft"></param>
+        /// <param name="colorBottomRight"></param>
+        /// <param name="colorTopRight"></param>
+        public unsafe void DrawString(SpriteFont spriteFont,
+                                      string text,
+                                      Vector2 origin,
+                                      float lineHeight,
+                                      ref Matrix renderTransform,
+                                      Color colorTopLeft,
+                                      Color colorBottomLeft,
+                                      Color colorBottomRight,
+                                      Color colorTopRight)
+        {
+            Vector2 offset = Vector2.Zero;
+
+            bool firstGlyphOfLine = true;
+
+            fixed (SpriteFont.Glyph* pGlyphs = spriteFont.Glyphs)
+                for (int i = 0; i < text.Length; ++i)
+                {
+                    char c = text[i];
+
+                    if (c == '\r')
+                        continue;
+
+                    if (c == '\n')
+                    {
+                        offset.X = 0;
+                        offset.Y += spriteFont.LineSpacing;
+                        firstGlyphOfLine = true;
+                        continue;
+                    }
+
+                    int currentGlyphIndex = spriteFont.GetGlyphIndexOrDefault(c);
+                    SpriteFont.Glyph* pCurrentGlyph = pGlyphs + currentGlyphIndex;
+
+                    // The first character on a line might have a negative left side bearing.
+                    // In this scenario, SpriteBatch/SpriteFont normally offset the text to the right,
+                    //  so that text does not hang off the left side of its rectangle.
+                    if (firstGlyphOfLine)
+                    {
+                        offset.X = Math.Max(pCurrentGlyph->LeftSideBearing, 0);
+                        firstGlyphOfLine = false;
+                    }
+                    else
+                    {
+                        offset.X += spriteFont.Spacing + pCurrentGlyph->LeftSideBearing;
+                    }
+
+                    Vector2 p = offset;
+
+                    float width = pCurrentGlyph->Width;
+                    float height = pCurrentGlyph->BoundsInTexture.Height;
+
+                    p.X += pCurrentGlyph->Cropping.X - origin.X;
+                    p.Y = -p.Y - height + lineHeight - pCurrentGlyph->Cropping.Y - origin.Y;
+
+                    Vector3 topLeft     = new Vector3(p.X        , p.Y + height, 0);
+                    Vector3 bottomLeft  = new Vector3(p.X        , p.Y         , 0);
+                    Vector3 bottomRight = new Vector3(p.X + width, p.Y         , 0);
+                    Vector3 topRight    = new Vector3(p.X + width, p.Y + height, 0);
+
+                    offset.X += pCurrentGlyph->Width + pCurrentGlyph->RightSideBearing;
+
+                    Vector3.Transform(ref topLeft, ref renderTransform, out topLeft);
+                    Vector3.Transform(ref bottomLeft, ref renderTransform, out bottomLeft);
+                    Vector3.Transform(ref bottomRight, ref renderTransform, out bottomRight);
+                    Vector3.Transform(ref topRight, ref renderTransform, out topRight);
+
+                    SpriteBatchItem item = _batcher.CreateBatchItem();
+                    item.Texture = spriteFont.Texture;
+
+                    _texCoordTL.X = pCurrentGlyph->BoundsInTexture.X * spriteFont.Texture.TexelWidth;
+                    _texCoordTL.Y = pCurrentGlyph->BoundsInTexture.Y * spriteFont.Texture.TexelHeight;
+                    _texCoordBR.X = (pCurrentGlyph->BoundsInTexture.X + pCurrentGlyph->BoundsInTexture.Width) * spriteFont.Texture.TexelWidth;
+                    _texCoordBR.Y = (pCurrentGlyph->BoundsInTexture.Y + pCurrentGlyph->BoundsInTexture.Height) * spriteFont.Texture.TexelHeight;
+
+                    item.vertexTL.Position = bottomLeft;
+                    item.vertexTL.Color = colorTopLeft;
+                    item.vertexTL.TextureCoordinate.X = _texCoordTL.X;
+                    item.vertexTL.TextureCoordinate.Y = _texCoordBR.Y;
+
+                    item.vertexBL.Position = topLeft;
+                    item.vertexBL.Color = colorBottomLeft;
+                    item.vertexBL.TextureCoordinate.X = _texCoordTL.X;
+                    item.vertexBL.TextureCoordinate.Y = _texCoordTL.Y;
+
+                    item.vertexTR.Position = bottomRight;
+                    item.vertexTR.Color = colorTopRight;
+                    item.vertexTR.TextureCoordinate.X = _texCoordBR.X;
+                    item.vertexTR.TextureCoordinate.Y = _texCoordBR.Y;
+
+                    item.vertexBR.Position = topRight;
+                    item.vertexBR.Color = colorBottomRight;
+                    item.vertexBR.TextureCoordinate.X = _texCoordBR.X;
+                    item.vertexBR.TextureCoordinate.Y = _texCoordTL.Y;
+                }
+
+            // We need to flush if we're using Immediate sort mode.
+            FlushIfNeeded();
+        }
 
         /// <summary>
         /// Submit a text string of sprites for drawing in the current batch.

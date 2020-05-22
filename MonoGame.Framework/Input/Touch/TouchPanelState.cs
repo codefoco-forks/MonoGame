@@ -678,7 +678,7 @@ namespace Microsoft.Xna.Framework.Input.Touch
             }
 
             // If the drag could not be classified then no gesture.
-            if (_dragGestureStarted == GestureType.None || _dragGestureStarted == GestureType.DragComplete)
+            if (_dragGestureStarted == GestureType.DragComplete)
                 return;
 
             _tapDisabled = true;

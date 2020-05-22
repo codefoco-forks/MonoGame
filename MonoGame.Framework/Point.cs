@@ -12,7 +12,7 @@ namespace Microsoft.Xna.Framework
     /// <summary>
     /// Describes a 2D-point.
     /// </summary>
-    [DataContract]
+    //[DataContract]
     [DebuggerDisplay("{DebugDisplayString,nq}")]
     public struct Point : IEquatable<Point>
     {
@@ -27,13 +27,13 @@ namespace Microsoft.Xna.Framework
         /// <summary>
         /// The x coordinate of this <see cref="Point"/>.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public int X;
 
         /// <summary>
         /// The y coordinate of this <see cref="Point"/>.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public int Y;
 
         #endregion
