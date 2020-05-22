@@ -161,10 +161,7 @@ namespace Microsoft.Xna.Framework.Input
                 buttons = string.Empty;
                 if ((_buttons & LeftButtonFlag) == LeftButtonFlag)
                 {
-                    if (buttons.Length > 0)
-                        buttons += " Left";
-                    else
-                        buttons += "Left";
+                    buttons = "Left";
                 }
                 if ((_buttons & RightButtonFlag) == RightButtonFlag)
                 {

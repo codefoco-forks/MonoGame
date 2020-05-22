@@ -15,7 +15,7 @@ namespace Microsoft.Xna.Framework
 #if XNADESIGNPROVIDED
     [System.ComponentModel.TypeConverter(typeof(Microsoft.Xna.Framework.Design.Vector2TypeConverter))]
 #endif
-    [DataContract]
+    //[DataContract]
     [DebuggerDisplay("{DebugDisplayString,nq}")]
     public struct Vector2 : IEquatable<Vector2>
     {
@@ -33,13 +33,13 @@ namespace Microsoft.Xna.Framework
         /// <summary>
         /// The x coordinate of this <see cref="Vector2"/>.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public float X;
 
         /// <summary>
         /// The y coordinate of this <see cref="Vector2"/>.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public float Y;
 
         #endregion
