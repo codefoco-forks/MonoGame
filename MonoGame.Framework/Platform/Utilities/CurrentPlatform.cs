@@ -7,7 +7,10 @@ using System;
 
 namespace MonoGame.Framework.Utilities
 {
-    internal enum OS
+    /// <summary>
+    /// Runtime OS identifier
+    /// </summary>
+    public enum OS
     {
         Windows,
         Linux,
@@ -15,7 +18,10 @@ namespace MonoGame.Framework.Utilities
         Unknown
     }
 
-    internal static class CurrentPlatform
+    /// <summary>
+    /// Current runtime Platform
+    /// </summary>
+    public static class CurrentPlatform
     {
         private static bool _init = false;
         private static OS _os;

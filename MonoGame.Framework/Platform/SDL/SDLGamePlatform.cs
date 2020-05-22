@@ -107,6 +107,8 @@ namespace Microsoft.Xna.Framework
         {
             Sdl.Event ev;
 
+            Mouse.ClickCount = 0;
+
             while (Sdl.PollEvent(out ev) == 1)
             {
                 switch (ev.Type)
@@ -132,6 +134,9 @@ namespace Microsoft.Xna.Framework
                         const int wheelDelta = 120;
                         Mouse.ScrollY += ev.Wheel.Y * wheelDelta;
                         Mouse.ScrollX += ev.Wheel.X * wheelDelta;
+                        break;
+                    case Sdl.EventType.MouseButtonUp:
+                        Mouse.ClickCount = ev.MouseButton.Clicks;
                         break;
                     case Sdl.EventType.KeyDown:
                     {
