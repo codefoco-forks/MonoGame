@@ -14,6 +14,9 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input.Touch;
 
+#if WINDOWS && DIRECTX
+using System.Windows.Forms;
+#endif
 
 namespace Microsoft.Xna.Framework
 {
@@ -84,8 +87,35 @@ namespace Microsoft.Xna.Framework
 
             // Allow some optional per-platform construction to occur too.
             PlatformConstruct();
-
         }
+
+#if WINDOWS && DIRECTX
+        /// <summary>
+        /// Create a Game object that renders the content to an external embeded control
+        /// </summary>
+        /// <param name="embededGameView"></param>
+        public Game(Control embededGameView)
+        {
+            _instance = this;
+
+            LaunchParameters = new LaunchParameters();
+            _services = new GameServiceContainer();
+            _components = new GameComponentCollection();
+            _content = new ContentManager(_services);
+
+            Platform = GamePlatform.PlatformCreate(this, embededGameView);
+            Platform.Activated += OnActivated;
+            Platform.Deactivated += OnDeactivated;
+            _services.AddService(typeof(GamePlatform), Platform);
+
+            // Calling Update() for first time initializes some systems
+            FrameworkDispatcher.Update();
+
+            // Allow some optional per-platform construction to occur too.
+            PlatformConstruct();
+        }
+#endif 
+
 
         ~Game()
         {
@@ -491,6 +521,49 @@ namespace Microsoft.Xna.Framework
                     "Handling for the run behavior {0} is not implemented.", runBehavior));
             }
         }
+
+#if WINDOWS && DIRECTX
+        /// <summary>
+        /// Run the game loop using external Form
+        /// (used when you embed a game view)
+        /// </summary>
+        /// <param name="applicationForm"></param>
+        public void Run(Form applicationForm)
+        {
+            AssertNotDisposed();
+            if (!Platform.BeforeRun())
+            {
+                BeginRun();
+                _gameTimer = Stopwatch.StartNew();
+                return;
+            }
+
+            if (!_initialized)
+            {
+                DoInitialize();
+                _initialized = true;
+            }
+
+            BeginRun();
+            _gameTimer = Stopwatch.StartNew();
+
+            DoUpdate(new GameTime());
+            
+            Platform.RunLoop(applicationForm);
+            EndRun();
+            DoExiting();
+        }
+
+        /// <summary>
+        /// WinForms proc integration
+        /// </summary>
+        /// <param name="m"></param>
+        public void WndProc(ref Message m)
+        {
+            Platform.WndProc(ref m);
+        }
+#endif
+
 
         private TimeSpan _accumulatedElapsedTime;
         private readonly GameTime _gameTime = new GameTime();

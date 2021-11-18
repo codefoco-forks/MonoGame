@@ -336,21 +336,32 @@ namespace Microsoft.Xna.Framework
             Debug.WriteLine("WARNING: GameWindow.Title has no effect under UWP.");
         }
 
+        public override bool GetDeviceDPI(out float dpi)
+        {
+            var displayInformation = DisplayInformation.GetForCurrentView();
+            if (displayInformation == null)
+            {
+                dpi = 0f;
+                return false;
+            }
+
+            int iscale = (int)displayInformation.ResolutionScale;
+            dpi = DEFAULT_DPI * iscale / 100f;
+            return true;
+        }
+
         internal void SetCursor(bool visible)
         {
             if ( _coreWindow == null )
                 return;
 
             var asyncResult = _coreWindow.Dispatcher.RunIdleAsync( (e) =>
-            {
-                if (visible)
-                    _coreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 0);
-                else
-                    _coreWindow.PointerCursor = null;
-
-                // On UAP platform it is also necessary to set the cursor of CoreIndependentInputSource in InputEvents
-                _inputEvents.CoreCursor = _coreWindow.PointerCursor;
-            });
+           {
+               if (visible)
+                   _coreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 0);
+               else
+                   _coreWindow.PointerCursor = null;
+           });
         }
 
         internal void RunLoop()

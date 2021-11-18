@@ -1,0 +1,224 @@
+# Repo: codefoco/AzureDevopsTemplates
+resources:
+  repositories:
+    - repository: templates
+      type: github
+      name: codefoco/AzureDevopsTemplates
+      endpoint: codefoco
+jobs:
+- job: 'MonoGameMac'
+  displayName: 'Mac'
+  variables:
+    - group: 'Keys'
+
+  pool:
+    vmImage: 'macOS-11'
+    demands: msbuild
+
+  steps:
+  - checkout: self
+    submodules: 'true'
+
+  - template: common-dotnet.yml@templates
+  - template: common-macos.yml@templates
+
+  - task: NuGetCommand@2 #MonoGame.Framework/MonoGame.Framework.iOS.csproj
+    displayName: 'NuGet restore  MonoGame.Framework/MonoGame.Framework.iOS.csproj'
+    inputs:
+      restoreSolution: ./MonoGame.Framework/MonoGame.Framework.iOS.csproj
+
+  - task: NuGetCommand@2
+    displayName: 'NuGet restore  MonoGame.Framework.DesktopGL.Mac.csproj'
+    inputs:
+      restoreSolution: ./MonoGame.Framework/MonoGame.Framework.DesktopGL.Mac.csproj
+
+  - task: PowerShell@2
+    displayName: 'PreBuild'
+    inputs:
+      targetType: filePath
+      filePath: ./devops/PreBuild.ps1
+      pwsh: true
+
+  # Build  MonoGame
+
+  - task: MSBuild@1 # Fantas.MonoGame.sln
+    displayName: 'Build csproj ./MonoGame.Framework/MonoGame.Framework.iOS.csproj'
+    inputs:
+      solution: ./MonoGame.Framework/MonoGame.Framework.iOS.csproj
+      configuration: Release
+
+  - task: DotNetCoreCLI@2
+    displayName: 'dotnet build ./MonoGame.Framework/MonoGame.Framework.net6.0-ios.csproj'
+    inputs:
+      command: custom
+      custom: build
+      arguments: './MonoGame.Framework/MonoGame.Framework.net6.0-ios.csproj /p:Configuration=Release'
+
+  - task: MSBuild@1 # Xam.Mac build
+    displayName: 'Build csproj ./MonoGame.Framework/MonoGame.Framework.DesktopGL.Mac.csproj'
+    inputs:
+      solution: ./MonoGame.Framework/MonoGame.Framework.DesktopGL.Mac.csproj
+      configuration: Release
+
+  - task: DotNetCoreCLI@2
+    displayName: 'dotnet build ./MonoGame.Framework/MonoGame.Framework.DesktopGL.net6.0-mac.csproj'
+    inputs:
+      command: custom
+      custom: build
+      arguments: './MonoGame.Framework/MonoGame.Framework.DesktopGL.net6.0-mac.csproj /p:Configuration=Release'
+
+  - task: PublishPipelineArtifact@1
+    displayName: 'Publish Pipeline Artifact: Xamarin.Mac.MonoGame.Frawework'
+    inputs:
+      targetPath: ./Artifacts/MonoGame.Framework/
+      artifact: 'Artifacts.Mac'
+      publishLocation: 'pipeline'
+
+  - template: send-telegram.yml@templates
+
+- job: 'MonoGameWindows'
+  displayName: 'Windows'
+  dependsOn: 'MonoGameMac'
+  variables:
+    - group: 'Keys'
+
+  pool:
+    vmImage: 'windows-2019'
+    demands:
+    - msbuild
+    - visualstudio
+    - vstest
+
+  steps:
+  - checkout: self
+    submodules: true
+
+  - template: common-dotnet.yml@templates
+  - template: common-win.yml@templates
+
+  - task: NuGetCommand@2
+    displayName: 'NuGet restore  MonoGame.Framework.Android.csproj'
+    inputs:
+      restoreSolution: ./MonoGame.Framework/MonoGame.Framework.Android.csproj
+
+  - task: NuGetCommand@2
+    displayName: 'NuGet restore MonoGame.Framework.DesktopGL.csproj'
+    inputs:
+      restoreSolution: ./MonoGame.Framework/MonoGame.Framework.DesktopGL.csproj
+
+  - task: NuGetCommand@2
+    displayName: 'NuGet restore MonoGame.Framework.WindowsDX'
+    inputs:
+      restoreSolution: ./MonoGame.Framework/MonoGame.Framework.WindowsDX.csproj
+
+  - task: NuGetCommand@2
+    displayName: 'NuGet restore MonoGame.Framework.WindowsUniversal.csproj'
+    inputs:
+      restoreSolution: ./MonoGame.Framework/MonoGame.Framework.WindowsUniversal.csproj
+
+  - task: PowerShell@2
+    displayName: 'PreBuild Script MonoGame'
+    inputs:
+      targetType: filePath
+      filePath: ./devops/PreBuild.ps1
+      errorActionPreference: 'silentlyContinue'
+      pwsh: true
+
+  - task: MSBuild@1
+    displayName: 'Build csproj ./MonoGame.Framework/MonoGame.Framework.Android.csproj'
+    inputs:
+      solution: ./MonoGame.Framework/MonoGame.Framework.Android.csproj
+      configuration: Release
+
+  - task: DotNetCoreCLI@2
+    displayName: 'dotnet build ./MonoGame.Framework/MonoGame.Framework.net6.0-android.csproj'
+    inputs:
+      command: custom
+      custom: build
+      arguments: './MonoGame.Framework/MonoGame.Framework.net6.0-android.csproj /p:Configuration=Release'
+
+  - task: MSBuild@1
+    displayName: 'Build csproj ./MonoGame.Framework/MonoGame.Framework.DesktopGL.csproj'
+    inputs:
+      solution: ./MonoGame.Framework/MonoGame.Framework.DesktopGL.csproj
+      configuration: Release
+
+  - task: MSBuild@1
+    displayName: 'Build csproj ./MonoGame.Framework/MonoGame.Framework.WindowsDX.csproj'
+    inputs:
+      solution: ./MonoGame.Framework/MonoGame.Framework.WindowsDX.csproj
+      configuration: Release
+
+  - task: MSBuild@1
+    displayName: 'Build csproj ./MonoGame.Framework/MonoGame.Framework.WindowsUniversal.csproj'
+    inputs:
+      solution: ./MonoGame.Framework/MonoGame.Framework.WindowsUniversal.csproj
+      configuration: Release
+
+  - task: DownloadPipelineArtifact@2
+    displayName: 'Download Build Xamarin.iOS'
+    inputs:
+      buildType: 'current'
+      artifactName: 'Artifacts.Mac'
+      targetPath: './Artifacts/MonoGame.Framework/'
+
+  - script: 'nuget setapikey $(apikey)'
+    displayName: 'Set NuGet API Key'
+
+  - task: PowerShell@2
+    displayName: 'Package Codefoco.MonoGame.Framework.nuget NuGet'
+    inputs:
+      targetType: filePath
+      filePath: ./devops/Package.ps1
+      arguments: 'Codefoco.MonoGame.Framework'
+      pwsh: true
+
+  - task: PowerShell@2
+    displayName: 'Package Codefoco.MonoGame.Framework.WindowsDX.nuget NuGet'
+    inputs:
+      targetType: filePath
+      filePath: ./devops/Package.ps1
+      arguments: 'Codefoco.MonoGame.Framework.WindowsDX'
+      pwsh: true
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Save Codefoco.MonoGame.Framework.nupkg Artifact'
+    inputs:
+      PathtoPublish: Codefoco.MonoGame.Framework.nupkg
+      ArtifactName: Codefoco.MonoGame.Framework.nupkg
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Save Codefoco.MonoGame.Framework.snupkg Artifact'
+    inputs:
+      PathtoPublish: Codefoco.MonoGame.Framework.snupkg
+      ArtifactName: Codefoco.MonoGame.Framework.snupkg
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Save Codefoco.MonoGame.Framework.WindowsDX.nupkg Artifact'
+    inputs:
+      PathtoPublish: Codefoco.MonoGame.Framework.WindowsDX.nupkg
+      ArtifactName: Codefoco.MonoGame.Framework.WindowsDX.nupkg
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Save Codefoco.MonoGame.Framework.WindowsDX.snupkg Artifact'
+    inputs:
+      PathtoPublish: Codefoco.MonoGame.Framework.WindowsDX.snupkg
+      ArtifactName: Codefoco.MonoGame.Framework.WindowsDX.snupkg
+
+  - task: PowerShell@2
+    displayName: 'Publish Codefoco.MonoGame.Framework NuGet'
+    inputs:
+      targetType: filePath
+      filePath: ./devops/Publish.ps1
+      arguments: Codefoco.MonoGame.Framework.WindowsDX
+      pwsh: true
+
+  - task: PowerShell@2
+    displayName: 'Publish Codefoco.MonoGame.Framework NuGet'
+    inputs:
+      targetType: filePath
+      filePath: ./devops/Publish.ps1
+      arguments: Codefoco.MonoGame.Framework
+      pwsh: true
+
+  - template: send-telegram.yml@templates
