@@ -37,6 +37,10 @@ namespace Microsoft.Xna.Framework
 
         private CoreIndependentInputSource _coreIndependentInputSource;
 
+        private static uint _clickDeltaTime;
+        private static ulong _lastPointerRelease;
+        private static byte _clickCount;
+
         /// <summary>
         /// Sets the cursor of <see cref="CoreIndependentInputSource"/> thread
         /// </summary>
@@ -54,7 +58,9 @@ namespace Microsoft.Xna.Framework
 
         public InputEvents(CoreWindow window, UIElement inputElement, TouchQueue touchQueue)
         {
+            var settings = new Windows.UI.ViewManagement.UISettings();
             _touchQueue = touchQueue;
+            _clickDeltaTime = settings.DoubleClickTime * 1000;
 
             // The key events are always tied to the window as those will
             // only arrive here if some other control hasn't gotten it.
@@ -220,6 +226,13 @@ namespace Microsoft.Xna.Framework
 
         private void PointerReleased(PointerPoint pointerPoint, UIElement target, Pointer pointer)
         {
+            if (pointerPoint.Timestamp - _lastPointerRelease < _clickDeltaTime)
+                _clickCount++;
+            else
+                _clickCount = 1;
+
+            _lastPointerRelease = pointerPoint.Timestamp;
+
             var pos = new Vector2((float)pointerPoint.Position.X, (float)pointerPoint.Position.Y) * _currentDipFactor;
 
             var isTouch = pointerPoint.PointerDevice.PointerDeviceType == PointerDeviceType.Touch;
@@ -252,7 +265,7 @@ namespace Microsoft.Xna.Framework
             else
                 verticalScrollDelta = state.MouseWheelDelta;
 
-            Mouse.PrimaryWindow.MouseState = new MouseState(x, y, 
+            var mouseState = new MouseState(x, y, 
                 Mouse.PrimaryWindow.MouseState.ScrollWheelValue + verticalScrollDelta,
                 state.IsLeftButtonPressed ? ButtonState.Pressed : ButtonState.Released,
                 state.IsMiddleButtonPressed ? ButtonState.Pressed : ButtonState.Released,
@@ -260,6 +273,8 @@ namespace Microsoft.Xna.Framework
                 state.IsXButton1Pressed ? ButtonState.Pressed : ButtonState.Released,
                 state.IsXButton2Pressed ? ButtonState.Pressed : ButtonState.Released,
                 Mouse.PrimaryWindow.MouseState.HorizontalScrollWheelValue + horizontalScrollDelta);
+            mouseState.ClickCount = _clickCount;
+            Mouse.PrimaryWindow.MouseState = mouseState;
         }
 
         public void UpdateState()
