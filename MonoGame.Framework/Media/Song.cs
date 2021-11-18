@@ -64,15 +64,19 @@ namespace Microsoft.Xna.Framework.Media
             PlatformInitialize(fileName);
         }
 
+#if DIRECTX || DESKTOPGL
+        internal Song(string name, Stream stream)
+        {
+            _name = name;
+
+            PlatformInitialize(stream);
+        }
+#endif
+
         ~Song()
         {
             Dispose(false);
         }
-
-        internal string FilePath
-		{
-			get { return _name; }
-		}
 
         /// <summary>
         /// Returns a song that can be played via <see cref="MediaPlayer"/>.
@@ -86,8 +90,23 @@ namespace Microsoft.Xna.Framework.Media
             song._name = name;
             return song;
         }
-		
-		public void Dispose()
+
+#if DIRECTX || DESKTOPGL
+        /// <summary>
+        /// Load a song from the given stream
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="stream"></param>
+        /// <returns></returns>
+        public static Song FromStream(string name, Stream stream)
+        {
+            var song = new Song(name, stream);
+            song._name = name;
+            return song;
+        }
+#endif
+
+        public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
@@ -114,7 +133,7 @@ namespace Microsoft.Xna.Framework.Media
         public bool Equals(Song song)
         {
 #if DIRECTX
-            return song != null && song.FilePath == FilePath;
+            return song != null && song._name == _name;
 #else
 			return ((object)song != null) && (Name == song.Name);
 #endif
