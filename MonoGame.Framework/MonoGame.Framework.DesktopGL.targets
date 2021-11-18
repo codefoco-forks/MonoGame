@@ -1,21 +1,129 @@
-<Project>
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <!-- if ShouldIncludeNative == False then don't include the native library -->
+    <PropertyGroup>
+        <MonoGamePlatform>DesktopGL</MonoGamePlatform>
+        <ShouldIncludeNative Condition=" '$(ShouldIncludeNative)' == '' ">True</ShouldIncludeNative>
+        <PreferredPlatformTarget Condition=" $(PreferredPlatformTarget)' == '' and '$(PlatformTarget)' == 'Win32' ">x86</PreferredPlatformTarget>
+        <PreferredPlatformTarget Condition=" $(PreferredPlatformTarget)' == '' and '$(PlatformTarget)' == 'Win64' ">x64</PreferredPlatformTarget>
+    </PropertyGroup>
 
-  <PropertyGroup>
-    <MonoGamePlatform>DesktopGL</MonoGamePlatform>
-  </PropertyGroup>
+    <!-- get the preferred architecture -->
+    <PropertyGroup>
+        <!-- handle x86/x64/ARM/ARM64 specifically -->
+        <PreferredPlatformTarget Condition=" '$(PreferredPlatformTarget)' == '' and ( '$(PlatformTarget)' == 'x64' or '$(PlatformTarget)' == 'x86' or '$(PlatformTarget)' == 'ARM64') ">$(PlatformTarget)</PreferredNativeChipmunk> 
+    </PropertyGroup>
+    <!-- get the  paths -->
+    <PropertyGroup>
+        <LinuxNativePath_OpenAL>$(MSBuildThisFileDirectory)..\..\runtimes\linux-x64\native\libopenal.so.1</LinuxNativePath_OpenAL>
+        <LinuxNativePath_libSDL>$(MSBuildThisFileDirectory)..\..\runtimes\linux-x64\native\libSDL2-2.0.so.0</LinuxNativePath_libSDL>
+        <OSXNativePath_OpenAL>$(MSBuildThisFileDirectory)..\..\runtimes\osx\native\libopenal.1.dylib</OSXNativePath_OpenAL>
+        <OSXNativePath_libSDL>$(MSBuildThisFileDirectory)..\..\runtimes\osx\native\libSDL2-2.0.0.dylib</OSXNativePath_libSDL>
+        <Windows32NativePath_OpenAL>$(MSBuildThisFileDirectory)..\..\runtimes\win-x86\native\soft_oal.dll</Windows32NativePath_OpenAL>
+        <Windows32NativePath_libSDL>$(MSBuildThisFileDirectory)..\..\runtimes\win-x86\native\SDL2.dll</Windows32NativePath_libSDL>
+        <Windows64NativePath_OpenAL>$(MSBuildThisFileDirectory)..\..\runtimes\win-x64\native\soft_oal.dll</Windows64NativePath_OpenAL>
+        <Windows64NativePath_libSDL>$(MSBuildThisFileDirectory)..\..\runtimes\win-x64\native\SDL2.dll</Windows64NativePath_libSDL>
+        <WindowsARM64NativePath_OpenAL>$(MSBuildThisFileDirectory)..\..\runtimes\win-arm64\native\soft_oal.dll</Windows64NativePath_OpenAL>
+        <WindowsARM64NativePath_libSDL>$(MSBuildThisFileDirectory)..\..\runtimes\win-arm64\native\SDL2.dll</Windows64NativePath_libSDL>
+    </PropertyGroup>
 
-  <Target Name="CopyDesktopGLNative" AfterTargets="AfterBuild" Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
-    <ItemGroup>
-      <_lib_winx64 Include="$(MSBuildThisFileDirectory)\..\runtimes\win-x64\native\*.*" />
-      <_lib_winx86 Include="$(MSBuildThisFileDirectory)\..\runtimes\win-x86\native\*.*" />
-      <_lib_linux Include="$(MSBuildThisFileDirectory)\..\runtimes\linux-x64\native\*.*" />
-      <_lib_osx Include="$(MSBuildThisFileDirectory)\..\runtimes\osx\native\*.*" />
+    <ItemGroup Condition=" '$(ShouldIncludeNative)' != 'False' and '$(PreferredPlatformTarget)' == 'x64' " >
+        <!-- Linux -->
+        <None Include="$(LinuxNativePath_OpenAL)" >
+            <Link>libopenal.so.1</Link>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Include="$(LinuxNativePath_libSDL)" >
+            <Link>libSDL2-2.0.so.0</Link>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <!-- Windows -->
+        <None Include="$(Windows64NativePath_OpenAL)">
+            <Link>soft_oal.dll</Link>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Include="$(Windows64NativePath_libSDL)">
+            <Link>SDL2.dll</Link>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <!-- Mac -->
+        <None Include="$(OSXNativePath_OpenAL)" >
+            <Link>libopenal.1.dylib</Link>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Include="$(OSXNativePath_libSDL)" >
+            <Link>libSDL2-2.0.0.dylib</Link>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
-  
-    <Copy SourceFiles="@(_lib_winx64)" DestinationFolder="$(OutDir)\x64" />
-    <Copy SourceFiles="@(_lib_winx86)" DestinationFolder="$(OutDir)\x86" />
-    <Copy SourceFiles="@(_lib_linux)" DestinationFolder="$(OutDir)\x64" />
-    <Copy SourceFiles="@(_lib_osx)" DestinationFolder="$(OutDir)" />
-  </Target>
 
+    <ItemGroup Condition=" '$(ShouldIncludeNative)' != 'False' and '$(PreferredPlatformTarget)' == 'x86' " >
+        <!-- Windows -->
+        <None Include="$(Windows32NativePath_OpenAL)">
+            <Link>soft_oal.dll</Link>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Include="$(Windows32NativePath_libSDL)">
+            <Link>SDL2.dll</Link>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+
+    <ItemGroup Condition=" '$(ShouldIncludeNative)' != 'False' and '$(PreferredPlatformTarget)' == 'ARM64' " >
+        <!-- Windows -->
+        <None Include="$(WindowsARM64NativePath_OpenAL)">
+            <Link>soft_oal.dll</Link>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Include="$(WindowsARM64NativePath_libSDL)">
+            <Link>SDL2.dll</Link>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+
+    <ItemGroup Condition=" '$(ShouldIncludeNative)' != 'False' and '$(PreferredPlatformTarget)' == '' " >
+        <!-- Linux -->
+        <None Include="$(LinuxNativePath_OpenAL)" >
+            <Link>x64\libopenal.so.1</Link>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Include="$(LinuxNativePath_libSDL)" >
+            <Link>x64\libSDL2-2.0.so.0</Link>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <!-- Mac -->
+        <None Include="$(OSXNativePath_OpenAL)" >
+            <Link>libopenal.1.dylib</Link>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Include="$(OSXNativePath_libSDL)" >
+            <Link>libSDL2-2.0.0.dylib</Link>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <!-- Windows -->
+        <None Include="$(Windows32NativePath_OpenAL)">
+            <Link>x86\soft_oal.dll</Link>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Include="$(Windows32NativePath_libSDL)">
+            <Link>x86\SDL2.dll</Link>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Include="$(Windows64NativePath_OpenAL)">
+            <Link>x64\soft_oal.dll</Link>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Include="$(Windows64NativePath_libSDL)">
+            <Link>x64\SDL2.dll</Link>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Include="$(WindowsARM64NativePath_OpenAL)">
+            <Link>ARM64\soft_oal.dll</Link>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Include="$(WindowsARM64NativePath_libSDL)">
+            <Link>ARM64\SDL2.dll</Link>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
 </Project>
