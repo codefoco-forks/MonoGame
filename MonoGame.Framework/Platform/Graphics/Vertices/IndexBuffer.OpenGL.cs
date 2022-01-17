@@ -113,33 +113,29 @@ namespace Microsoft.Xna.Framework.Graphics
             var elementSizeInByte = Marshal.SizeOf<T>();
             var sizeInBytes = elementSizeInByte * elementCount;
             var dataHandle = GCHandle.Alloc(data, GCHandleType.Pinned);
-            try
+
+            var dataPtr = (IntPtr)(dataHandle.AddrOfPinnedObject().ToInt64() + startIndex * elementSizeInByte);
+            var bufferSize = IndexCount * (IndexElementSize == IndexElementSize.SixteenBits ? 2 : 4);
+
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, ibo);
+            GraphicsExtensions.CheckGLError();
+
+            if (options == SetDataOptions.Discard)
             {
-                var dataPtr = (IntPtr)(dataHandle.AddrOfPinnedObject().ToInt64() + startIndex * elementSizeInByte);
-                var bufferSize = IndexCount * (IndexElementSize == IndexElementSize.SixteenBits ? 2 : 4);
-
-                GL.BindBuffer(BufferTarget.ElementArrayBuffer, ibo);
-                GraphicsExtensions.CheckGLError();
-
-                if (options == SetDataOptions.Discard)
-                {
-                    // By assigning NULL data to the buffer this gives a hint
-                    // to the device to discard the previous content.
-                    GL.BufferData(
-                        BufferTarget.ElementArrayBuffer,
-                        (IntPtr)bufferSize,
-                        IntPtr.Zero,
-                        _isDynamic ? BufferUsageHint.StreamDraw : BufferUsageHint.StaticDraw);
-                    GraphicsExtensions.CheckGLError();
-                }
-
-                GL.BufferSubData(BufferTarget.ElementArrayBuffer, (IntPtr)offsetInBytes, (IntPtr)sizeInBytes, dataPtr);
+                // By assigning NULL data to the buffer this gives a hint
+                // to the device to discard the previous content.
+                GL.BufferData(
+                    BufferTarget.ElementArrayBuffer,
+                    (IntPtr)bufferSize,
+                    IntPtr.Zero,
+                    _isDynamic ? BufferUsageHint.StreamDraw : BufferUsageHint.StaticDraw);
                 GraphicsExtensions.CheckGLError();
             }
-            finally
-            {
-                dataHandle.Free();
-            }
+
+            GL.BufferSubData(BufferTarget.ElementArrayBuffer, (IntPtr)offsetInBytes, (IntPtr)sizeInBytes, dataPtr);
+            GraphicsExtensions.CheckGLError();
+
+            dataHandle.Free();
         }
 
         protected override void Dispose(bool disposing)

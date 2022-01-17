@@ -13,16 +13,31 @@ namespace Microsoft.Xna.Framework.Media
         private Album album;
         private Artist artist;
         private Genre genre;
+
+        private Stream songStream;
+        private string fileName;
         
 		private MusicProperties musicProperties;
 
-        [CLSCompliant(false)]
+        /// <summary>
+        /// StorageFile
+        /// </summary>
         public StorageFile StorageFile
         {
             get { return this.musicProperties.File; }
         }
-        
-		internal Song(Album album, Artist artist, Genre genre, MusicProperties musicProperties)
+
+        internal Stream Stream
+        {
+            get { return songStream; }
+        }
+
+        internal string FileName
+        {
+            get { return fileName; }
+        }
+
+        internal Song(Album album, Artist artist, Genre genre, MusicProperties musicProperties)
 		{
             this.album = album;
             this.artist = artist;
@@ -32,7 +47,12 @@ namespace Microsoft.Xna.Framework.Media
 
 		private void PlatformInitialize(string fileName)
         {
+            this.fileName = fileName;
+        }
 
+        private void PlatformInitialize(Stream stream)
+        {
+            this.songStream = stream;
         }
 
         private void PlatformDispose(bool disposing)

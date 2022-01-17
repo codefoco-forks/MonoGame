@@ -435,6 +435,10 @@ namespace MonoGame.Effect
 		    
 		    /// int
 		    public int minor_ver;
+
+			/// char*
+		    [MarshalAs(UnmanagedType.LPStr)]
+		    public string mainfn;
 		    
 		    /// int
 		    public int uniform_count;
@@ -2822,7 +2826,17 @@ namespace MonoGame.Effect
 		    ///f: MOJOSHADER_free
 		    ///d: void*
 		    [DllImport(mojoshader_dll, EntryPoint="MOJOSHADER_parse")]
-		public static extern  IntPtr MOJOSHADER_parse([In()] [MarshalAs(UnmanagedType.LPStr)] string profile, [In()] byte[] tokenbuf, int bufsize, IntPtr swiz, int swizcount, IntPtr smap, int smapcount, IntPtr m, IntPtr f, IntPtr d) ;
+		public static extern  IntPtr MOJOSHADER_parse([In()] [MarshalAs(UnmanagedType.LPStr)] string profile,
+                                                      IntPtr mainfn,
+													  [In()] byte[] tokenbuf, 
+													   int bufsize,
+													   IntPtr swiz,
+													   int swizcount,
+													   IntPtr smap,
+													   int smapcount,
+													   IntPtr m,
+													   IntPtr f,
+													   IntPtr d) ;
 		
 		    
 		    /// Return Type: void
@@ -2843,7 +2857,9 @@ namespace MonoGame.Effect
 		    ///f: MOJOSHADER_free
 		    ///d: void*
 		    [DllImport(mojoshader_dll, EntryPoint="MOJOSHADER_parseEffect")]
-		public static extern  IntPtr MOJOSHADER_parseEffect([In()] [MarshalAs(UnmanagedType.LPStr)] string profile, [In()] [MarshalAs(UnmanagedType.LPStr)] string buf, int _len, ref MOJOSHADER_swizzle swiz, int swizcount, ref MOJOSHADER_samplerMap smap, int smapcount, IntPtr m, IntPtr f, IntPtr d) ;
+		public static extern  IntPtr MOJOSHADER_parseEffect([In()] [MarshalAs(UnmanagedType.LPStr)] string profile,
+														    [In()] [MarshalAs(UnmanagedType.LPStr)] string buf,
+															int _len, ref MOJOSHADER_swizzle swiz, int swizcount, ref MOJOSHADER_samplerMap smap, int smapcount, IntPtr m, IntPtr f, IntPtr d) ;
 		
 		    
 		    /// Return Type: void
