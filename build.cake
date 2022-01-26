@@ -48,6 +48,39 @@ private bool GetMSBuildWith(string requires)
     return false;
 }
 
+private void ParseVersion()
+{
+    if (!string.IsNullOrEmpty(EnvironmentVariable("GITHUB_ACTIONS")))
+    {
+        version = "3.8.1." + EnvironmentVariable("GITHUB_RUN_NUMBER");
+
+        var repositoryUrl = EnvironmentVariable("GITHUB_REPOSITORY");
+        var branch = EnvironmentVariable("GITHUB_REF");
+
+        if (!string.IsNullOrEmpty(repositoryUrl) && 
+            repositoryUrl != "MonoGame/MonoGame") // If we are building a PR
+        {
+            var split = repositoryUrl.Split('/');
+            version = version + "-" + split[0];
+        }
+        else if (repositoryUrl == "MonoGame/MonoGame" &&
+            !string.IsNullOrEmpty(branch) &&
+            branch != "refs/heads/master") // If we are building our repository
+        {
+            var branchName = branch.Split('/')[2];
+            version = version + "-" + branchName;
+        }
+    }
+    else
+    {
+        var branch = EnvironmentVariable("BRANCH_NAME") ?? string.Empty;    
+        if (!branch.Contains("master"))
+            version += "-develop";
+    }
+
+    Console.WriteLine("Version: " + version);
+}
+
 //////////////////////////////////////////////////////////////////////
 // TASKS
 //////////////////////////////////////////////////////////////////////
