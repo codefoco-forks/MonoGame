@@ -9,6 +9,12 @@ using UIKit;
 using Foundation;
 using CoreGraphics;
 
+#if !NET
+using nfloat = System.nfloat;
+#else
+using nfloat = ObjCRuntime.nfloat;
+#endif
+
 namespace Microsoft.Xna.Framework
 {
     class iOSGameViewController : 
@@ -187,10 +193,6 @@ namespace Microsoft.Xna.Framework
                         if (!platformBackButton.Handled())
                         {
                             ControllerUserInteractionEnabled = true;
-                        }
-                        else
-                        {
-                            Microsoft.Xna.Framework.Input.GamePad.MenuPressed = true;
                         }
                     }
                     else
