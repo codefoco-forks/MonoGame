@@ -3,32 +3,27 @@
 // file 'LICENSE.txt', which is part of this source code package.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Windows.ApplicationModel.Core;
 using Windows.UI.Core;
 using Windows.ApplicationModel.Activation;
 
 namespace Microsoft.Xna.Framework
 {
-    class UAPFrameworkView<T> : IFrameworkView
-        where T : Game, new()
+    class UAPFrameworkView: IFrameworkView
     {
-        public UAPFrameworkView(Action<T, IActivatedEventArgs> gameConstructorCustomizationDelegate)
+        Action<IFrameworkView> _onGetFrameworkViewGame;
+
+        public UAPFrameworkView(Action<IFrameworkView> onGetFrameworkViewGame)
         {
-            this._gameConstructorCustomizationDelegate = gameConstructorCustomizationDelegate;
+            _onGetFrameworkViewGame = onGetFrameworkViewGame;
         }
 
-        private Action<T, IActivatedEventArgs> _gameConstructorCustomizationDelegate = null;
         private CoreApplicationView _applicationView;
-        private T _game;
+        private Game _game;
 
         public void Initialize(CoreApplicationView applicationView)
         {
             _applicationView = applicationView;
-
             _applicationView.Activated += ViewActivated;
         }
 
@@ -40,13 +35,9 @@ namespace Microsoft.Xna.Framework
                 UAPGamePlatform.LaunchParameters = ((LaunchActivatedEventArgs)args).Arguments;
                 UAPGamePlatform.PreviousExecutionState = ((LaunchActivatedEventArgs)args).PreviousExecutionState;
 
-                // Construct the game.                
-                _game = new T();
+                _onGetFrameworkViewGame(this);
 
-                //Initializes it, if delegate was provided
-                if (_gameConstructorCustomizationDelegate != null)
-                    _gameConstructorCustomizationDelegate(_game, args);
-
+                _game = UAPGameWindow.Instance.Game;
             }
             else if (args.Kind == ActivationKind.Protocol)
             {
@@ -55,15 +46,11 @@ namespace Microsoft.Xna.Framework
                 UAPGamePlatform.LaunchParameters = protocolArgs.Uri.AbsoluteUri;
                 UAPGamePlatform.PreviousExecutionState = protocolArgs.PreviousExecutionState;
 
-                // Construct the game if it does not exist
-                // Protocol can be used to reactivate a suspended game
                 if (_game == null)
                 {
-                    _game = new T();
+                    _onGetFrameworkViewGame(this);
 
-                    //Initializes it, if delegate was provided
-                    if (_gameConstructorCustomizationDelegate != null)
-                        _gameConstructorCustomizationDelegate(_game, args);
+                    _game = UAPGameWindow.Instance.Game;
                 }
             }
         }
@@ -71,6 +58,7 @@ namespace Microsoft.Xna.Framework
         public void Load(string entryPoint)
         {
         }
+
 
         public void Run()
         {
