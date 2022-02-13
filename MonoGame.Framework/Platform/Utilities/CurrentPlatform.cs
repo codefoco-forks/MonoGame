@@ -7,7 +7,10 @@ using System;
 
 namespace MonoGame.Framework.Utilities
 {
-    internal enum OS
+    /// <summary>
+    /// Runtime OS identifier
+    /// </summary>
+    public enum OS
     {
         Windows,
         Linux,
@@ -15,13 +18,38 @@ namespace MonoGame.Framework.Utilities
         Unknown
     }
 
-    internal static class CurrentPlatform
+    /// <summary>
+    /// Current runtime Platform
+    /// </summary>
+    public static class CurrentPlatform
     {
         private static bool _init = false;
         private static OS _os;
 
         [DllImport("libc")]
         static extern int uname(IntPtr buf);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern bool IsWow64Process2(
+            IntPtr process, 
+            out ushort processMachine, 
+            out ushort nativeMachine
+        );
+
+        internal static bool IsArm64
+        {
+            get
+            {
+                ushort processMachine;
+                ushort nativeMachine;
+
+                IntPtr handle = System.Diagnostics.Process.GetCurrentProcess().Handle;
+
+                IsWow64Process2(handle, out processMachine, out nativeMachine);
+
+                return nativeMachine == 0xaa64;
+            }
+        }
 
         private static void Init()
         {
@@ -84,13 +112,17 @@ namespace MonoGame.Framework.Utilities
         {
             get
             {
-                if (CurrentPlatform.OS == OS.Windows && Environment.Is64BitProcess)
-                    return "win-x64";
-                else if (CurrentPlatform.OS == OS.Windows && !Environment.Is64BitProcess)
+                if (CurrentPlatform.OS == OS.Windows)
+                {
+                    if (CurrentPlatform.IsArm64)
+                        return "win-arm64";
+                    if (Environment.Is64BitProcess)
+                        return "win-x64";
                     return "win-x86";
-                else if (CurrentPlatform.OS == OS.Linux)
+                }
+                if (CurrentPlatform.OS == OS.Linux)
                     return "linux-x64";
-                else if (CurrentPlatform.OS == OS.MacOSX)
+                if (CurrentPlatform.OS == OS.MacOSX)
                     return "osx";
                 else
                     return "unknown";

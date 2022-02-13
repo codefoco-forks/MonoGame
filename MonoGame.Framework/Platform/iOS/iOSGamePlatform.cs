@@ -185,8 +185,6 @@ namespace Microsoft.Xna.Framework
         public override void BeforeInitialize()
         {
             base.BeforeInitialize ();
-
-            _viewController.View.LayoutSubviews();
         }
 
         public override void RunLoop()
@@ -350,8 +348,6 @@ namespace Microsoft.Xna.Framework
 
 				presentParams.DisplayOrientation = orientation;
 
-                // Recalculate our views.
-                ViewController.View.LayoutSubviews();
 				
                 gdm.ApplyChanges();
 			}
