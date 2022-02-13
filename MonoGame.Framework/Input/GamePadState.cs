@@ -110,23 +110,7 @@ namespace Microsoft.Xna.Framework.Input
         /// <summary>
         /// Gets the button mask along with 'virtual buttons' like LeftThumbstickLeft.
         /// </summary>
-        private Buttons GetVirtualButtons ()
-        {
-            var result = Buttons._buttons;
 
-            result |= ThumbSticks._virtualButtons;
-
-            if (DPad.Down == ButtonState.Pressed)
-                result |= Microsoft.Xna.Framework.Input.Buttons.DPadDown;
-            if (DPad.Up == ButtonState.Pressed)
-                result |= Microsoft.Xna.Framework.Input.Buttons.DPadUp;
-            if (DPad.Left == ButtonState.Pressed)
-                result |= Microsoft.Xna.Framework.Input.Buttons.DPadLeft;
-            if (DPad.Right == ButtonState.Pressed)
-                result |= Microsoft.Xna.Framework.Input.Buttons.DPadRight;
-
-            return result;
-        }
 
         /// <summary>
         /// Determines whether specified input device buttons are pressed in this GamePadState.
@@ -135,7 +119,7 @@ namespace Microsoft.Xna.Framework.Input
         /// <param name="button">Buttons to query. Specify a single button, or combine multiple buttons using a bitwise OR operation.</param>
         public bool IsButtonDown(Buttons button)
         {
-            return (GetVirtualButtons() & button) == button;
+            return (Buttons._buttons & button) == button;
         }
 
         /// <summary>
@@ -145,7 +129,7 @@ namespace Microsoft.Xna.Framework.Input
         /// <param name="button">Buttons to query. Specify a single button, or combine multiple buttons using a bitwise OR operation.</param>
         public bool IsButtonUp(Buttons button)
         {
-            return (GetVirtualButtons() & button) != button;
+            return (Buttons._buttons & button) != button;
         }
 
         /// <summary>
@@ -215,7 +199,7 @@ namespace Microsoft.Xna.Framework.Input
             if (!IsConnected)
                 return "[GamePadState: IsConnected = 0]";
 
-            return "[GamePadState: IsConnected=" + (IsConnected ? "1" : "0") +
+            return "[GamePadState: IsConnected = 1 " +
                    ", PacketNumber=" + PacketNumber.ToString("00000") +
                    ", Buttons=" + Buttons +
                    ", DPad=" + DPad +

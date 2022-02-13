@@ -61,7 +61,36 @@ namespace Microsoft.Xna.Framework
 	    /// </summary>
 		public abstract string ScreenDeviceName { get; }
 
-		private string _title;
+		protected const float DEFAULT_DPI = 96f;
+        /// <summary>
+        /// Get current screen scale factor
+        /// (Only works on Windows/Mac)
+        /// </summary>
+        public float ScreenScale
+        {
+            get
+            {
+                float dpi;
+                if (!GetDeviceDPI(out dpi))
+                    return 1f;
+
+                float scale = dpi / DEFAULT_DPI;
+                return scale;
+            }
+        }
+
+        /// <summary>
+        /// Get the DPI the window is being displayed
+        /// </summary>
+        /// <param name="dpi"></param>
+        /// <returns></returns>
+        public virtual bool GetDeviceDPI(out float dpi)
+        {
+            dpi = 0f;
+            return false;
+        }
+
+        private string _title;
         /// <summary>
         /// Gets or sets the title of the game window.
         /// </summary>
@@ -262,15 +291,5 @@ namespace Microsoft.Xna.Framework
 	    /// </summary>
 	    /// <param name="title">The new title of the window.</param>
 		protected abstract void SetTitle (string title);
-
-#if DIRECTX && WINDOWS
-        public static GameWindow Create(Game game, int width, int height)
-        {
-            var window = new MonoGame.Framework.WinFormsGameWindow((MonoGame.Framework.WinFormsGamePlatform)game.Platform);
-            window.Initialize(width, height);
-
-            return window;
-        }
-#endif
     }
 }
