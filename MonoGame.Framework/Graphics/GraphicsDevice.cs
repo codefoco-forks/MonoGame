@@ -868,6 +868,8 @@ namespace Microsoft.Xna.Framework.Graphics
 
             int renderTargetWidth;
             int renderTargetHeight;
+            int yoffset;
+
             if (renderTargets == null)
             {
                 _currentRenderTargetCount = 0;
@@ -875,8 +877,7 @@ namespace Microsoft.Xna.Framework.Graphics
                 PlatformApplyDefaultRenderTarget();
                 clearTarget = PresentationParameters.RenderTargetUsage == RenderTargetUsage.DiscardContents;
 
-                renderTargetWidth = PresentationParameters.BackBufferWidth;
-                renderTargetHeight = PresentationParameters.BackBufferHeight;
+                PlatformGetDefaultRenderTargetSize(out renderTargetWidth, out renderTargetHeight, out yoffset);
             }
 			else
 			{
@@ -891,10 +892,11 @@ namespace Microsoft.Xna.Framework.Graphics
 
                 renderTargetWidth = renderTarget.Width;
                 renderTargetHeight = renderTarget.Height;
+                yoffset = 0;
             }
 
             // Set the viewport to the size of the first render target.
-            Viewport = new Viewport(0, 0, renderTargetWidth, renderTargetHeight);
+            Viewport = new Viewport(0, yoffset, renderTargetWidth, renderTargetHeight);
 
             // Set the scissor rectangle to the size of the first render target.
             ScissorRectangle = new Rectangle(0, 0, renderTargetWidth, renderTargetHeight);
