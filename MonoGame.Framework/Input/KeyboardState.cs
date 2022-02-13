@@ -95,19 +95,14 @@ namespace Microsoft.Xna.Framework.Input
 
         internal KeyboardState(List<Keys> keys, bool capsLock = false, bool numLock = false) : this()
         {
-            _keys0 = 0;
-            _keys1 = 0;
-            _keys2 = 0;
-            _keys3 = 0;
-            _keys4 = 0;
-            _keys5 = 0;
-            _keys6 = 0;
-            _keys7 = 0;
-            _modifiers = (byte)(0 | (capsLock ? CapsLockModifier : 0) | (numLock ? NumLockModifier : 0));
+            _modifiers = (byte)((capsLock ? CapsLockModifier : 0) | (numLock ? NumLockModifier : 0));
 
-            if (keys != null)
-                foreach (Keys k in keys)
-                    InternalSetKey(k);
+            int count = keys.Count;
+
+            for (int i = 0; i < count; i++)
+            {
+                InternalSetKey(keys[i]);
+            }
         }
 
         /// <summary>
@@ -118,40 +113,34 @@ namespace Microsoft.Xna.Framework.Input
         /// <param name="numLock">Num Lock state.</param>
         public KeyboardState(Keys[] keys, bool capsLock = false, bool numLock = false) : this()
         {
-            _keys0 = 0;
-            _keys1 = 0;
-            _keys2 = 0;
-            _keys3 = 0;
-            _keys4 = 0;
-            _keys5 = 0;
-            _keys6 = 0;
-            _keys7 = 0;
             _modifiers = (byte)(0 | (capsLock ? CapsLockModifier : 0) | (numLock ? NumLockModifier : 0));
 
-            if (keys != null)
-                foreach (Keys k in keys)
-                    InternalSetKey(k);
+            if (keys == null)
+                return;
+
+            int count = keys.Length;
+
+            for (int i = 0; i < count; i++)
+            {
+                InternalSetKey(keys[i]);
+            }
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="KeyboardState"/> class.
         /// </summary>
         /// <param name="keys">List of keys to be flagged as pressed on initialization.</param>
-        public KeyboardState(params Keys[] keys) : this()
+        public KeyboardState(Keys[] keys) : this()
         {
-            _keys0 = 0;
-            _keys1 = 0;
-            _keys2 = 0;
-            _keys3 = 0;
-            _keys4 = 0;
-            _keys5 = 0;
-            _keys6 = 0;
-            _keys7 = 0;
-            _modifiers = 0;
+            if (keys == null)
+                return;
 
-            if (keys != null)
-                foreach (Keys k in keys)
-                    InternalSetKey(k);
+            int count = keys.Length;
+
+            for (int i = 0; i < count; i++)
+            {
+                InternalSetKey(keys[i]);
+            }
         }
 
         /// <summary>
