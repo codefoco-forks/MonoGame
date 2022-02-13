@@ -1,19 +1,24 @@
 <Project Sdk="MSBuild.Sdk.Extras">
 
   <PropertyGroup>
-    <TargetFramework>xamarinios10</TargetFramework>
-    <DefineConstants>IOS;GLES;STBSHARP_INTERNAL</DefineConstants>
+    <TargetFrameworks>xamarinios10;xamarintvos10</TargetFrameworks>
+    <DefineConstants>IOS;GLES</DefineConstants>
+    
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <MGOpenGL>GLES</MGOpenGL>
     <Description>The MonoGame runtime for iOS which supports iOS Versions 10 and above. </Description>
     <PackageTags>monogame;.net core;core;.net standard;standard;ios</PackageTags>
     <PackageId>MonoGame.Framework.iOS</PackageId>
-    <AppendTargetFrameworkToOutputPath>False</AppendTargetFrameworkToOutputPath>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <DebugType>portable</DebugType>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="  '$(TargetFramework)' == 'xamarintvos10' ">
+    <DefineConstants>$(DefineConstants);TVOS</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.Numerics" />
   </ItemGroup>
 
   <ItemGroup>
@@ -21,12 +26,10 @@
     <Compile Remove="obj\**\*" />
     <Compile Remove="Platform\**\*" />
     <Compile Remove="Properties\**\*" />
-    <Compile Remove="Utilities\System.Numerics.Vectors\**\*" />
   </ItemGroup>
 
   <ItemGroup>
     <None Remove="Platform\**\*" />
-    <None Remove="Utilities\System.Numerics.Vectors\**\*" />
   </ItemGroup>
 
   <ItemGroup>
@@ -50,7 +53,6 @@
     <Compile Include="Platform\GamePlatform.Mobile.cs" />
     <Compile Include="Platform\Graphics\GraphicsAdapter.Legacy.cs" />
     <Compile Include="Platform\Graphics\OpenGL.iOS.cs" />
-    <Compile Include="Platform\Graphics\Texture2D.StbSharp.cs" />
     <Compile Include="Platform\GraphicsDeviceManager.Legacy.cs" />
     <Compile Include="Platform\Input\GamePad.iOS.cs" />
     <Compile Include="Platform\Input\Joystick.Default.cs" />
@@ -68,17 +70,22 @@
     <Compile Include="Platform\Utilities\FuncLoader.iOS.cs" />
     <Compile Include="Platform\Utilities\InteropHelpers.cs" />
     <Compile Include="Platform\Utilities\ReflectionHelpers.Default.cs" />
-
-    <Compile Include="..\ThirdParty\StbImageSharp\src\**\*.cs" LinkBase="Utilities\StbImageSharp" />
-    <Compile Include="..\ThirdParty\StbImageWriteSharp\src\**\*.cs" LinkBase="Utilities\StbImageWriteSharp" />
+    <Compile Include="Platform\Graphics\Texture2D.iOS.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Include="MonoGame.Framework.iOS.targets" PackagePath="build" />
   </ItemGroup>
-
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
   <Import Project="Platform\OpenGL.targets" />
+  <Import Project="Platform\OpenGLES.EmbeddedShaders.targets" />
   <Import Project="Platform\OpenAL.targets" />
   <Import Project="Platform\Microsoft.Devices.Sensors.targets" />
+  <Import Project="MonoGame.Sign.targets" />
 </Project>
 

@@ -190,6 +190,11 @@ namespace Microsoft.Xna.Framework.Input
                     if (controller.Gamepad.ButtonY.IsPressed)
                         buttons |= Buttons.Y;
 
+                    if (controller.Gamepad.LeftShoulder.IsPressed)
+                        buttons |= Buttons.LeftShoulder;
+                    if (controller.Gamepad.RightShoulder.IsPressed)
+                        buttons |= Buttons.RightShoulder;
+
                     if (controller.Gamepad.DPad.Up.IsPressed)
                     {
                         Up = ButtonState.Pressed;
