@@ -13,7 +13,7 @@ namespace Microsoft.Xna.Framework
     /// The collection of the <see cref="CurveKey"/> elements and a part of the <see cref="Curve"/> class.
     /// </summary>
     // TODO : [TypeConverter(typeof(ExpandableObjectConverter))]
-    [DataContract]
+    //[DataContract]
     public class CurveKeyCollection : ICollection<CurveKey>
     {
         #region Private Fields
@@ -29,7 +29,7 @@ namespace Microsoft.Xna.Framework
         /// </summary>
         /// <param name="index">The index of key in this collection.</param>
         /// <returns><see cref="CurveKey"/> at <paramref name="index"/> position.</returns>
-        [DataMember(Name = "Items")]
+        //[DataMember(Name = "Items")]
         public CurveKey this[int index]
         {
             get { return _keys[index]; }
@@ -54,7 +54,7 @@ namespace Microsoft.Xna.Framework
         /// <summary>
         /// Returns the count of keys in this collection.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public int Count
         {
             get { return _keys.Count; }
@@ -63,7 +63,7 @@ namespace Microsoft.Xna.Framework
         /// <summary>
         /// Returns false because it is not a read-only collection.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public bool IsReadOnly
         {
             get { return false; }

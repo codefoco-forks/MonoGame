@@ -258,15 +258,12 @@ namespace Microsoft.Xna.Framework {
 				throw new InvalidOperationException (
 					"Framebuffer was not created correctly: " + status);
 
-			_glapi.Viewport(0, 0, viewportWidth, viewportHeight);
-            _glapi.Scissor(0, 0, viewportWidth, viewportHeight);
+			GraphicsDevice graphicsDevice = _platform.Game.GraphicsDevice;
 
-			var gds = _platform.Game.Services.GetService(
-                typeof (IGraphicsDeviceService)) as IGraphicsDeviceService;
-
-			if (gds != null && gds.GraphicsDevice != null)
+			if (graphicsDevice != null)
 			{
-                var pp = gds.GraphicsDevice.PresentationParameters;
+                var pp = graphicsDevice.PresentationParameters;
+
                 int height = viewportHeight;
                 int width = viewportWidth;
 
@@ -285,21 +282,27 @@ namespace Microsoft.Xna.Framework {
                     }
                 }
 
-                pp.BackBufferHeight = height;
-                pp.BackBufferWidth = width;
-
-				gds.GraphicsDevice.Viewport = new Viewport(
-					0, 0,
-					pp.BackBufferWidth,
-					pp.BackBufferHeight);
-				
 				// FIXME: These static methods on GraphicsDevice need
 				//        to go away someday.
-				gds.GraphicsDevice.glFramebuffer = _framebuffer;
+				graphicsDevice.glFramebuffer = _framebuffer;
+
+				if (height != pp.BackBufferHeight && width != pp.BackBufferWidth)
+				{
+					pp.BackBufferHeight = height;
+					pp.BackBufferWidth = width;
+
+					graphicsDevice.Viewport = new Viewport(
+						0, 0,
+						pp.BackBufferWidth,
+						pp.BackBufferHeight);
+
+					_platform.Window.OnClientSizeChanged();
+				}
+
 			}
 
             if (Threading.BackgroundContext == null)
-                Threading.BackgroundContext = new OpenGLES.EAGLContext(ctx.Context.API, ctx.Context.ShareGroup);
+                Threading.BackgroundContext = new EAGLContext(ctx.Context.API, ctx.Context.ShareGroup);
 		}
 
 		private void DestroyFramebuffer ()
@@ -356,11 +359,13 @@ namespace Microsoft.Xna.Framework {
 		{
 			base.LayoutSubviews ();
 
-            var gds = _platform.Game.Services.GetService (
-                typeof (IGraphicsDeviceService)) as IGraphicsDeviceService;
+            GraphicsDevice graphicsDevice = _platform.Game.GraphicsDevice;
 
-            if (gds == null || gds.GraphicsDevice == null)
+            if (graphicsDevice == null)
                 return;
+
+			int viewportHeight = (int)Math.Round(Layer.Bounds.Size.Height * Layer.ContentsScale);
+			int viewportWidth = (int)Math.Round(Layer.Bounds.Size.Width * Layer.ContentsScale);
 
 			if (_framebuffer != 0)
 				DestroyFramebuffer ();
@@ -374,14 +379,11 @@ namespace Microsoft.Xna.Framework {
 		[Export ("didMoveToWindow")]
 		public virtual void DidMoveToWindow ()
 		{
+			if (Window == null)
+				return;
 
-            if (Window != null) {
-                
-                if (__renderbuffergraphicsContext == null)
-                    CreateContext ();
-                if (_framebuffer == 0)
-                    CreateFramebuffer ();
-            }
+            if (__renderbuffergraphicsContext == null)
+                CreateContext ();
 		}
 
 		#endregion UIWindow Notifications
