@@ -7,11 +7,11 @@ using System.Runtime.InteropServices;
 
 namespace Microsoft.Xna.Framework.Graphics
 {
-    [DataContract]
+    //[DataContract]
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
 	public struct VertexPosition : IVertexType
 	{
-        [DataMember]
+        //[DataMember]
 		public Vector3 Position;
 
 		public static readonly VertexDeclaration VertexDeclaration;

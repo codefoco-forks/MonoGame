@@ -28,6 +28,7 @@ namespace Microsoft.Xna.Framework.Audio
         internal readonly int[] alBufferIds;
 
         readonly string oggFileName;
+        readonly Stream oggStream;
 
         internal VorbisReader Reader { get; private set; }
         internal bool Ready { get; private set; }
@@ -37,8 +38,19 @@ namespace Microsoft.Xna.Framework.Audio
         public int BufferCount { get; private set; }
 
         public OggStream(string filename, Action finishedAction = null, int bufferCount = DefaultBufferCount)
+            : this(finishedAction, bufferCount)
         {
             oggFileName = filename;
+        }
+
+        public OggStream(Stream stream, Action finishedAction = null, int bufferCount = DefaultBufferCount)
+            : this(finishedAction, bufferCount)
+        {
+            oggStream = stream;
+        }
+
+        public OggStream(Action finishedAction = null, int bufferCount = DefaultBufferCount)
+        {
             FinishedAction = finishedAction;
             BufferCount = bufferCount;
 
@@ -257,7 +269,10 @@ namespace Microsoft.Xna.Framework.Audio
 
         internal void Open(bool precache = false)
         {
-            Reader = new VorbisReader(oggFileName);
+            if (oggStream != null)
+                Reader = new VorbisReader(oggStream, closeStreamOnDispose: false);
+            else
+                Reader = new VorbisReader(oggFileName);
 
             if (precache)
             {

@@ -70,12 +70,12 @@ namespace Microsoft.Xna.Framework.Input.Touch
 
         internal static void AddEvent(int id, TouchLocationState state, Vector2 position)
         {
-            AddEvent(id, state, position, false);
+            AddEvent(id, state, position, DeviceType.Touch, 0f, 0f);
         }
 
-        internal static void AddEvent(int id, TouchLocationState state, Vector2 position, bool isMouse)
+        internal static void AddEvent(int id, TouchLocationState state, Vector2 position, DeviceType deviceType, float pressure, float rotation)
         {
-            PrimaryWindow.TouchPanelState.AddEvent(id, state, position, isMouse);
+            PrimaryWindow.TouchPanelState.AddEvent(id, state, position, deviceType, pressure, rotation);
         }
 
         /// <summary>
