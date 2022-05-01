@@ -65,57 +65,16 @@ namespace Microsoft.Xna.Framework.Graphics
 
 
         /// <summary>
-        /// Lazily recomputes the world+view+projection matrix and
-        /// fog vector based on the current effect parameter settings.
-        /// </summary>
-        internal static EffectDirtyFlags SetWorldViewProjAndFog(EffectDirtyFlags dirtyFlags,
-                                                                ref Matrix world, ref Matrix view, ref Matrix projection, ref Matrix worldView,
-                                                                bool fogEnabled, float fogStart, float fogEnd,
-                                                                EffectParameter worldViewProjParam, EffectParameter fogVectorParam)
-        {
-            // Recompute the world+view+projection matrix?
-            if ((dirtyFlags & EffectDirtyFlags.WorldViewProj) != 0)
-            {
-                Matrix worldViewProj;
-                
-                Matrix.Multiply(ref world, ref view, out worldView);
-                Matrix.Multiply(ref worldView, ref projection, out worldViewProj);
-                
-                worldViewProjParam.SetValue(worldViewProj);
-                
-                dirtyFlags &= ~EffectDirtyFlags.WorldViewProj;
-            }
-
-            if (fogEnabled)
-            {
-                // Recompute the fog vector?
-                if ((dirtyFlags & (EffectDirtyFlags.Fog | EffectDirtyFlags.FogEnable)) != 0)
-                {
-                    SetFogVector(ref worldView, fogStart, fogEnd, fogVectorParam);
-
-                    dirtyFlags &= ~(EffectDirtyFlags.Fog | EffectDirtyFlags.FogEnable);
-                }
-            }
-            else
-            {
-                // When fog is disabled, make sure the fog vector is reset to zero.
-                if ((dirtyFlags & EffectDirtyFlags.FogEnable) != 0)
-                {
-                    fogVectorParam.SetValue(Vector4.Zero);
-
-                    dirtyFlags &= ~EffectDirtyFlags.FogEnable;
-                }
-            }
-
-            return dirtyFlags;
-        }
-
-
-        /// <summary>
         /// Sets a vector which can be dotted with the object space vertex position to compute fog amount.
         /// </summary>
-        static void SetFogVector(ref Matrix worldView, float fogStart, float fogEnd, EffectParameter fogVectorParam)
+        internal static void SetFogVector(ref Matrix worldView, bool fogEnabled, float fogStart, float fogEnd, EffectParameter fogVectorParam)
         {
+            if (!fogEnabled)
+            {
+                fogVectorParam.SetValue(Vector4.Zero);
+                return;
+            }
+
             if (fogStart == fogEnd)
             {
                 // Degenerate case: force everything to 100% fogged if start and end are the same.
