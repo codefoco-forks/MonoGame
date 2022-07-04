@@ -9,7 +9,7 @@ namespace Microsoft.Xna.Framework.Input
     /// </summary>
     public struct GamePadButtons
     {
-        internal readonly Buttons _buttons;
+        internal Buttons _buttons;
 
         /// <summary>
         /// Gets a value indicating if the button A is pressed.
