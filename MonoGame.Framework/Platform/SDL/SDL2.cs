@@ -54,7 +54,7 @@ internal static class Sdl
 
         MouseMotion = 0x400,
         MouseButtonDown = 0x401,
-        MouseButtonup = 0x402,
+        MouseButtonUp = 0x402,
         MouseWheel = 0x403,
 
         JoyAxisMotion = 0x600,
@@ -116,6 +116,8 @@ internal static class Sdl
         public Keyboard.Event Key;
         [FieldOffset(0)]
         public Mouse.MotionEvent Motion;
+        [FieldOffset(0)]
+        public Mouse.MouseButtonEvent MouseButton;
         [FieldOffset(0)]
         public Keyboard.TextEditingEvent Edit;
         [FieldOffset(0)]
@@ -506,6 +508,15 @@ internal static class Sdl
         {
             return GetError(SDL_GetWindowDisplayIndex(window));
         }
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate int d_sdl_getdisplaydpi(int displayIndex, out float ddpi, out float hdpi, out float vdpi);
+        private static d_sdl_getdisplaydpi SDL_GetDisplayDPI = FuncLoader.LoadFunction<d_sdl_getdisplaydpi>(NativeLibrary, "SDL_GetDisplayDPI");
+
+        public static int GetDisplayDPI(int displayIndex, out float ddpi, out float hdpi, out float vdpi)
+        {
+            return GetError(SDL_GetDisplayDPI(displayIndex, out ddpi, out hdpi, out vdpi));
+        }
     }
 
     public static class GL
@@ -574,6 +585,10 @@ internal static class Sdl
         public static d_sdl_gl_makecurrent MakeCurrent = FuncLoader.LoadFunction<d_sdl_gl_makecurrent>(NativeLibrary, "SDL_GL_MakeCurrent");
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate void sdl_gl_getdrawablesize(IntPtr window, out int width, out int height);
+        public static sdl_gl_getdrawablesize GetDrawableSize = FuncLoader.LoadFunction<sdl_gl_getdrawablesize>(NativeLibrary, "SDL_GL_GetDrawableSize");
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         private delegate int d_sdl_gl_setattribute(Attribute attr, int value);
         private static d_sdl_gl_setattribute SDL_GL_SetAttribute = FuncLoader.LoadFunction<d_sdl_gl_setattribute>(NativeLibrary, "SDL_GL_SetAttribute");
 
@@ -634,6 +649,21 @@ internal static class Sdl
             public int Y;
             public int Xrel;
             public int Yrel;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct MouseButtonEvent
+        {
+            public EventType Type;
+            public uint Timestamp;
+            public uint WindowID;
+            public uint Which;
+            public byte Button;
+            public byte State;
+            public byte Clicks;
+            private byte padding1;
+            public int X;
+            public int Y;
         }
 
         [StructLayout(LayoutKind.Sequential)]
