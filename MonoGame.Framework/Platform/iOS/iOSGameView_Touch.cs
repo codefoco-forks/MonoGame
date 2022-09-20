@@ -126,20 +126,26 @@ namespace Microsoft.Xna.Framework {
 				var position = GetOffsetPosition (new Vector2 ((float)location.X, (float)location.Y), true);
 				var id = touch.Handle.ToInt32 ();
 
+				float pressure = (float)touch.Force / 2f;
+				DeviceType deviceType = DeviceType.Touch;
+
+				if (touch.Type == UITouchType.Stylus)
+					deviceType = DeviceType.Pen;
+
 				switch (touch.Phase) 
                 {
 				//case UITouchPhase.Stationary:
 				case UITouchPhase.Moved:
-					TouchPanel.AddEvent(id, TouchLocationState.Moved, position);					
+					TouchPanel.AddEvent(id, TouchLocationState.Moved, position, deviceType, pressure, 0f);					
 					break;
 				case UITouchPhase.Began:
-                    TouchPanel.AddEvent(id, TouchLocationState.Pressed, position);
+                    TouchPanel.AddEvent(id, TouchLocationState.Pressed, position, deviceType, pressure, 0f);
 					break;
 				case UITouchPhase.Ended	:
-                    TouchPanel.AddEvent(id, TouchLocationState.Released, position);
+                    TouchPanel.AddEvent(id, TouchLocationState.Released, position, deviceType, pressure, 0f);
 					break;
 				case UITouchPhase.Cancelled:
-                    TouchPanel.AddEvent(id, TouchLocationState.Released, position);
+                    TouchPanel.AddEvent(id, TouchLocationState.Released, position, deviceType, pressure, 0f);
 					break;
 				default:
 					break;
