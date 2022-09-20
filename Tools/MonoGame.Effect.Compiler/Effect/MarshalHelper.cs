@@ -7,22 +7,21 @@ namespace MonoGame.Effect
 	{
         public static T Unmarshal<T>(IntPtr ptr)
         {
-            var type = typeof(T);
-            var result = (T)Marshal.PtrToStructure(ptr, type);
+            var result = Marshal.PtrToStructure<T>(ptr);
             return result;
         }
 
 		public static T[] UnmarshalArray<T>(IntPtr ptr, int count) 
         {
 			var type = typeof(T);
-            var size = Marshal.SizeOf(type);            
+            var size = Marshal.SizeOf<T>();
             var ret = new T[count];
 
             for (int i = 0; i < count; i++)
             {
                 var offset = i * size;
 				var structPtr = new IntPtr(ptr.ToInt64() + offset);
-                ret[i] = (T)Marshal.PtrToStructure(structPtr, type);
+                ret[i] = Marshal.PtrToStructure<T>(structPtr);
             }
 
 			return ret;
