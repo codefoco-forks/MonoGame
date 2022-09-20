@@ -88,20 +88,6 @@ namespace Microsoft.Xna.Framework.Input
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="T:Microsoft.Xna.Framework.Input.GamePadState"/> struct
-        /// using the specified stick, trigger, and button values.
-        /// </summary>
-        /// <param name="leftThumbStick">Left stick value. Each axis is clamped between −1.0 and 1.0.</param>
-        /// <param name="rightThumbStick">Right stick value. Each axis is clamped between −1.0 and 1.0.</param>
-        /// <param name="leftTrigger">Left trigger value. This value is clamped between 0.0 and 1.0.</param>
-        /// <param name="rightTrigger">Right trigger value. This value is clamped between 0.0 and 1.0.</param>
-        /// <param name="buttons"> Array of Buttons to initialize as pressed.</param>
-        public GamePadState(Vector2 leftThumbStick, Vector2 rightThumbStick, float leftTrigger, float rightTrigger, Buttons[] buttons)
-            : this(new GamePadThumbSticks(leftThumbStick, rightThumbStick), new GamePadTriggers(leftTrigger, rightTrigger), new GamePadButtons(buttons), new GamePadDPad(buttons))
-        {
-        }
-
-        /// <summary>
         /// Define this method in platform partial classes to initialize default
         /// values for platform-specific fields.
         /// </summary>
@@ -110,23 +96,7 @@ namespace Microsoft.Xna.Framework.Input
         /// <summary>
         /// Gets the button mask along with 'virtual buttons' like LeftThumbstickLeft.
         /// </summary>
-        private Buttons GetVirtualButtons ()
-        {
-            var result = Buttons._buttons;
 
-            result |= ThumbSticks._virtualButtons;
-
-            if (DPad.Down == ButtonState.Pressed)
-                result |= Microsoft.Xna.Framework.Input.Buttons.DPadDown;
-            if (DPad.Up == ButtonState.Pressed)
-                result |= Microsoft.Xna.Framework.Input.Buttons.DPadUp;
-            if (DPad.Left == ButtonState.Pressed)
-                result |= Microsoft.Xna.Framework.Input.Buttons.DPadLeft;
-            if (DPad.Right == ButtonState.Pressed)
-                result |= Microsoft.Xna.Framework.Input.Buttons.DPadRight;
-
-            return result;
-        }
 
         /// <summary>
         /// Determines whether specified input device buttons are pressed in this GamePadState.
@@ -135,8 +105,7 @@ namespace Microsoft.Xna.Framework.Input
         /// <param name="button">Buttons to query. Specify a single button, or combine multiple buttons using a bitwise OR operation.</param>
         public bool IsButtonDown(Buttons button)
         {
-            if (button == Microsoft.Xna.Framework.Input.Buttons.None) return false;
-            return (GetVirtualButtons() & button) == button;
+            return (Buttons._buttons & button) == button;
         }
 
         /// <summary>
@@ -146,7 +115,7 @@ namespace Microsoft.Xna.Framework.Input
         /// <param name="button">Buttons to query. Specify a single button, or combine multiple buttons using a bitwise OR operation.</param>
         public bool IsButtonUp(Buttons button)
         {
-            return (GetVirtualButtons() & button) != button;
+            return (Buttons._buttons & button) != button;
         }
 
         /// <summary>
@@ -216,7 +185,7 @@ namespace Microsoft.Xna.Framework.Input
             if (!IsConnected)
                 return "[GamePadState: IsConnected = 0]";
 
-            return "[GamePadState: IsConnected=" + (IsConnected ? "1" : "0") +
+            return "[GamePadState: IsConnected = 1 " +
                    ", PacketNumber=" + PacketNumber.ToString("00000") +
                    ", Buttons=" + Buttons +
                    ", DPad=" + DPad +

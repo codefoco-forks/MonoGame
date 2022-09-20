@@ -34,7 +34,7 @@ using System.Runtime.Serialization;
 
 namespace Microsoft.Xna.Framework.Graphics
 {
-    [DataContract]
+    //[DataContract]
     public class DisplayMode
     {
         #region Fields
