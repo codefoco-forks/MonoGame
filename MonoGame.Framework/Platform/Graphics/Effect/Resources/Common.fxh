@@ -37,6 +37,7 @@ CommonVSOutput ComputeCommonVSOutput(float4 position)
 {
     CommonVSOutput vout;
     
+    position = mul(position, World);
     vout.Pos_ps = mul(position, WorldViewProj);
     vout.Diffuse = DiffuseColor;
     vout.Specular = 0;

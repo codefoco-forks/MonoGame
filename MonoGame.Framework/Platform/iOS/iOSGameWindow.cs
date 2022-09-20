@@ -133,6 +133,15 @@ namespace Microsoft.Xna.Framework {
 			}
 		}
 
+		public override bool GetDeviceDPI(out float dpi)
+		{
+			float scale = (float)UIScreen.MainScreen.Scale;
+
+			dpi = DEFAULT_DPI * scale;
+
+			return true;
+		}
+
 		public override DisplayOrientation CurrentOrientation {
 			get {
                 #if TVOS
