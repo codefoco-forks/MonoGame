@@ -3,7 +3,7 @@ using System.Runtime.Serialization;
 
 namespace Microsoft.Xna.Framework.Graphics
 {
-    [DataContract]
+    //[DataContract]
     public sealed class DeviceLostException : Exception
     {
         public DeviceLostException()

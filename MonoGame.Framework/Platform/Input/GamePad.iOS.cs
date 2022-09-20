@@ -153,7 +153,7 @@ namespace Microsoft.Xna.Framework.Input
 
                     if (controller.ExtendedGamepad.ButtonMenu.IsPressed)
                         buttons |= Buttons.Start;
-                    if (controller.ExtendedGamepad.ButtonOptions.IsPressed)
+                    if (controller.ExtendedGamepad.ButtonOptions != null && controller.ExtendedGamepad.ButtonOptions.IsPressed)
                         buttons |= Buttons.Back;
 
                     if (controller.ExtendedGamepad.DPad.Up.IsPressed)
@@ -194,6 +194,11 @@ namespace Microsoft.Xna.Framework.Input
                         buttons |= Buttons.X;
                     if (controller.Gamepad.ButtonY.IsPressed)
                         buttons |= Buttons.Y;
+
+                    if (controller.Gamepad.LeftShoulder.IsPressed)
+                        buttons |= Buttons.LeftShoulder;
+                    if (controller.Gamepad.RightShoulder.IsPressed)
+                        buttons |= Buttons.RightShoulder;
 
                     if (controller.Gamepad.DPad.Up.IsPressed)
                     {
