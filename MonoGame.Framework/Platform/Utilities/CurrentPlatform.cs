@@ -7,7 +7,10 @@ using System;
 
 namespace MonoGame.Framework.Utilities
 {
-    internal enum OS
+    /// <summary>
+    /// Runtime OS identifier
+    /// </summary>
+    public enum OS
     {
         Windows,
         Linux,
@@ -15,13 +18,49 @@ namespace MonoGame.Framework.Utilities
         Unknown
     }
 
-    internal static class CurrentPlatform
+    /// <summary>
+    /// Current runtime Platform
+    /// </summary>
+    public static class CurrentPlatform
     {
         private static bool _init = false;
         private static OS _os;
 
+        private static bool _isARM64;
+
         [DllImport("libc")]
         static extern int uname(IntPtr buf);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern bool IsWow64Process2(
+            IntPtr process, 
+            out ushort processMachine, 
+            out ushort nativeMachine
+        );
+
+        private static bool CheckIsARM64Windows()
+        {
+            ushort processMachine;
+            ushort nativeMachine;
+
+            // IsWow64Process2 is only available on Windows 10
+            if (Environment.OSVersion.Version.Major < 10 || Environment.OSVersion.Version.Build < 1511)
+                return false;
+
+            IntPtr handle = System.Diagnostics.Process.GetCurrentProcess().Handle;
+
+            IsWow64Process2(handle, out processMachine, out nativeMachine);
+
+            return nativeMachine == 0xaa64;
+        }
+
+        internal static bool IsARM64
+        {
+            get
+            {
+                return _isARM64;
+            }
+        }
 
         private static void Init()
         {
@@ -37,6 +76,7 @@ namespace MonoGame.Framework.Utilities
                 case PlatformID.Win32Windows:
                 case PlatformID.WinCE:
                     _os = OS.Windows;
+                    _isARM64 = CheckIsARM64Windows();
                     break;
                 case PlatformID.MacOSX:
                     _os = OS.MacOSX;
@@ -50,8 +90,22 @@ namespace MonoGame.Framework.Utilities
                     {
                         buf = Marshal.AllocHGlobal(8192);
 
-                        if (uname(buf) == 0 && Marshal.PtrToStringAnsi(buf) == "Linux")
-                            _os = OS.Linux;
+                        if (uname(buf) == 0)
+                        {
+                            if (Marshal.PtrToStringAnsi(buf) == "Linux")
+                                _os = OS.Linux;
+
+
+                            // https://pubs.opengroup.org/onlinepubs/009696899/basedefs/sys/utsname.h.html
+                            // Read machine field from uname to get the CPU arch
+                            long offset = IntPtr.Size * 4;
+                            IntPtr m = new IntPtr(buf.ToInt64() + offset);
+                            string machine = Marshal.PtrToStringAnsi(m);
+
+                            if (machine.StartsWith("arm64", StringComparison.OrdinalIgnoreCase) ||
+                                machine.StartsWith("aarch64", StringComparison.OrdinalIgnoreCase))
+                                _isARM64 = true;
+                        }
                     }
                     catch
                     {
@@ -84,13 +138,21 @@ namespace MonoGame.Framework.Utilities
         {
             get
             {
-                if (CurrentPlatform.OS == OS.Windows && Environment.Is64BitProcess)
-                    return "win-x64";
-                else if (CurrentPlatform.OS == OS.Windows && !Environment.Is64BitProcess)
+                if (CurrentPlatform.OS == OS.Windows)
+                {
+                    if (CurrentPlatform.IsARM64)
+                        return "win-arm64";
+                    if (Environment.Is64BitProcess)
+                        return "win-x64";
                     return "win-x86";
-                else if (CurrentPlatform.OS == OS.Linux)
+                }
+                if (CurrentPlatform.OS == OS.Linux)
+                {
+                    if (CurrentPlatform.IsARM64)
+                        return "linux-arm64";
                     return "linux-x64";
-                else if (CurrentPlatform.OS == OS.MacOSX)
+                }
+                if (CurrentPlatform.OS == OS.MacOSX)
                     return "osx";
                 else
                     return "unknown";
