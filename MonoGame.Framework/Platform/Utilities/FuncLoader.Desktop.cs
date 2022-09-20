@@ -6,7 +6,7 @@ namespace MonoGame.Framework.Utilities
 {
     internal class FuncLoader
     {
-        private class Windows
+        internal static class Windows
         {
             [DllImport("kernel32", CharSet = CharSet.Ansi, ExactSpelling = true, SetLastError = true)]
             public static extern IntPtr GetProcAddress(IntPtr hModule, string procName);
@@ -15,7 +15,7 @@ namespace MonoGame.Framework.Utilities
             public static extern IntPtr LoadLibraryW(string lpszLib);
         }
 
-        private class Linux
+        private static class Linux
         {
             [DllImport("libdl.so.2")]
             public static extern IntPtr dlopen(string path, int flags);
@@ -51,10 +51,17 @@ namespace MonoGame.Framework.Utilities
             }
             else
             {
-                if (Environment.Is64BitProcess)
-                    ret = LoadLibrary(Path.Combine(assemblyLocation, "x64", libname));
+                if (CurrentPlatform.IsARM64)
+                {
+                    ret = LoadLibrary(Path.Combine(assemblyLocation, "ARM64", libname));
+                }
                 else
-                    ret = LoadLibrary(Path.Combine(assemblyLocation, "x86", libname));
+                {
+                    if (Environment.Is64BitProcess)
+                        ret = LoadLibrary(Path.Combine(assemblyLocation, "x64", libname));
+                    else
+                        ret = LoadLibrary(Path.Combine(assemblyLocation, "x86", libname));
+                }
             }
 
             // Try .NET Core development locations
@@ -111,7 +118,7 @@ namespace MonoGame.Framework.Utilities
                 return default(T);
             }
 
-#if NETSTANDARD
+#if NETSTANDARD && !NETFRAMEWORK
             return Marshal.GetDelegateForFunctionPointer<T>(ret);
 #else
             return (T)(object)Marshal.GetDelegateForFunctionPointer(ret, typeof(T));

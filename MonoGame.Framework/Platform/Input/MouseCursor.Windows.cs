@@ -40,6 +40,18 @@ namespace Microsoft.Xna.Framework.Input
             Hand = new MouseCursor(Cursors.Hand);
         }
 
+        private static MouseCursor PlatformFromBitmap(Bitmap bitmap, int originx, int originy)
+        {
+            IconInfo iconInfo = new IconInfo();
+            GetIconInfo(bitmap.GetHicon(), ref iconInfo);
+            iconInfo.xHotspot = originx;
+            iconInfo.yHotspot = originy;
+            iconInfo.fIcon = false;
+            Cursor cursor = new Cursor(CreateIconIndirect(ref iconInfo));
+            return new MouseCursor(cursor, needsDisposing: true);
+        }
+
+
         private static MouseCursor PlatformFromTexture2D(Texture2D texture, int originx, int originy)
         {
             var w = texture.Width;

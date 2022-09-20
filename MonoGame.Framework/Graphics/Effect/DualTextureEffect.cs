@@ -27,6 +27,7 @@ namespace Microsoft.Xna.Framework.Graphics
         EffectParameter fogColorParam;
         EffectParameter fogVectorParam;
         EffectParameter worldViewProjParam;
+        EffectParameter worldParam;
 
         #endregion
 
@@ -39,7 +40,7 @@ namespace Microsoft.Xna.Framework.Graphics
         Matrix view = Matrix.Identity;
         Matrix projection = Matrix.Identity;
 
-        Matrix worldView;
+        Matrix _cachedViewProjection = Matrix.Identity;
 
         Vector3 diffuseColor = Vector3.One;
 
@@ -81,6 +82,8 @@ namespace Microsoft.Xna.Framework.Graphics
             {
                 view = value;
                 dirtyFlags |= EffectDirtyFlags.WorldViewProj | EffectDirtyFlags.Fog;
+
+                Matrix.Multiply(ref view, ref projection, out _cachedViewProjection);
             }
         }
 
@@ -96,6 +99,8 @@ namespace Microsoft.Xna.Framework.Graphics
             {
                 projection = value;
                 dirtyFlags |= EffectDirtyFlags.WorldViewProj;
+
+                Matrix.Multiply(ref view, ref projection, out _cachedViewProjection);
             }
         }
 
@@ -285,6 +290,7 @@ namespace Microsoft.Xna.Framework.Graphics
             fogColorParam       = Parameters["FogColor"];
             fogVectorParam      = Parameters["FogVector"];
             worldViewProjParam  = Parameters["WorldViewProj"];
+            worldParam          = Parameters["World"];
         }
 
 
@@ -293,9 +299,29 @@ namespace Microsoft.Xna.Framework.Graphics
         /// </summary>
         protected internal override void OnApply()
         {
-            // Recompute the world+view+projection matrix or fog vector?
-            dirtyFlags = EffectHelpers.SetWorldViewProjAndFog(dirtyFlags, ref world, ref view, ref projection, ref worldView, fogEnabled, fogStart, fogEnd, worldViewProjParam, fogVectorParam);
+            // Pass View (which should be already multiplied by projection)
+            if ((dirtyFlags & EffectDirtyFlags.WorldViewProj) != 0)
+            {
+                worldViewProjParam.SetValue(_cachedViewProjection);
 
+                dirtyFlags &= ~EffectDirtyFlags.WorldViewProj;
+            }
+
+            // Pass world transform
+            if ((dirtyFlags & EffectDirtyFlags.World) != 0)
+            {
+                worldParam.SetValue(world);
+
+                dirtyFlags &= ~EffectDirtyFlags.World;
+            }
+
+            // Recompute Fog vector?
+            if ((dirtyFlags & (EffectDirtyFlags.Fog | EffectDirtyFlags.FogEnable)) != 0)
+            {
+                EffectHelpers.SetFogVector(ref _cachedViewProjection, fogEnabled, fogStart, fogEnd, fogVectorParam);
+
+                dirtyFlags &= ~(EffectDirtyFlags.Fog | EffectDirtyFlags.FogEnable);
+            }
             // Recompute the diffuse/alpha material color parameter?
             if ((dirtyFlags & EffectDirtyFlags.MaterialColor) != 0)
             {

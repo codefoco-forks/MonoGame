@@ -18,6 +18,8 @@ BEGIN_CONSTANTS
     float3 FogColor         _ps(c0) _cb(c1);
     float4 FogVector        _vs(c5) _cb(c2);
 
+    float4x4 World          _vs(c9) _cb(c4);
+
 MATRIX_CONSTANTS
 
     float4x4 WorldViewProj  _vs(c1) _cb(c0);
