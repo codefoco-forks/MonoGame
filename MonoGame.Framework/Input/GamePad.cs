@@ -104,7 +104,22 @@ namespace Microsoft.Xna.Framework.Input
             if (index < 0 || index >= PlatformGetMaxNumberOfGamePads())
                 return GamePadState.Default;
 
-            return PlatformGetState(index, leftDeadZoneMode, rightDeadZoneMode);
+            GamePadState state = PlatformGetState(index, leftDeadZoneMode, rightDeadZoneMode);
+
+            Buttons buttons = state.Buttons._buttons;
+
+            if (state.DPad.Down == ButtonState.Pressed)
+                buttons |= Buttons.DPadDown;
+            if (state.DPad.Up == ButtonState.Pressed)
+                buttons |= Buttons.DPadUp;
+            if (state.DPad.Left == ButtonState.Pressed)
+                buttons |= Buttons.DPadLeft;
+            if (state.DPad.Right == ButtonState.Pressed)
+                buttons |= Buttons.DPadRight;
+
+            state.Buttons = new GamePadButtons(buttons);
+
+            return state;
         }
 
         /// <summary>
