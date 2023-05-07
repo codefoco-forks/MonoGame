@@ -15,6 +15,8 @@ namespace Microsoft.Xna.Framework.Content.Pipeline.Graphics
 	{
         private char? defaultCharacter;
         private string fontName;
+        private string fontName2;
+        private string fontName3;
         private float size;
         private float spacing;
         private FontDescriptionStyle style;
@@ -39,10 +41,36 @@ namespace Microsoft.Xna.Framework.Content.Pipeline.Graphics
 			}
 		}
 
-		/// <summary>
-		/// Gets or sets the size, in points, of the font.
-		/// </summary>
-		public float Size
+        [ContentSerializer(Optional = true)]
+        public string FontName2
+        {
+            get
+            {
+                return fontName2;
+            }
+            set
+            {
+                fontName2 = value;
+            }
+        }
+
+        [ContentSerializer(Optional = true)]
+        public string FontName3
+        {
+            get
+            {
+                return fontName3;
+            }
+            set
+            {
+                fontName3 = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the size, in points, of the font.
+        /// </summary>
+        public float Size
 		{
 			get
 			{
