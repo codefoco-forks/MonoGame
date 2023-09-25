@@ -1,38 +1,34 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net452</TargetFrameworks>
-    <DefineConstants>OPENGL;OPENAL;XNADESIGNPROVIDED;LINUX;DESKTOPGL;SUPPORTS_EFX;NETSTANDARD;STBSHARP_INTERNAL</DefineConstants>
+    <TargetFrameworks>net46;net6.0;net8.0</TargetFrameworks>
+    <DefineConstants>OPENGL;OPENAL;XNADESIGNPROVIDED;DESKTOPGL</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Description>The MonoGame runtime supporting Windows, Linux and macOS using SDL2 and OpenGL.</Description>
     <PackageTags>monogame;.net core;core;.net standard;standard;desktopgl</PackageTags>
     <PackageId>MonoGame.Framework.DesktopGL</PackageId>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <DebugType>portable</DebugType>
+    <LangVersion>7.2</LangVersion>
   </PropertyGroup>
 
   <!-- NETFX reference assemblies let us target .NET Framework on Mac/Linux without Mono -->
   <ItemGroup>
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.0">
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="NVorbis" Version="0.10.4" />
   </ItemGroup>
   
-  <ItemGroup>
-    <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
-  </ItemGroup>
-
   <ItemGroup>
     <Compile Remove="bin\**\*" />
     <Compile Remove="obj\**\*" />
     <Compile Remove="Platform\**\*" />
     <Compile Remove="Properties\**\*" />
-    <Compile Remove="Utilities\System.Numerics.Vectors\**\*" />
   </ItemGroup>
 
   <ItemGroup>
     <None Remove="Platform\**\*" />
-    <None Remove="Utilities\System.Numerics.Vectors\**\*" />
   </ItemGroup>
 
   <ItemGroup>
@@ -44,12 +40,19 @@
     <Compile Remove="Input\KeyboardInput.cs" />
   </ItemGroup>
 
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net8.0' or '$(TargetFramework)' == 'net6.0'">
+    <Compile Include="Platform\Graphics\ImageWriter.BigGustave.cs" />
+    <Compile Include="Platform\Graphics\Texture2D.BigGustave.cs" />    
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
+    <Compile Include="Platform\Graphics\ImageWriter.System.Drawing.cs" />
+    <Compile Include="Platform\Graphics\Texture2D.System.Drawing.cs" />    
+  </ItemGroup>
   <ItemGroup>
     <Compile Include="Platform\TitleContainer.Desktop.cs" />
     <Compile Include="Platform\Audio\OggStream.cs" />
     <Compile Include="Platform\Audio\Xact\WaveBank.Default.cs" />
     <Compile Include="Platform\Graphics\OpenGL.Common.cs" />
-    <Compile Include="Platform\Graphics\Texture2D.StbSharp.cs" />    
     <Compile Include="Platform\SDL\SDL2.cs" />
     <Compile Include="Platform\SDL\SDLGamePlatform.cs" />
     <Compile Include="Platform\SDL\SDLGameWindow.cs" />
@@ -75,18 +78,35 @@
     <Compile Include="Platform\Graphics\GraphicsAdapter.Legacy.cs" />
     <Compile Include="Platform\GamePlatform.Desktop.cs" />
     <Compile Include="Platform\GraphicsDeviceManager.SDL.cs" />
-    
-    <Compile Include="..\ThirdParty\StbImageSharp\src\**\*.cs" LinkBase="Utilities\StbImageSharp" />
-    <Compile Include="..\ThirdParty\StbImageWriteSharp\src\**\*.cs" LinkBase="Utilities\StbImageWriteSharp" />
 
     <Compile Include="..\ThirdParty\NVorbis\NVorbis\**\*.cs" LinkBase="ThirdParty\NVorbis" />
     <Compile Remove="..\ThirdParty\NVorbis\NVorbis\Properties\AssemblyInfo.cs" />
   </ItemGroup>
-
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net8.0' or '$(TargetFramework)' == 'net6.0'">
+    <Compile Include="..\ThirdParty\BigGustave\src\BigGustave\Adam7.cs" />
+    <Compile Include="..\ThirdParty\BigGustave\src\BigGustave\Adler32Checksum.cs" />
+    <Compile Include="..\ThirdParty\BigGustave\src\BigGustave\ChunkHeader.cs" />
+    <Compile Include="..\ThirdParty\BigGustave\src\BigGustave\ColorType.cs" />
+    <Compile Include="..\ThirdParty\BigGustave\src\BigGustave\CompressionMethod.cs" />
+    <Compile Include="..\ThirdParty\BigGustave\src\BigGustave\Crc32.cs" />
+    <Compile Include="..\ThirdParty\BigGustave\src\BigGustave\Decoder.cs" />
+    <Compile Include="..\ThirdParty\BigGustave\src\BigGustave\FilterMethod.cs" />
+    <Compile Include="..\ThirdParty\BigGustave\src\BigGustave\FilterType.cs" />
+    <Compile Include="..\ThirdParty\BigGustave\src\BigGustave\HeaderValidationResult.cs" />
+    <Compile Include="..\ThirdParty\BigGustave\src\BigGustave\IChunkVisitor.cs" />
+    <Compile Include="..\ThirdParty\BigGustave\src\BigGustave\ImageHeader.cs" />
+    <Compile Include="..\ThirdParty\BigGustave\src\BigGustave\InterlaceMethod.cs" />
+    <Compile Include="..\ThirdParty\BigGustave\src\BigGustave\Palette.cs" />
+    <Compile Include="..\ThirdParty\BigGustave\src\BigGustave\Pixel.cs" />
+    <Compile Include="..\ThirdParty\BigGustave\src\BigGustave\Png.cs" />
+    <Compile Include="..\ThirdParty\BigGustave\src\BigGustave\PngBuilder.cs" />
+    <Compile Include="..\ThirdParty\BigGustave\src\BigGustave\PngOpener.cs" />
+    <Compile Include="..\ThirdParty\BigGustave\src\BigGustave\PngOpenerSettings.cs" />
+    <Compile Include="..\ThirdParty\BigGustave\src\BigGustave\PngStreamWriteHelper.cs" />
+    <Compile Include="..\ThirdParty\BigGustave\src\BigGustave\RawPngData.cs" />
+    <Compile Include="..\ThirdParty\BigGustave\src\BigGustave\StreamHelper.cs" />
+  </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="MonoGame.bmp">
-      <LogicalName>MonoGame.bmp</LogicalName>
-    </EmbeddedResource>
     <EmbeddedResource Include="..\ThirdParty\SDL_GameControllerDB\gamecontrollerdb.txt">
       <LogicalName>gamecontrollerdb.txt</LogicalName>
     </EmbeddedResource>
@@ -115,6 +135,28 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
 
+    <Content Include="..\ThirdParty\Dependencies\openal-soft\Windows\x86\soft_oal.dll">
+      <Link>x86\soft_oal.dll</Link>
+      <PackagePath>runtimes\win-x86\native</PackagePath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\ThirdParty\Dependencies\SDL\Windows\x86\SDL2.dll">
+      <Link>x86\SDL2.dll</Link>
+      <PackagePath>runtimes\win-x86\native</PackagePath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+
+    <Content Include="..\ThirdParty\Dependencies\openal-soft\Windows\ARM64\soft_oal.dll">
+      <Link>ARM64\soft_oal.dll</Link>
+      <PackagePath>runtimes\win-arm64\native</PackagePath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\ThirdParty\Dependencies\SDL\Windows\ARM64\SDL2.dll">
+      <Link>ARM64\SDL2.dll</Link>
+      <PackagePath>runtimes\win-arm64\native</PackagePath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+
     <Content Include="..\ThirdParty\Dependencies\openal-soft\Linux\x64\libopenal.so.1">
       <Link>x64\libopenal.so.1</Link>
       <PackagePath>runtimes\linux-x64\native</PackagePath>
@@ -123,6 +165,17 @@
     <Content Include="..\ThirdParty\Dependencies\SDL\Linux\x64\libSDL2-2.0.so.0">
       <Link>x64\libSDL2-2.0.so.0</Link>
       <PackagePath>runtimes\linux-x64\native</PackagePath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+
+    <Content Include="..\ThirdParty\Dependencies\openal-soft\Linux\ARM64\libopenal.so.1">
+      <Link>ARM64\libopenal.so.1</Link>
+      <PackagePath>runtimes\linux-arm64\native</PackagePath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\ThirdParty\Dependencies\SDL\Linux\ARM64\libSDL2-2.0.so.0">
+      <Link>ARM64\libSDL2-2.0.so.0</Link>
+      <PackagePath>runtimes\linux-arm64\native</PackagePath>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
 
@@ -139,7 +192,17 @@
 
     <Content Include="MonoGame.Framework.DesktopGL.targets" PackagePath="build" />
   </ItemGroup>
-
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\BigGustave\src\BigGustave\BigGustave.csproj" />
+  </ItemGroup>
   <Import Project="Platform\OpenGL.targets" />
+  <Import Project="Platform\OpenGL.EmbeddedShaders.targets" />
   <Import Project="Platform\OpenAL.targets" />
+  <Import Project="MonoGame.Sign.targets" />
 </Project>
