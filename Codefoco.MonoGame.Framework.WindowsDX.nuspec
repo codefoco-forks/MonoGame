@@ -1,0 +1,56 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd">
+  <metadata>
+    <id>Codefoco.MonoGame.Framework.WindowsDX</id>
+    <version>3.8.0.0</version>
+    <title>Codefoco.MonoGame.Framework.WindowsDX</title>
+    <authors>MonoGame Team</authors>
+    <owners>MonoGame Team</owners>
+    <licenseUrl>https://github.com/mono/MonoGame/blob/develop/LICENSE.txt#L2</licenseUrl>
+    <projectUrl>http://monogame.net/</projectUrl>
+    <iconUrl>https://pbs.twimg.com/profile_images/487954549441691649/O3KsHAsb_400x400.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>MonoGame is an open source implementation of the Microsoft XNA 4.x Framework. The goal is to make it easy for XNA developers to create cross-platform games with extremely high code reuse.
+
+This package provides you with MonoGame Framework that works on Windows (Direct X).</description>
+    <summary>This package is a Windows DX package of MonoGame. Created by Vinicius Jarina to make it easier to work with MonoGame as a dependency</summary>
+    <copyright>Copyright © 2009-2023 The MonoGame Team</copyright>
+    <releaseNotes>Release: ff4cb0697</releaseNotes>
+    <repository type="git" url="https://github.com/codefoco/MonoGame" commit="ff4cb06978a5757ffaf267ce7b79c2f5b859590d" />
+    <language>en-US</language>
+    <dependencies>
+      <dependency id="SharpDX" version="[4.0.1]" />
+      <dependency id="SharpDX.Direct2D1" version="[4.0.1]" />
+      <dependency id="SharpDX.Direct3D11" version="[4.0.1]" />
+      <dependency id="SharpDX.DXGI" version="[4.0.1]" />
+      <dependency id="SharpDX.XAudio2" version="[4.0.1]" />
+      <dependency id="SharpDX.MediaFoundation" version="[4.0.1]" />
+      <dependency id="SharpDX.XInput" version="[4.0.1]" />
+      <dependency id="SharpDX.Direct3D9" version="[4.0.1]" />
+    </dependencies>
+  </metadata>
+  <files>
+    <!-- .NET 8-->
+    <file src="MonoGame.Framework\MonoGame.Framework.WindowsDX.targets" target="build\net8.0-windows7.0\Codefoco.MonoGame.Framework.WindowsDX.targets" />
+    <file src="MonoGame.Framework\MonoGame.Framework.WindowsDX.targets" target="build\net6.0-windows7.0\Codefoco.MonoGame.Framework.WindowsDX.targets" />
+    <!-- C# Assemblies -->
+
+    <file src="Artifacts\MonoGame.Framework\WindowsDX\Release\net8.0-windows\MonoGame.Framework.dll" target="lib\net8.0-windows7.0\MonoGame.Framework.dll" />
+    <file src="Artifacts\MonoGame.Framework\WindowsDX\Release\net8.0-windows\MonoGame.Framework.xml" target="lib\net8.0-windows7.0\MonoGame.Framework.xml" />
+
+    <file src="Artifacts\MonoGame.Framework\WindowsDX\Release\net6.0-windows\MonoGame.Framework.dll" target="lib\net6.0-windows7.0\MonoGame.Framework.dll" />
+    <file src="Artifacts\MonoGame.Framework\WindowsDX\Release\net6.0-windows\MonoGame.Framework.xml" target="lib\net6.0-windows7.0\MonoGame.Framework.xml" />
+
+    <!-- .NET 4.5 -->
+    <file src="MonoGame.Framework\MonoGame.Framework.WindowsDX.targets" target="build\net46\Codefoco.MonoGame.Framework.WindowsDX.targets" />
+    <!-- C# Assemblies -->
+    <file src="Artifacts\MonoGame.Framework\WindowsDX\Release\net46\MonoGame.Framework.dll" target="lib\net46\MonoGame.Framework.dll" />
+    <file src="Artifacts\MonoGame.Framework\WindowsDX\Release\net46\MonoGame.Framework.xml" target="lib\net46\MonoGame.Framework.xml" />
+    <!-- UWP -->
+    <file src="MonoGame.Framework\MonoGame.Framework.WindowsUniversal.targets" target="build\uap10.0\Codefoco.MonoGame.Framework.WindowsDX.targets" />
+    <!-- C# Assemblies -->
+    <file src="Artifacts\MonoGame.Framework\WindowsUniversal\Release\uap10.0\MonoGame.Framework.dll" target="lib\uap10.0\MonoGame.Framework.dll" />
+    <file src="Artifacts\MonoGame.Framework\WindowsUniversal\Release\uap10.0\MonoGame.Framework.xml" target="lib\uap10.0\MonoGame.Framework.xml" />
+    <file src="Artifacts\MonoGame.Framework\WindowsUniversal\Release\uap10.0\MonoGame.Framework.pri" target="lib\uap10.0\MonoGame.Framework.pri" />
+  </files>
+</package>

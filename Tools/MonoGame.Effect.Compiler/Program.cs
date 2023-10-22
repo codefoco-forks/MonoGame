@@ -9,6 +9,8 @@ namespace MonoGame.Effect.Compiler
 {
     public static class Program
     {
+        public static bool UseGLES = false;
+
         public static int Main(string[] args)
         {
             if (!Environment.Is64BitProcess && Environment.OSVersion.Platform != PlatformID.Unix)
@@ -20,7 +22,15 @@ namespace MonoGame.Effect.Compiler
             var options = new Options();
             var parser = new CommandLineParser(options);
             parser.Title = "mgfxc - The MonoGame Effect compiler.";
-
+            for(int i = 0; i < args.Length; i++)
+            {
+                string arg = args[i];
+                if (arg == "/Profile:OpenGLES")
+                {
+                    args[i] = "/Profile:OpenGL";
+                    UseGLES = true;
+                }
+            }
             if (!parser.ParseCommandLine(args))
                 return 1;
             

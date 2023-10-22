@@ -31,9 +31,10 @@ namespace Microsoft.Xna.Framework.Graphics
             get 
             {
                 // TODO: Add a name to pass lookup table.
-				foreach (var pass in _passes) 
+                for (int i = 0; i < _passes.Length; i++) 
                 {
-					if (pass.Name == name)
+                    EffectPass pass = _passes[i];
+                    if (pass.Name == name)
 						return pass;
 				}
 				return null;
