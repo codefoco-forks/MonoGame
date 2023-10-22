@@ -130,11 +130,11 @@ namespace Microsoft.Xna.Framework.Graphics
                      */
                     // Triangle 1
                     *(indexPtr + 0) = (short)(i * 4);
-                    *(indexPtr + 1) = (short)(i * 4 + 1);
-                    *(indexPtr + 2) = (short)(i * 4 + 2);
+                    *(indexPtr + 2) = (short)(i * 4 + 1);
+                    *(indexPtr + 1) = (short)(i * 4 + 2);
                     // Triangle 2
-                    *(indexPtr + 3) = (short)(i * 4 + 1);
-                    *(indexPtr + 4) = (short)(i * 4 + 3);
+                    *(indexPtr + 4) = (short)(i * 4 + 1);
+                    *(indexPtr + 3) = (short)(i * 4 + 3);
                     *(indexPtr + 5) = (short)(i * 4 + 2);
                 }
             }
@@ -244,14 +244,16 @@ namespace Microsoft.Xna.Framework.Graphics
             if (start == end)
                 return;
 
-            var vertexCount = end - start;
+            int vertexCount = end - start;
 
             // If the effect is not null, then apply each pass and render the geometry
             if (effect != null)
             {
-                var passes = effect.CurrentTechnique.Passes;
-                foreach (var pass in passes)
+                EffectPassCollection passes = effect.CurrentTechnique.Passes;
+                int count = passes.Count;
+                for (int i = 0; i < count; i++)
                 {
+                    EffectPass pass = passes[i];
                     pass.Apply();
 
                     // Whatever happens in pass.Apply, make sure the texture being drawn
