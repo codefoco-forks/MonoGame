@@ -87,6 +87,16 @@ VSOutput VSBasicVc(VSInputVc vin)
     return vout;
 }
 
+// Vertex shader: vertex + alpha.
+VSOutputPositionColorAlpha VSBasicVertexAlpha(VSInputVc vin)
+{
+    VSOutputPositionColorAlpha pca;
+    vin.Position = mul(vin.Position, World);
+    pca.PositionPS = mul(vin.Position, WorldViewProj);
+    pca.Diffuse   = DiffuseColor;
+    pca.Alpha     = vin.Color.a;
+    return pca;
+}
 
 // Vertex shader: vertex color, no fog.
 VSOutputNoFog VSBasicVcNoFog(VSInputVc vin)
@@ -347,6 +357,33 @@ float4 PSBasicNoFog(VSOutputNoFog pin) : SV_Target0
     return pin.Diffuse;
 }
 
+// Pixel shader: Smooth edge
+// This is a shader used to create a pseudo antialias primitives
+// ideally we should calculate the Normal for each vertex
+// and do something similar to this https://blog.mapbox.com/drawing-antialiased-lines-with-opengl-8766f34192dc
+// but for lack of time I will do a good-enough aproximation
+// and doing a smooth only using a factor on the edge
+// Also, noticed we are using SpecularPower to avoid adding a new EffectParameter
+
+float4 PSBasicSmoothEdge(VSOutputPositionColorAlpha pca) : SV_Target0
+{
+    float alpha = 1.0 - smoothstep(SpecularPower, 1.0, pca.Alpha);
+    return pca.Diffuse * alpha;
+}
+
+// Pixel shader: Smooth  (simetric both edges)
+float4 PSBasicSmoothBothEdges(VSOutputPositionColorAlpha pca) : SV_Target0
+{
+    float x = pca.Alpha;
+    float alpha;
+
+    if (x < 0.5)
+        alpha = smoothstep(0.0, 1.0 - SpecularPower, x);
+    else
+        alpha = 1.0 - smoothstep(SpecularPower, 1.0, x);
+    
+    return pca.Diffuse * alpha;
+}
 
 // Pixel shader: texture.
 float4 PSBasicTx(VSOutputTx pin) : SV_Target0
@@ -488,3 +525,6 @@ TECHNIQUE( BasicEffect_PixelLighting_Texture,					VSBasicPixelLightingTx,		PSBas
 TECHNIQUE( BasicEffect_PixelLighting_Texture_NoFog,				VSBasicPixelLightingTx,		PSBasicPixelLightingTx );
 TECHNIQUE( BasicEffect_PixelLighting_Texture_VertexColor,		VSBasicPixelLightingTxVc,	PSBasicPixelLightingTx );
 TECHNIQUE( BasicEffect_PixelLighting_Texture_VertexColor_NoFog,	VSBasicPixelLightingTxVc,	PSBasicPixelLightingTx );
+
+TECHNIQUE( BasicEffect_VertexSmoothEdge,	VSBasicVertexAlpha, PSBasicSmoothEdge);
+TECHNIQUE( BasicEffect_VertexSmoothBothEdges,	VSBasicVertexAlpha, PSBasicSmoothBothEdges);

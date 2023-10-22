@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.IO;
 using System.Threading;
 using NVorbis;
 using MonoGame.OpenAL;
@@ -27,6 +28,7 @@ namespace Microsoft.Xna.Framework.Audio
         internal readonly int[] alBufferIds;
 
         readonly string oggFileName;
+        readonly Stream oggStream;
 
         internal VorbisReader Reader { get; private set; }
         internal bool Ready { get; private set; }
@@ -36,8 +38,19 @@ namespace Microsoft.Xna.Framework.Audio
         public int BufferCount { get; private set; }
 
         public OggStream(string filename, Action finishedAction = null, int bufferCount = DefaultBufferCount)
+            : this(finishedAction, bufferCount)
         {
             oggFileName = filename;
+        }
+
+        public OggStream(Stream stream, Action finishedAction = null, int bufferCount = DefaultBufferCount)
+            : this(finishedAction, bufferCount)
+        {
+            oggStream = stream;
+        }
+
+        public OggStream(Action finishedAction = null, int bufferCount = DefaultBufferCount)
+        {
             FinishedAction = finishedAction;
             BufferCount = bufferCount;
 
@@ -159,7 +172,7 @@ namespace Microsoft.Xna.Framework.Audio
 
         public void SeekToPosition(TimeSpan pos)
         {
-            Reader.TimePosition = pos;
+            Reader.DecodedTime = pos;
             AL.SourceStop(alSourceId);
             ALHelper.CheckError("Failed to stop source.");
         }
@@ -169,7 +182,7 @@ namespace Microsoft.Xna.Framework.Audio
             if (Reader == null)
                 return TimeSpan.Zero;
 
-            return Reader.TimePosition;
+            return Reader.DecodedTime;
         }
 
         public TimeSpan GetLength()
@@ -256,7 +269,10 @@ namespace Microsoft.Xna.Framework.Audio
 
         internal void Open(bool precache = false)
         {
-            Reader = new VorbisReader(oggFileName);
+            if (oggStream != null)
+                Reader = new VorbisReader(oggStream, closeStreamOnDispose: false);
+            else
+                Reader = new VorbisReader(oggFileName);
 
             if (precache)
             {
