@@ -12,7 +12,7 @@ using CoreGraphics;
 #if !NET
 using nfloat = System.nfloat;
 #else
-using nfloat = ObjCRuntime.nfloat;
+using nfloat = global::System.Runtime.InteropServices.NFloat;
 #endif
 
 namespace Microsoft.Xna.Framework

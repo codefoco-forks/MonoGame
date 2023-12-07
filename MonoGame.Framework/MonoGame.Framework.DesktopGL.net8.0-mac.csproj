@@ -12,11 +12,19 @@ This package provides you with MonoGame Framework that uses OpenGL for rendering
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <DebugType>portable</DebugType>
     <LangVersion>9.0</LangVersion>
-    <ImplicitUsings>false</ImplicitUsings>
     <NoNFloatUsing>true</NoNFloatUsing>
+    <ImplicitUsings>false</ImplicitUsings>
   </PropertyGroup>
 
   <!-- NETFX reference assemblies let us target .NET Framework on Mac/Linux without Mono -->
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <CreatePackage>false</CreatePackage>
+    <UseSGen>false</UseSGen>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <CreatePackage>false</CreatePackage>
+    <UseSGen>false</UseSGen>
+  </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
