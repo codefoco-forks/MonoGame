@@ -91,7 +91,6 @@ namespace Microsoft.Xna.Framework
                 }
                 else if (_game.GraphicsDevice != null)
                 {
-                    _game.GraphicsDevice.Clear(Color.Black);
                     if (GameView.IsResuming && Resumer != null)
                     {
                         Resumer.Draw();
@@ -182,6 +181,15 @@ namespace Microsoft.Xna.Framework
             {
                 return _clientBounds;
             }
+        }
+
+        public override bool GetDeviceDPI(out float dpi)
+        {
+            float scale = Game.Activity.Resources.DisplayMetrics.Density;
+
+            dpi = DEFAULT_DPI * scale;
+
+            return true;
         }
 
         internal void ChangeClientBounds(Rectangle bounds)
