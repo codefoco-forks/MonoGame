@@ -15,7 +15,7 @@ namespace Microsoft.Xna.Framework
 #if XNADESIGNPROVIDED
     [System.ComponentModel.TypeConverter(typeof(Microsoft.Xna.Framework.Design.Vector3TypeConverter))]
 #endif
-    [DataContract]
+    //[DataContract]
     [DebuggerDisplay("{DebugDisplayString,nq}")]
     public struct Vector3 : IEquatable<Vector3>
     {
@@ -40,19 +40,19 @@ namespace Microsoft.Xna.Framework
         /// <summary>
         /// The x coordinate of this <see cref="Vector3"/>.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public float X;
 
         /// <summary>
         /// The y coordinate of this <see cref="Vector3"/>.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public float Y;
 
         /// <summary>
         /// The z coordinate of this <see cref="Vector3"/>.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public float Z;
 
         #endregion
@@ -1335,26 +1335,9 @@ namespace Microsoft.Xna.Framework
             z = Z;
         }
 
-        /// <summary>
-        /// Returns a <see cref="System.Numerics.Vector3"/>.
-        /// </summary>
-        public System.Numerics.Vector3 ToNumerics()
-        {
-            return new System.Numerics.Vector3(this.X, this.Y, this.Z);
-        }
-
         #endregion
 
         #region Operators
-
-        /// <summary>
-        /// Converts a <see cref="System.Numerics.Vector3"/> to a <see cref="Vector3"/>.
-        /// </summary>
-        /// <param name="value">The converted value.</param>
-        public static implicit operator Vector3(System.Numerics.Vector3 value)
-        {
-            return new Vector3(value.X, value.Y, value.Z);
-        }
 
         /// <summary>
         /// Compares whether two <see cref="Vector3"/> instances are equal.

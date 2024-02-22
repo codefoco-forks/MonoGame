@@ -1,0 +1,103 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd">
+  <metadata>
+    <id>Codefoco.MonoGame.Framework</id>
+    <version>3.8.0</version>
+    <title>Codefoco.MonoGame.Framework</title>
+    <authors>MonoGame Team</authors>
+    <owners>MonoGame Team</owners>
+    <licenseUrl>https://github.com/mono/MonoGame/blob/develop/LICENSE.txt#L2</licenseUrl>
+    <projectUrl>http://monogame.net/</projectUrl>
+    <iconUrl>https://pbs.twimg.com/profile_images/487954549441691649/O3KsHAsb_400x400.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>MonoGame is an open source implementation of the Microsoft XNA 4.x Framework. The goal is to make it easy for XNA developers to create cross-platform games with extremely high code reuse.
+
+This package provides you with MonoGame Framework that works on several different platforms.</description>
+    <summary>This package is a multi-target package of MonoGame. Created by Vinicius Jarina to make it easier to work with MonoGame as a dependency</summary>
+    <copyright>Copyright © 2009-2024 The MonoGame Team</copyright>
+    <language>en-US</language>
+    <repository type="git" url="https://github.com/codefoco/MonoGame" commit="7752cb644d35c18a627fc78d106e36ca9a85b3ad" />
+    <releaseNotes>Release: 7752cb644</releaseNotes>
+  </metadata>
+  <files>
+    <!-- Android -->
+    <file src="MonoGame.Framework\MonoGame.Framework.Android.targets" target="build\MonoAndroid\Codefoco.MonoGame.Framework.targets" />
+    <file src="MonoGame.Framework\MonoGame.Framework.Android.targets" target="build\net8.0-android28\Codefoco.MonoGame.Framework.targets" />
+    <!-- C# Assemblies -->
+    <file src="Artifacts\MonoGame.Framework\Android\Release\MonoGame.Framework.dll" target="lib\MonoAndroid\MonoGame.Framework.dll" />
+    <file src="Artifacts\MonoGame.Framework\Android\Release\MonoGame.Framework.pdb" target="lib\MonoAndroid\MonoGame.Framework.pdb" />
+    <file src="Artifacts\MonoGame.Framework\Android\Release\MonoGame.Framework.xml" target="lib\MonoAndroid\MonoGame.Framework.xml" />
+
+    <file src="Artifacts\MonoGame.Framework\net8.0-android\Release\net8.0-android\MonoGame.Framework.dll" target="lib\net8.0-android28\MonoGame.Framework.dll" />
+    <file src="Artifacts\MonoGame.Framework\net8.0-android\Release\net8.0-android\MonoGame.Framework.pdb" target="lib\net8.0-android28\MonoGame.Framework.pdb" />
+    <file src="Artifacts\MonoGame.Framework\net8.0-android\Release\net8.0-android\MonoGame.Framework.xml" target="lib\net8.0-android28\MonoGame.Framework.xml" />
+
+    <file src="Artifacts\MonoGame.Framework\net8.0-ios\Release\MonoGame.Framework.dll" target="lib\net8.0-ios11.0\MonoGame.Framework.dll" />
+    <file src="Artifacts\MonoGame.Framework\net8.0-ios\Release\MonoGame.Framework.pdb" target="lib\net8.0-ios11.0\MonoGame.Framework.pdb" />
+    <file src="Artifacts\MonoGame.Framework\net8.0-ios\Release\MonoGame.Framework.xml" target="lib\net8.0-ios11.0\MonoGame.Framework.xml" />
+
+    <!-- .NET 8 -->
+    <file src="MonoGame.Framework\MonoGame.Framework.DesktopGL.targets" target="build\net8.0\Codefoco.MonoGame.Framework.targets" />
+    <file src="MonoGame.Framework\MonoGame.Framework.DesktopGL.targets" target="build\net6.0\Codefoco.MonoGame.Framework.targets" />
+
+    <!-- C# Assemblies -->
+    <file src="Artifacts\MonoGame.Framework\DesktopGL\Release\net8.0\MonoGame.Framework.dll" target="lib\net8.0\MonoGame.Framework.dll" />
+    <file src="Artifacts\MonoGame.Framework\DesktopGL\Release\net8.0\MonoGame.Framework.pdb" target="lib\net8.0\MonoGame.Framework.pdb" />
+    <file src="Artifacts\MonoGame.Framework\DesktopGL\Release\net8.0\MonoGame.Framework.xml" target="lib\net8.0\MonoGame.Framework.xml" />
+
+    <file src="Artifacts\MonoGame.Framework\DesktopGL\Release\net6.0\MonoGame.Framework.dll" target="lib\net6.0\MonoGame.Framework.dll" />
+    <file src="Artifacts\MonoGame.Framework\DesktopGL\Release\net6.0\MonoGame.Framework.pdb" target="lib\net6.0\MonoGame.Framework.pdb" />
+    <file src="Artifacts\MonoGame.Framework\DesktopGL\Release\net6.0\MonoGame.Framework.xml" target="lib\net6.0\MonoGame.Framework.xml" />
+
+    <!-- .NET 4.6 -->
+    <file src="MonoGame.Framework\MonoGame.Framework.DesktopGL.targets" target="build\net46\Codefoco.MonoGame.Framework.targets" />
+    <!-- C# Assemblies -->
+    <file src="Artifacts\MonoGame.Framework\DesktopGL\Release\net46\MonoGame.Framework.dll" target="lib\net46\MonoGame.Framework.dll" />
+    <file src="Artifacts\MonoGame.Framework\DesktopGL\Release\net46\MonoGame.Framework.pdb" target="lib\net46\MonoGame.Framework.pdb" />
+    <file src="Artifacts\MonoGame.Framework\DesktopGL\Release\net46\MonoGame.Framework.xml" target="lib\net46\MonoGame.Framework.xml" />
+    <!-- MacOS -->
+    <file src="MonoGame.Framework\MonoGame.Framework.DesktopGL.Mac.targets" target="build\xamarinmac20\Codefoco.MonoGame.Framework.targets" />
+    <file src="Artifacts\MonoGame.Framework\DesktopGL.Mac\Release\MonoGame.Framework.dll" target="lib\xamarinmac20\MonoGame.Framework.dll" />
+    <file src="Artifacts\MonoGame.Framework\DesktopGL.Mac\Release\MonoGame.Framework.pdb" target="lib\xamarinmac20\MonoGame.Framework.pdb" />
+    <file src="Artifacts\MonoGame.Framework\DesktopGL.Mac\Release\MonoGame.Framework.xml" target="lib\xamarinmac20\MonoGame.Framework.xml" />
+    
+    <file src="Artifacts\MonoGame.Framework\DesktopGL.net8.0-mac\Release\net8.0-macos\MonoGame.Framework.dll" target="lib\net8.0-macos10.13\MonoGame.Framework.dll" />
+    <file src="Artifacts\MonoGame.Framework\DesktopGL.net8.0-mac\Release\net8.0-macos\MonoGame.Framework.pdb" target="lib\net8.0-macos10.13\MonoGame.Framework.pdb" />
+    <file src="Artifacts\MonoGame.Framework\DesktopGL.net8.0-mac\Release\net8.0-macos\MonoGame.Framework.xml" target="lib\net8.0-macos10.13\MonoGame.Framework.xml" />
+    
+    <!-- .NET Standard -->
+    <!-- <file src="MonoGame.Framework\MonoGame.Framework.DesktopGL.targets" target="build\netstandard2.0\Codefoco.MonoGame.Framework.targets" /> -->
+    <!-- C# Assemblies -->
+    <!-- <file src="Artifacts\MonoGame.Framework\DesktopGL\Release\netstandard2.0\MonoGame.Framework.dll" target="lib\netstandard2.0\MonoGame.Framework.dll" />
+    <file src="Artifacts\MonoGame.Framework\DesktopGL\Release\netstandard2.0\MonoGame.Framework.pdb" target="lib\netstandard2.0\MonoGame.Framework.pdb" />
+    <file src="Artifacts\MonoGame.Framework\DesktopGL\Release\netstandard2.0\MonoGame.Framework.xml" target="lib\netstandard2.0\MonoGame.Framework.xml" /> -->
+    <!-- iOS -->
+    <file src="MonoGame.Framework\MonoGame.Framework.iOS.targets" target="build\xamarinios\Codefoco.MonoGame.Framework.targets" />
+    <file src="MonoGame.Framework\MonoGame.Framework.iOS.targets" target="build\net8.0-ios11.0\Codefoco.MonoGame.Framework.targets" />
+    
+    <file src="Artifacts\MonoGame.Framework\iOS\Release\MonoGame.Framework.dll" target="lib\xamarinios\MonoGame.Framework.dll" />
+    <file src="Artifacts\MonoGame.Framework\iOS\Release\MonoGame.Framework.pdb" target="lib\xamarinios\MonoGame.Framework.pdb" />
+    <file src="Artifacts\MonoGame.Framework\iOS\Release\MonoGame.Framework.xml" target="lib\xamarinios\MonoGame.Framework.xml" />
+    
+    <!-- tvOS -->
+    <file src="MonoGame.Framework\MonoGame.Framework.iOS.targets" target="build\xamarintvos\Codefoco.MonoGame.Framework.targets" />
+
+    <file src="Artifacts\MonoGame.Framework\tvOS\Release\MonoGame.Framework.dll" target="lib\xamarintvos\MonoGame.Framework.dll" />
+    <file src="Artifacts\MonoGame.Framework\tvOS\Release\MonoGame.Framework.pdb" target="lib\xamarintvos\MonoGame.Framework.pdb" />
+    <file src="Artifacts\MonoGame.Framework\tvOS\Release\MonoGame.Framework.xml" target="lib\xamarintvos\MonoGame.Framework.xml" />
+
+    <!-- Native Dependencies -->
+    <file src="Artifacts\MonoGame.Framework\DesktopGL\Release\net46\x64\SDL2.dll" target="runtimes\win-x64\native\SDL2.dll" />
+    <file src="Artifacts\MonoGame.Framework\DesktopGL\Release\net46\x64\soft_oal.dll" target="runtimes\win-x64\native\soft_oal.dll" />
+    <file src="Artifacts\MonoGame.Framework\DesktopGL\Release\net46\x86\SDL2.dll" target="runtimes\win-x86\native\SDL2.dll" />
+    <file src="Artifacts\MonoGame.Framework\DesktopGL\Release\net46\x86\soft_oal.dll" target="runtimes\win-x86\native\soft_oal.dll" />
+    <file src="Artifacts\MonoGame.Framework\DesktopGL\Release\net46\ARM64\SDL2.dll" target="runtimes\win-arm64\native\SDL2.dll" />
+    <file src="Artifacts\MonoGame.Framework\DesktopGL\Release\net46\ARM64\soft_oal.dll" target="runtimes\win-arm64\native\soft_oal.dll" />
+    <file src="Artifacts\MonoGame.Framework\DesktopGL\Release\net46\libopenal.1.dylib" target="runtimes\osx\native\libopenal.1.dylib" />
+    <file src="Artifacts\MonoGame.Framework\DesktopGL\Release\net46\libSDL2.dylib" target="runtimes\osx\native\libSDL2.dylib" />
+    <file src="Artifacts\MonoGame.Framework\DesktopGL\Release\net46\x64\libopenal.so.1" target="runtimes\linux-x64\native\libopenal.so.1" />
+    <file src="Artifacts\MonoGame.Framework\DesktopGL\Release\net46\x64\libSDL2-2.0.so.0" target="runtimes\linux-x64\native\libSDL2-2.0.so.0" />
+    <file src="Artifacts\MonoGame.Framework\DesktopGL\Release\net46\ARM64\libopenal.so.1" target="runtimes\linux-arm64\native\libopenal.so.1" />
+    <file src="Artifacts\MonoGame.Framework\DesktopGL\Release\net46\ARM64\libSDL2-2.0.so.0" target="runtimes\linux-arm64\native\libSDL2-2.0.so.0" />
+  </files>
+</package>
