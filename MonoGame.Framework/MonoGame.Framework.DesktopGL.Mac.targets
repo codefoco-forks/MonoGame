@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <!-- if ShouldIncludeNative == False then don't include the native library -->
+    <PropertyGroup>
+        <MonoGamePlatform>DesktopGL</MonoGamePlatform>
+        <ShouldIncludeNative Condition=" '$(ShouldIncludeNative)' == '' ">True</ShouldIncludeNative>
+    </PropertyGroup>
+    <!-- get the  paths -->
+    <PropertyGroup>
+        <OSXNativePath_OpenAL>$(MSBuildThisFileDirectory)..\..\runtimes\osx\native\libopenal.1.dylib</OSXNativePath_OpenAL>
+        <OSXNativePath_libSDL>$(MSBuildThisFileDirectory)..\..\runtimes\osx\native\libSDL2.dylib</OSXNativePath_libSDL>
+    </PropertyGroup>
+
+    <ItemGroup Condition=" '$(ShouldIncludeNative)' != 'False' ">
+        <!-- Mac -->
+        <None Include="$(OSXNativePath_OpenAL)" >
+            <Link>libopenal.1.dylib</Link>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Include="$(OSXNativePath_libSDL)" >
+            <Link>libSDL2.dylib</Link>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+</Project>
