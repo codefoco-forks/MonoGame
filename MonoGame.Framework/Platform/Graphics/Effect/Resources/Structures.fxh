@@ -101,6 +101,13 @@ struct VSOutputNoFog
     float4 Diffuse    : COLOR0;
 };
 
+struct VSOutputPositionColorAlpha
+{
+    float4 PositionPS : SV_Position;
+    float4 Diffuse  : COLOR0;
+    float  Alpha    : COLOR1;
+};
+
 struct VSOutputTx
 {
     float4 PositionPS : SV_Position;
