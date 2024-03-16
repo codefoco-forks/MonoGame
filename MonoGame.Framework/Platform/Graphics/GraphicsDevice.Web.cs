@@ -53,6 +53,13 @@ namespace Microsoft.Xna.Framework.Graphics
         {
         }
 
+        internal void PlatformGetDefaultRenderTargetSize(out int renderTargetWidth, out int renderTargetHeight, out int yoffset)
+        {
+            renderTargetWidth = PresentationParameters.BackBufferWidth;
+            renderTargetHeight = PresentationParameters.BackBufferHeight;
+            yoffset = 0;
+        }
+
         internal void PlatformResolveRenderTargets()
         {
             // Resolving MSAA render targets should be done here.

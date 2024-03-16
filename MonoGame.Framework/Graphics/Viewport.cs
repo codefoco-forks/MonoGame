@@ -10,7 +10,7 @@ namespace Microsoft.Xna.Framework.Graphics
     /// <summary>
     /// Describes the view bounds for render-target surface.
     /// </summary>
-    [DataContract]
+    //[DataContract]
     public struct Viewport
     {
 		private int x;
@@ -20,12 +20,22 @@ namespace Microsoft.Xna.Framework.Graphics
 		private float minDepth;
 		private float maxDepth;
 
+        private static Viewport emptyViewport = new Viewport();
+
+        public static Viewport Empty
+        {
+            get
+            {
+                return emptyViewport;
+            }
+        }
+
         #region Properties
 
         /// <summary>
         /// The height of the bounds in pixels.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public int Height
         {
 			get {
@@ -39,7 +49,7 @@ namespace Microsoft.Xna.Framework.Graphics
         /// <summary>
         /// The upper limit of depth of this viewport.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public float MaxDepth
         {
 			get {
@@ -53,7 +63,7 @@ namespace Microsoft.Xna.Framework.Graphics
         /// <summary>
         /// The lower limit of depth of this viewport.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public float MinDepth
         {
 			get {
@@ -67,7 +77,7 @@ namespace Microsoft.Xna.Framework.Graphics
         /// <summary>
         /// The width of the bounds in pixels.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public int Width
         {
 			get {
@@ -81,7 +91,7 @@ namespace Microsoft.Xna.Framework.Graphics
         /// <summary>
         /// The y coordinate of the beginning of this viewport.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public int Y
         {
 			get {
@@ -96,7 +106,7 @@ namespace Microsoft.Xna.Framework.Graphics
         /// <summary>
         /// The x coordinate of the beginning of this viewport.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public int X 
 		{
 			get{ return x;}
@@ -264,6 +274,21 @@ namespace Microsoft.Xna.Framework.Graphics
 	    {
 	        return "{X:" + x + " Y:" + y + " Width:" + width + " Height:" + height + " MinDepth:" + minDepth + " MaxDepth:" + maxDepth + "}";
 	    }
+
+        public static bool operator ==(Viewport left, Viewport right)
+        {
+            return left.x == right.x &&
+                   left.y == right.y &&
+                   left.width == right.width &&
+                   left.height == right.height &&
+                   left.minDepth == right.minDepth &&
+                   left.maxDepth == right.maxDepth;
+        }
+
+        public static bool operator !=(Viewport left, Viewport right)
+        {
+            return !(left == right);
+        }
     }
 }
 

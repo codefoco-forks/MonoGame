@@ -57,8 +57,12 @@ namespace Microsoft.Xna.Framework.Input
             }
             catch (SharpDX.SharpDXException ex)
             {
+#if NET_4_0
+                if (ex.ResultCode.Code == DeviceNotConnectedHResult)
+#else
                 if (ex.HResult == DeviceNotConnectedHResult)
-                {
+#endif
+                    {
                     _connected[index] = false;
                     SetDisconnectedTimeout(index);
                     return new GamePadCapabilities();
@@ -305,7 +309,11 @@ namespace Microsoft.Xna.Framework.Input
             }
             catch (SharpDX.SharpDXException ex)
             {
+#if NET_4_0
+                if (ex.ResultCode.Code == DeviceNotConnectedHResult)
+#else
                 if (ex.HResult == DeviceNotConnectedHResult)
+#endif
                 {
                     _connected[index] = false;
                     SetDisconnectedTimeout(index);
