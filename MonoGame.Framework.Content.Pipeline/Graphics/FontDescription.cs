@@ -19,6 +19,7 @@ namespace Microsoft.Xna.Framework.Content.Pipeline.Graphics
         private string fontName3;
         private string fontName4;
         private float size;
+        private float scale;
         private float spacing;
         private FontDescriptionStyle style;
         private bool useKerning;
@@ -98,9 +99,27 @@ namespace Microsoft.Xna.Framework.Content.Pipeline.Graphics
 			}
 		}
 
-		/// <summary>
-		/// Gets or sets the amount of space, in pixels, to insert between letters in a string.
-		/// </summary>
+        /// <summary>
+        /// Gets or sets the font scale.
+        /// </summary>
+        [ContentSerializer(Optional = true)]
+        public float Scale
+        {
+            get
+            {
+                return scale;
+            }
+            set
+            {
+                if (value <= 0.0f)
+                    throw new ArgumentOutOfRangeException("Scale must be greater than zero.");
+                scale = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the amount of space, in pixels, to insert between letters in a string.
+        /// </summary>
         [ContentSerializer(Optional = true)]
 		public float Spacing
 		{

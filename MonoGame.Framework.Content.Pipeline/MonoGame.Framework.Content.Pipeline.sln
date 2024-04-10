@@ -5,6 +5,8 @@ VisualStudioVersion = 25.0.1706.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonoGame.Framework.Content.Pipeline", "MonoGame.Framework.Content.Pipeline.csproj", "{F2FFA8EF-0434-4D76-9AC9-653FC135CA58}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonoGame.Framework.DesktopGL", "..\MonoGame.Framework\MonoGame.Framework.DesktopGL.csproj", "{7C76C29E-77E4-42E4-9C08-78A466F0B4A5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{F2FFA8EF-0434-4D76-9AC9-653FC135CA58}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F2FFA8EF-0434-4D76-9AC9-653FC135CA58}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F2FFA8EF-0434-4D76-9AC9-653FC135CA58}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7C76C29E-77E4-42E4-9C08-78A466F0B4A5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7C76C29E-77E4-42E4-9C08-78A466F0B4A5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7C76C29E-77E4-42E4-9C08-78A466F0B4A5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7C76C29E-77E4-42E4-9C08-78A466F0B4A5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

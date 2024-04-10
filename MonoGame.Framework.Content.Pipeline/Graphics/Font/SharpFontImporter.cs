@@ -103,9 +103,9 @@ namespace Microsoft.Xna.Framework.Content.Pipeline.Graphics
         {
             try
             {
-                const uint dpi = 96;
+                const uint dpi = 192;
                 var face = lib.NewFace(fontName, 0);
-                var fixedSize = ((int)options.Size) << 6;
+                var fixedSize = ((int)options.Size / 2) << 6;
                 face.SetCharSize(0, fixedSize, dpi, dpi);
 
                 if (face.FamilyName == "Microsoft Sans Serif" && options.FontName != "Microsoft Sans Serif")
