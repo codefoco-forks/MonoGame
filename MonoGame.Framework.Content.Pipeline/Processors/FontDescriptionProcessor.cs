@@ -69,6 +69,7 @@ namespace Microsoft.Xna.Framework.Content.Pipeline.Processors
             string fontFile2 = null;
             string fontFile3 = null;
             string fontFile4 = null;
+            string fontFile5 = null;
 
             if (input.FontName2 != null)
                 fontFile2 = FindFont(input.FontName2, input.Style.ToString());
@@ -78,6 +79,9 @@ namespace Microsoft.Xna.Framework.Content.Pipeline.Processors
 
             if (input.FontName4 != null)
                 fontFile4 = FindFont(input.FontName4, input.Style.ToString());
+
+            if (input.FontName5 != null)
+                fontFile5 = FindFont(input.FontName5, input.Style.ToString());
 
             string sourceDirectory = Path.GetDirectoryName(input.Identity.SourceFilename);
 
@@ -89,6 +93,8 @@ namespace Microsoft.Xna.Framework.Content.Pipeline.Processors
                 fontFile3 = GetFontPath(input.FontName3, sourceDirectory);
             if (fontFile4 == string.Empty)
                 fontFile4 = GetFontPath(input.FontName4, sourceDirectory);
+            if (fontFile5 == string.Empty)
+                fontFile5 = GetFontPath(input.FontName5, sourceDirectory);
 
             if (string.IsNullOrEmpty(fontFile) || !File.Exists(fontFile))
                 throw new FileNotFoundException("Could not find \"" + input.FontName + "\" font file.");
@@ -118,6 +124,11 @@ namespace Microsoft.Xna.Framework.Content.Pipeline.Processors
                 throw new Exception(string.Format("Could not load {0}", fontFile4));
             }
 
+            if (!string.IsNullOrEmpty(fontFile5) && !File.Exists(fontFile5))
+            {
+                throw new Exception(string.Format("Could not load {0}", fontFile5));
+            }
+
             var lineSpacing = 0f;
             int yOffsetMin = 0;
 
@@ -135,6 +146,9 @@ namespace Microsoft.Xna.Framework.Content.Pipeline.Processors
             if (!string.IsNullOrEmpty(fontFile4))
                 fonts.Add(fontFile4);
 
+            if (!string.IsNullOrEmpty(fontFile5))
+                fonts.Add(fontFile5);
+
             var glyphs = ImportFont(input, out lineSpacing, out yOffsetMin, context, fonts.ToArray());
 
             var glyphData = new HashSet<GlyphData>(glyphs.Select(x => x.Data));
@@ -151,9 +165,14 @@ namespace Microsoft.Xna.Framework.Content.Pipeline.Processors
 
             var face = GlyphPacker.ArrangeGlyphs(glyphData.ToArray(), requiresPot, requiresSquare);
 
+            float scale = 1.0f;
+
+            if (input.Scale != 0.0f)
+                scale = input.Scale;
+
             // Adjust line and character spacing.
             lineSpacing += input.Spacing;
-            output.VerticalLineSpacing = (int)lineSpacing;
+            output.VerticalLineSpacing = (int)(lineSpacing / scale);
 
             foreach (Glyph glyph in glyphs)
             {
@@ -162,18 +181,22 @@ namespace Microsoft.Xna.Framework.Content.Pipeline.Processors
                 var texRect = glyph.Data.Subrect;
                 output.Glyphs.Add(texRect);
 
-                var cropping = new Rectangle(0, (int)(glyph.Data.YOffset - yOffsetMin), (int)glyph.Data.XAdvance, output.VerticalLineSpacing);
+                int width = (int)(glyph.Data.Subrect.Width / scale);
+                int height = (int)(glyph.Data.Subrect.Height / scale);
+                int x = (int)((glyph.Data.YOffset - yOffsetMin) / scale);
+
+                var cropping = new Rectangle(0, x, width, height);
                 output.Cropping.Add(cropping);
 
                 // Set the optional character kerning.
                 if (input.UseKerning)
                 {
                     ABCFloat widths = glyph.Data.CharacterWidths;
-                    output.Kerning.Add(new Vector3(widths.A, widths.B, widths.C));
+                    output.Kerning.Add(new Vector3(widths.A / scale, widths.B / scale, widths.C / scale));
                 }
                 else
                 {
-                    output.Kerning.Add(new Vector3(0, texRect.Width, 0));
+                    output.Kerning.Add(new Vector3(0, texRect.Width / scale, 0));
                 }
             }
 

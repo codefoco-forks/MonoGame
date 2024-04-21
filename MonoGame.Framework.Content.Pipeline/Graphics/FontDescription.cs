@@ -18,6 +18,7 @@ namespace Microsoft.Xna.Framework.Content.Pipeline.Graphics
         private string fontName2;
         private string fontName3;
         private string fontName4;
+        private string fontName5;
         private float size;
         private float scale;
         private float spacing;
@@ -79,6 +80,19 @@ namespace Microsoft.Xna.Framework.Content.Pipeline.Graphics
             set
             {
                 fontName4 = value;
+            }
+        }
+
+        [ContentSerializer(Optional = true)]
+        public string FontName5
+        {
+            get
+            {
+                return fontName5;
+            }
+            set
+            {
+                fontName5 = value;
             }
         }
 

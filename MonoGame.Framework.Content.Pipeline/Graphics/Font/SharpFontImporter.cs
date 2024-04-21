@@ -103,9 +103,14 @@ namespace Microsoft.Xna.Framework.Content.Pipeline.Graphics
         {
             try
             {
-                const uint dpi = 192;
+                uint dpi = 96;
+                if (options.Scale != 1.0f && options.Scale != 0.0f)
+                {
+                    dpi = (uint)(dpi * options.Scale);
+                }
+
                 var face = lib.NewFace(fontName, 0);
-                var fixedSize = ((int)options.Size / 2) << 6;
+                var fixedSize = ((int)options.Size << 6);
                 face.SetCharSize(0, fixedSize, dpi, dpi);
 
                 if (face.FamilyName == "Microsoft Sans Serif" && options.FontName != "Microsoft Sans Serif")
@@ -126,6 +131,7 @@ namespace Microsoft.Xna.Framework.Content.Pipeline.Graphics
         private GlyphData ImportGlyph(uint glyphIndex, Face face)
         {
             face.LoadGlyph(glyphIndex, LoadFlags.Default, LoadTarget.Normal);
+            face.Glyph.Outline.Embolden(64);
             face.Glyph.RenderGlyph(RenderMode.Normal);
 
             // Render the character.
