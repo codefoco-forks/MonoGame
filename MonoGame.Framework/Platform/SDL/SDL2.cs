@@ -25,7 +25,7 @@ internal static class Sdl
             return FuncLoader.LoadLibraryExt("sdl2");
     }
 
-    public static Version version;
+    public static Version CurrentVersion;
 
     [Flags]
     public enum InitFlags
@@ -52,7 +52,7 @@ internal static class Sdl
 
         MouseMotion = 0x400,
         MouseButtonDown = 0x401,
-        MouseButtonup = 0x402,
+        MouseButtonUp = 0x402,
         MouseWheel = 0x403,
 
         JoyAxisMotion = 0x600,
@@ -115,6 +115,8 @@ internal static class Sdl
         [FieldOffset(0)]
         public Mouse.MotionEvent Motion;
         [FieldOffset(0)]
+        public Mouse.MouseButtonEvent MouseButton;
+        [FieldOffset(0)]
         public Keyboard.TextEditingEvent Edit;
         [FieldOffset(0)]
         public Keyboard.TextInputEvent Text;
@@ -138,6 +140,9 @@ internal static class Sdl
 
     public struct Version
     {
+        public static readonly Sdl.Version Sdl205Version = new Sdl.Version() { Major = 2, Minor = 0, Patch = 5 };
+        public static readonly Sdl.Version Sdl204Version = new Sdl.Version() { Major = 2, Minor = 0, Patch = 4 };
+
         public byte Major;
         public byte Minor;
         public byte Patch;
@@ -165,19 +170,7 @@ internal static class Sdl
             if (!(obj is Version))
                 return false;
 
-            return version == (Version)obj;
-        }
-
-        public override int GetHashCode()
-        {
-            unchecked
-            {
-                int hash = 17;
-                hash = hash * 23 + Major.GetHashCode();
-                hash = hash * 23 + Minor.GetHashCode();
-                hash = hash * 23 + Patch.GetHashCode();
-                return hash;
-            }
+            return CurrentVersion == (Version)obj;
         }
 
         public static bool operator !=(Version version1, Version version2)
@@ -206,12 +199,21 @@ internal static class Sdl
             // SDL switched formats from 2.0.x to 2.x.y (with y being optional)
             if (version.Major == 2 && version.Minor == 0 && version.Patch < 23)
             {
-                return version.Major * 1_000_000 + version.Patch * 1000;
+                return version.Major * 1000000 + version.Patch * 1000;
             }
             else
             {
-                return version.Major * 1_000_000 + version.Minor * 1000 + version.Patch;
+                return version.Major * 1000000 + version.Minor * 1000 + version.Patch;
             }
+        }
+
+        public override int GetHashCode()
+        {
+            int hashCode = -639545495;
+            hashCode = hashCode * -1521134295 + Major.GetHashCode();
+            hashCode = hashCode * -1521134295 + Minor.GetHashCode();
+            hashCode = hashCode * -1521134295 + Patch.GetHashCode();
+            return hashCode;
         }
     }
 
@@ -576,6 +578,15 @@ internal static class Sdl
         {
             return GetError(SDL_GetWindowDisplayIndex(window));
         }
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate int d_sdl_getdisplaydpi(int displayIndex, out float ddpi, out float hdpi, out float vdpi);
+        private static d_sdl_getdisplaydpi SDL_GetDisplayDPI = FuncLoader.LoadFunction<d_sdl_getdisplaydpi>(NativeLibrary, "SDL_GetDisplayDPI");
+
+        public static int GetDisplayDPI(int displayIndex, out float ddpi, out float hdpi, out float vdpi)
+        {
+            return GetError(SDL_GetDisplayDPI(displayIndex, out ddpi, out hdpi, out vdpi));
+        }
     }
 
     public static class GL
@@ -644,6 +655,10 @@ internal static class Sdl
         public static d_sdl_gl_makecurrent MakeCurrent = FuncLoader.LoadFunction<d_sdl_gl_makecurrent>(NativeLibrary, "SDL_GL_MakeCurrent");
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate void sdl_gl_getdrawablesize(IntPtr window, out int width, out int height);
+        public static sdl_gl_getdrawablesize GetDrawableSize = FuncLoader.LoadFunction<sdl_gl_getdrawablesize>(NativeLibrary, "SDL_GL_GetDrawableSize");
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         private delegate int d_sdl_gl_setattribute(Attribute attr, int value);
         private static d_sdl_gl_setattribute SDL_GL_SetAttribute = FuncLoader.LoadFunction<d_sdl_gl_setattribute>(NativeLibrary, "SDL_GL_SetAttribute");
 
@@ -704,6 +719,21 @@ internal static class Sdl
             public int Y;
             public int Xrel;
             public int Yrel;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct MouseButtonEvent
+        {
+            public EventType Type;
+            public uint Timestamp;
+            public uint WindowID;
+            public uint Which;
+            public byte Button;
+            public byte State;
+            public byte Clicks;
+            private byte padding1;
+            public int X;
+            public int Y;
         }
 
         [StructLayout(LayoutKind.Sequential)]
