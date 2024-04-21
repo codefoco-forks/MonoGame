@@ -9,7 +9,12 @@ namespace Microsoft.Xna.Framework.Input
     /// </summary>
     public struct GamePadButtons
     {
-        internal readonly Buttons _buttons;
+        internal Buttons _buttons;
+
+        public Buttons CurrentState
+        {
+            get { return _buttons; }
+        }
 
         /// <summary>
         /// Gets a value indicating if the button A is pressed.
@@ -148,11 +153,6 @@ namespace Microsoft.Xna.Framework.Input
             _buttons = buttons;
         }
 
-        internal GamePadButtons(params Buttons[] buttons) : this()
-        {
-            foreach (Buttons b in buttons)
-                _buttons |= b;
-        }
 
         /// <summary>
         /// Determines whether two specified instances of <see cref="GamePadButtons"/> are equal.

@@ -1,4 +1,27 @@
-﻿# MonoGame
+﻿## Why a fork of MonoGame?
+ 
+ MonoGame is really powerful, but I want to do a couple of changes that wouldn't be well received in the MonoGame upstream. I am trying to keep this fork as updated as possible with all changes from the upstream MonoGame.
+
+Main Changes I did:
+ * Remove StbSharp (and use the native image library .NET/Android/UIKit) to handle `PlatformFromStream`, `SaveAsPng` and `SaveAsJpeg`
+      * The main reason is because the StbSharp code is really not the best thing to maintain, is a generated code trying to mimic C. .NET/.NET Core, Android and iOS have very good imaging libraries there is no reason to use StbSharp.
+ * Add SourceLink
+      * Debug can be way better if you can step into the MonoGame source code.
+ * [Add multi-target NuGet](https://www.nuget.org/packages/Codefoco.MonoGame.Framework/)
+      * Is easier to create another NuGets that depend on MonoGame using one single NuGet instead several
+ * Add tvOS support back
+      * For some reason tvOS was removed from upstream MonoGame, I've restored the support and update a few iOS parts.
+ * Change the way UWP creates the main GameObject
+      * UWP used a bunch of generics to create the main Game object, I just replaced by a simple callback
+ * Removed Deflate/ZlibStream
+      * Removed Deflate and ZLibStream, I will add compressed XNB support back but using System.Compression instead re-write zlib in C#
+ * Removed the MonoGame.bmp
+      * There is no reason to force MonoGame icon o every MG Game, if you want to replace the icon you should be able to it from the Main application, and not using a hack to create a Icon.bmp as a Resource.
+ * Added XamarinMac TargetFramework (using DesktopGL backend)
+ * Enabled HiDPI on Mac/Windows
+ * Build on old versions of .NET
+ 
+ # MonoGame
 
 One framework for creating powerful cross-platform games.  The spiritual successor to XNA with thousands of titles shipped across desktop, mobile, and console platforms.  [MonoGame](http://www.monogame.net/) is a fully managed .NET open source game framework without any black boxes.  Create, develop and distribute your games your way.
 
