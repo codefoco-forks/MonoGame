@@ -21,7 +21,15 @@ namespace MonoGame.Framework
         public WinFormsGamePlatform(Game game)
             : base(game)
         {
-            _window = new WinFormsGameWindow(this);
+            _window = new WinFormsGameWindow(this, null);
+
+            Window = _window;
+        }
+
+        public WinFormsGamePlatform(Game game, Control gameView)
+            : base(game)
+        {
+            _window = new WinFormsGameWindow(this, gameView);
 
             Window = _window;
         }
@@ -60,7 +68,17 @@ namespace MonoGame.Framework
 
         public override void RunLoop()
         {
-            _window.RunLoop();
+            _window.RunLoop(_window.GameForm);
+        }
+
+        public override void RunLoop(Form mainForm)
+        {
+            _window.RunLoop(mainForm);
+        }
+
+        public override void WndProc(ref Message m)
+        {
+            _window.WndProc(ref m);
         }
 
         public override void StartRunLoop()

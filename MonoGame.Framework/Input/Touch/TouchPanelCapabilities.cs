@@ -18,7 +18,6 @@ namespace Microsoft.Xna.Framework.Input.Touch
     /// </summary>
     public struct TouchPanelCapabilities
     {
-        private bool hasPressure;
         private bool isConnected;
         private int maximumTouchCount;
         private bool initialized;
@@ -28,10 +27,6 @@ namespace Microsoft.Xna.Framework.Input.Touch
             if (!initialized)
             {
                 initialized = true;
-
-                // There does not appear to be a way of finding out if a touch device supports pressure.
-                // XNA does not expose a pressure value, so let's assume it doesn't support it.
-                hasPressure = false;
 
 #if WINDOWS_UAP
                 // Is a touch device present?
@@ -69,14 +64,6 @@ namespace Microsoft.Xna.Framework.Input.Touch
                 //Touch isn't implemented in OpenTK, so no linux or mac https://github.com/opentk/opentk/issues/80
                 isConnected = false;
 #endif
-            }
-        }
-
-        public bool HasPressure
-        {
-            get
-            {
-                return hasPressure;
             }
         }
 
