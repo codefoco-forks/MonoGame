@@ -10,7 +10,7 @@ namespace Microsoft.Xna.Framework
     /// <summary>
     /// Provides data for the <see cref="GameWindow.KeyUp"/> and <see cref="GameWindow.KeyDown"/> events.
     /// </summary>
-    public struct InputKeyEventArgs
+    public class InputKeyEventArgs : EventArgs
     {
         /// <summary>
         /// The key that was either pressed or released.
