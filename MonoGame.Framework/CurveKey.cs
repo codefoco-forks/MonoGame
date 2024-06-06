@@ -11,7 +11,7 @@ namespace Microsoft.Xna.Framework
     /// Key point on the <see cref="Curve"/>.
     /// </summary>
     // TODO : [TypeConverter(typeof(ExpandableObjectConverter))]
-    [DataContract]
+    //[DataContract]
     public class CurveKey : IEquatable<CurveKey>, IComparable<CurveKey>
     {
         #region Private Fields
@@ -29,7 +29,7 @@ namespace Microsoft.Xna.Framework
         /// <summary>
         /// Gets or sets the indicator whether the segment between this point and the next point on the curve is discrete or continuous.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public CurveContinuity Continuity
         {
             get { return this._continuity; }
@@ -39,7 +39,7 @@ namespace Microsoft.Xna.Framework
         /// <summary>
         /// Gets a position of the key on the curve.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public float Position
         {
             get { return this._position; }
@@ -48,7 +48,7 @@ namespace Microsoft.Xna.Framework
         /// <summary>
         /// Gets or sets a tangent when approaching this point from the previous point on the curve.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public float TangentIn
         {
             get { return this._tangentIn; }
@@ -58,7 +58,7 @@ namespace Microsoft.Xna.Framework
         /// <summary>
         /// Gets or sets a tangent when leaving this point to the next point on the curve.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public float TangentOut
         {
             get { return this._tangentOut; }
@@ -68,7 +68,7 @@ namespace Microsoft.Xna.Framework
         /// <summary>
         /// Gets a value of this point.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public float Value
         {
             get { return this._value; }
