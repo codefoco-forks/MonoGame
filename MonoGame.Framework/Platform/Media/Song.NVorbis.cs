@@ -25,7 +25,18 @@ namespace Microsoft.Xna.Framework.Media
 
             _duration = stream.GetLength();
         }
-        
+
+        private void PlatformInitialize(Stream oggStream)
+        {
+            // init OpenAL if need be
+            OpenALSoundController.EnsureInitialized();
+
+            stream = new OggStream(oggStream, OnFinishedPlaying);
+            stream.Prepare();
+
+            _duration = stream.GetLength();
+        }
+
         internal void SetEventHandler(FinishedPlayingHandler handler) { }
 
         internal void OnFinishedPlaying()

@@ -8,7 +8,7 @@ namespace Microsoft.Xna.Framework.Input
     public static partial class MessageBox
     {
         public static bool IsVisible { get; private set; }
-
+#if !NET_4_0
         /// <summary>
         /// Displays the message box interface asynchronously.
         /// </summary>
@@ -39,6 +39,8 @@ namespace Microsoft.Xna.Framework.Input
 
             return result;
         }
+
+#endif
 
         /// <summary>
         /// Hides the message box interface and returns the parameter as the result of <see cref="Show"/>

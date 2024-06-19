@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using Microsoft.Xna.Framework.Content.Pipeline.Graphics.Font;
 using SharpFont;
 
 namespace Microsoft.Xna.Framework.Content.Pipeline.Graphics
@@ -24,44 +25,59 @@ namespace Microsoft.Xna.Framework.Content.Pipeline.Graphics
 
         Library lib = null;
 
-        public void Import(FontDescription options, string fontName)
+        public void Import(FontDescription options, string[] fontNames)
         {
             lib = new Library();
             // Create a bunch of GDI+ objects.
-            var face = CreateFontFace(options, fontName);
+            FontFaceCache[] faces = CreateFontFaces(options, fontNames);
             try
             {
                 // Which characters do we want to include?
                 var characters = options.Characters;
 
                 var glyphList = new List<Glyph>();
-                var glyphMaps = new Dictionary<uint, GlyphData>();
 
                 // Rasterize each character in turn.
                 foreach (char character in characters)
                 {
-                    uint glyphIndex = face.GetCharIndex(character);
-                    if (!glyphMaps.TryGetValue(glyphIndex, out GlyphData glyphData))
+                    foreach (FontFaceCache faceCache in faces)
                     {
-                        glyphData = ImportGlyph(glyphIndex, face);
-                        glyphMaps.Add(glyphIndex, glyphData);
-                    }
+                        Face face = faceCache.FontFace;
+                        Dictionary<uint, GlyphData> glyphMaps = faceCache.GlyphMaps;
 
-                    var glyph = new Glyph(character, glyphData);
-                    glyphList.Add(glyph);
+                        uint glyphIndex = face.GetCharIndex(character);
+                        if (glyphIndex == 0)
+                            continue;
+
+                        if (!glyphMaps.TryGetValue(glyphIndex, out GlyphData glyphData))
+                        {
+                            glyphData = ImportGlyph(glyphIndex, face);
+                            glyphMaps.Add(glyphIndex, glyphData);
+                        }
+
+                        var glyph = new Glyph(character, glyphData);
+                        glyphList.Add(glyph);
+                        break;
+                    }
                 }
                 Glyphs = glyphList;
 
+                Face firstFace = faces[0].FontFace;
+
                 // Store the font height.
-                LineSpacing = face.Size.Metrics.Height >> 6;
+                LineSpacing = firstFace.Size.Metrics.Height >> 6;
 
                 // The height used to calculate the Y offset for each character.
-                YOffsetMin = -face.Size.Metrics.Ascender >> 6;
+                YOffsetMin = -firstFace.Size.Metrics.Ascender >> 6;
             }
             finally
             {
-                if (face != null)
-                    face.Dispose();
+                foreach (FontFaceCache face in faces)
+                {
+                    if (face != null)
+                        face.FontFace.Dispose();
+                }
+
                 if (lib != null)
                 {
                     lib.Dispose();
@@ -70,21 +86,37 @@ namespace Microsoft.Xna.Framework.Content.Pipeline.Graphics
             }
         }
 
+        private FontFaceCache[] CreateFontFaces(FontDescription options, string[] fontNames)
+        {
+            int count = fontNames.Length;
+            FontFaceCache[] faces = new FontFaceCache[count];
+            for (int i = 0; i < count; i++)
+            {
+                faces[i] = CreateFontFace(options, fontNames[i]);
+            }
+            return faces;
+        }
+
 
         // Attempts to instantiate the requested GDI+ font object.
-        private Face CreateFontFace(FontDescription options, string fontName)
+        private FontFaceCache CreateFontFace(FontDescription options, string fontName)
         {
             try
             {
-                const uint dpi = 96;
+                uint dpi = 96;
+                if (options.Scale != 1.0f && options.Scale != 0.0f)
+                {
+                    dpi = (uint)(dpi * options.Scale);
+                }
+
                 var face = lib.NewFace(fontName, 0);
-                var fixedSize = ((int)options.Size) << 6;
+                var fixedSize = ((int)options.Size << 6);
                 face.SetCharSize(0, fixedSize, dpi, dpi);
 
                 if (face.FamilyName == "Microsoft Sans Serif" && options.FontName != "Microsoft Sans Serif")
                     throw new PipelineException(string.Format("Font {0} is not installed on this computer.", options.FontName));
 
-                return face;
+                return new FontFaceCache(face);
 
                 // A font substitution must have occurred.
                 //throw new Exception(string.Format("Can't find font '{0}'.", options.FontName));
@@ -99,6 +131,8 @@ namespace Microsoft.Xna.Framework.Content.Pipeline.Graphics
         private GlyphData ImportGlyph(uint glyphIndex, Face face)
         {
             face.LoadGlyph(glyphIndex, LoadFlags.Default, LoadTarget.Normal);
+            face.Glyph.Outline.Embolden(32);
+
             face.Glyph.RenderGlyph(RenderMode.Normal);
 
             // Render the character.
