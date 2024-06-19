@@ -23,6 +23,7 @@ namespace Microsoft.Xna.Framework.Content.Pipeline.Graphics
             HorizontalSpacing = desc.Spacing;
 
             DefaultCharacter = desc.DefaultCharacter;
+            Scale = desc.Scale;
         }
 
         public string FontName = string.Empty;
@@ -45,7 +46,8 @@ namespace Microsoft.Xna.Framework.Content.Pipeline.Graphics
 
         public List<Vector3> Kerning = new List<Vector3>();
 
-        public Nullable<Char> DefaultCharacter;	 
+        public Nullable<Char> DefaultCharacter;
 
+        public float Scale;
     }
 }

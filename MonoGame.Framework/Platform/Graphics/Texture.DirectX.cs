@@ -36,6 +36,11 @@ namespace Microsoft.Xna.Framework.Graphics
             return _texture;
         }
 
+        internal void SetTexture(Resource texture)
+        {
+            _texture = texture;
+        }
+
         internal ShaderResourceView GetShaderResourceView()
         {
             if (_resourceView == null)
