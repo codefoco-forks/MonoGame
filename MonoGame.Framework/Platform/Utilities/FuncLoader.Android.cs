@@ -31,7 +31,7 @@ namespace MonoGame.Framework.Utilities
             var libpath = Path.Combine(nlibpath, libname);
             lib = dlopen(libpath, RTLD_LAZY);
             if (lib != IntPtr.Zero)
-            {	
+            {
                 Console.WriteLine("FuncLoader.LoadLibrary {0}", libpath);
                 return lib;
             }
@@ -56,7 +56,7 @@ namespace MonoGame.Framework.Utilities
             // requires .NET Framework 4.5.1 and its useful for corert
             // return Marshal.GetDelegateForFunctionPointer<T>(ret);
 
-            return (T)(object)Marshal.GetDelegateForFunctionPointer(ret, typeof(T));
+            return Marshal.GetDelegateForFunctionPointer<T>(ret);
         }
     }
 }

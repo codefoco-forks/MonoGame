@@ -11,6 +11,7 @@ using SharpDX.Direct3D11;
 using SharpDX.DXGI;
 using MapFlags = SharpDX.Direct3D11.MapFlags;
 using Resource = SharpDX.Direct3D11.Resource;
+using SharpDX.WIC;
 
 #if WINDOWS_UAP
 using Windows.Graphics.Imaging;
@@ -216,7 +217,148 @@ namespace Microsoft.Xna.Framework.Graphics
             return arraySlice * _levelCount + level;
         }
 
-        /// <summary />
+        // Retored from:
+        // https://github.com/KonajuGames/MonoGame/blob/1f0167bc2a18ec4f287dfbc208d5b0f2e87da53e/MonoGame.Framework/Graphics/Texture2D.DirectX.cs
+        // There is no reason to not 
+        private static Texture2D PlatformFromStream(GraphicsDevice graphicsDevice, Stream stream)
+        {
+            if (!stream.CanSeek)
+                throw new NotSupportedException("stream must support seek operations");
+
+            // For reference this implementation was ultimately found through this post:
+            // http://stackoverflow.com/questions/9602102/loading-textures-with-sharpdx-in-metro 
+            Texture2D toReturn = null;
+            SharpDX.WIC.BitmapDecoder decoder;
+
+            using (var bitmap = LoadBitmap(stream, out decoder))
+            using (decoder)
+            {
+                SharpDX.Direct3D11.Texture2D sharpDxTexture = CreateTex2DFromBitmap(bitmap, graphicsDevice);
+
+                toReturn = new Texture2D(graphicsDevice, bitmap.Size.Width, bitmap.Size.Height);
+
+                toReturn.SetTexture(sharpDxTexture);
+            }
+            return toReturn;
+        }
+
+        private void PlatformSaveAsJpeg(Stream stream, int width, int height)
+        {
+#if WINDOWS_UAP
+            SaveAsImage(Windows.Graphics.Imaging.BitmapEncoder.JpegEncoderId, stream, width, height);
+#else
+            var textureData = new uint[Width * Height];
+            GetData(textureData);
+
+            ImageWriter.SaveAsImage(textureData, Width, Height, stream, width, height, ImageWriter.ImageWriterFormat.Jpg);
+#endif
+        }
+
+        private void PlatformSaveAsPng(Stream stream, int width, int height)
+        {
+#if WINDOWS_UAP
+            SaveAsImage(Windows.Graphics.Imaging.BitmapEncoder.PngEncoderId, stream, width, height);
+#else
+            var textureData = new uint[Width * Height];
+            GetData(textureData);
+
+            ImageWriter.SaveAsImage(textureData, Width, Height, stream, width, height, ImageWriter.ImageWriterFormat.Png);
+#endif
+        }
+
+
+#if WINDOWS_UAP
+        private void SaveAsImage(Guid encoderId, Stream stream, int width, int height)
+        {
+            var pixelData = new byte[Width * Height * GraphicsExtensions.GetSize(Format)];
+            GetData(pixelData);
+
+            // TODO: We should implement async SaveAsPng() for WinRT.
+            Task.Run(async () =>
+            {
+                // Create a temporary memory stream for writing the png.
+                var memstream = new InMemoryRandomAccessStream();
+
+                // Write the png.
+                var encoder = await Windows.Graphics.Imaging.BitmapEncoder.CreateAsync(encoderId, memstream);
+                encoder.SetPixelData(BitmapPixelFormat.Rgba8, BitmapAlphaMode.Premultiplied, (uint)width, (uint)height, 96, 96, pixelData);
+                await encoder.FlushAsync();
+
+                // Copy the memory stream into the real output stream.
+                memstream.Seek(0);
+                memstream.AsStreamForRead().CopyTo(stream);
+
+            }).Wait();
+        }
+#endif
+
+        static unsafe SharpDX.Direct3D11.Texture2D CreateTex2DFromBitmap(BitmapSource bsource, GraphicsDevice device)
+        {
+            Texture2DDescription desc;
+            desc.Width = bsource.Size.Width;
+            desc.Height = bsource.Size.Height;
+            desc.ArraySize = 1;
+            desc.BindFlags = BindFlags.ShaderResource;
+            desc.Usage = ResourceUsage.Default;
+            desc.CpuAccessFlags = CpuAccessFlags.None;
+            desc.Format = SharpDX.DXGI.Format.R8G8B8A8_UNorm;
+            desc.MipLevels = 1;
+            desc.OptionFlags = ResourceOptionFlags.None;
+            desc.SampleDescription.Count = 1;
+            desc.SampleDescription.Quality = 0;
+
+            using (DataStream s = new DataStream(bsource.Size.Height * bsource.Size.Width * 4, true, true))
+            {
+                bsource.CopyPixels(bsource.Size.Width * 4, s);
+
+                // Multiply colors by alpha
+                var data = (byte*)s.DataPointer;
+                for (var i = 0; i < s.Length; i+=4)
+                {
+                    byte alpha = data[i + 3];
+                    
+                    data[i + 0] = (byte)(data[i + 0] * alpha / 255f);
+                    data[i + 1] = (byte)(data[i + 1] * alpha / 255f);
+                    data[i + 2] = (byte)(data[i + 2] * alpha / 255f);
+                }
+
+                DataRectangle rect = new DataRectangle(s.DataPointer, bsource.Size.Width * 4);
+
+                return new SharpDX.Direct3D11.Texture2D(device._d3dDevice, desc, rect);
+            }
+        }
+
+
+        static ImagingFactory imgfactory;
+
+        private static BitmapSource LoadBitmap(Stream stream, out SharpDX.WIC.BitmapDecoder decoder)
+        {
+            if (imgfactory == null)
+            {
+                imgfactory = new ImagingFactory();
+            }
+
+            decoder = new SharpDX.WIC.BitmapDecoder(
+                imgfactory,
+                stream,
+                DecodeOptions.CacheOnDemand
+                );
+
+            var fconv = new FormatConverter(imgfactory);
+
+            fconv.Initialize(
+                decoder.GetFrame(0),
+                PixelFormat.Format32bppRGBA,
+                BitmapDitherType.None, null,
+                0.0, BitmapPaletteType.Custom);
+
+            return fconv;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         protected internal virtual Texture2DDescription GetTexture2DDescription()
         {
             var desc = new Texture2DDescription();

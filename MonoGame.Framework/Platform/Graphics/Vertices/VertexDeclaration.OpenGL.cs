@@ -21,8 +21,9 @@ namespace Microsoft.Xna.Framework.Graphics
             // Get the vertex attribute info and cache it
             attrInfo = new VertexDeclarationAttributeInfo(GraphicsDevice.MaxVertexAttributes);
 
-            foreach (var ve in InternalVertexElements)
+            for (int i = 0; i < InternalVertexElements.Length; i++)
             {
+                var ve = InternalVertexElements[i];
                 var attributeLocation = shader.GetAttribLocation(ve.VertexElementUsage, ve.UsageIndex);
                 // XNA appears to ignore usages it can't find a match for, so we will do the same
                 if (attributeLocation < 0)
@@ -36,7 +37,7 @@ namespace Microsoft.Xna.Framework.Graphics
                     VertexAttribPointerType = ve.VertexElementFormat.OpenGLVertexAttribPointerType(),
                     Normalized = ve.OpenGLVertexAttribNormalized(),
                 });
-                attrInfo.EnabledAttributes[attributeLocation] = true;
+                attrInfo.EnabledAttributes |= (1 << attributeLocation);
             }
 
             _shaderAttributeInfo.Add(programHash, attrInfo);
@@ -63,7 +64,7 @@ namespace Microsoft.Xna.Framework.Graphics
 #endif
                 GraphicsExtensions.CheckGLError();
             }
-            GraphicsDevice.SetVertexAttributeArray(attrInfo.EnabledAttributes);
+            GraphicsDevice.SetVertexAttributeArray(attrInfo.EnabledAttributes, attrInfo.MaxVertexAttributes);
 		    GraphicsDevice._attribsDirty = true;
 		}
 
@@ -72,7 +73,8 @@ namespace Microsoft.Xna.Framework.Graphics
         /// </summary>
         internal class VertexDeclarationAttributeInfo
         {
-            internal bool[] EnabledAttributes;
+            internal int EnabledAttributes;
+            internal int MaxVertexAttributes;
 
             internal class Element
             {
@@ -87,7 +89,8 @@ namespace Microsoft.Xna.Framework.Graphics
 
             internal VertexDeclarationAttributeInfo(int maxVertexAttributes)
             {
-                EnabledAttributes = new bool[maxVertexAttributes];
+                EnabledAttributes = 0;
+                MaxVertexAttributes = maxVertexAttributes;
                 Elements = new List<Element>();
             }
         }
