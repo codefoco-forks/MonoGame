@@ -5,6 +5,12 @@
 using GameController;
 using System.Collections.Generic;
 
+#if !NET
+using ControllerIndexType = System.Int32;
+#else
+using ControllerIndexType = GameController.GCControllerPlayerIndex;
+#endif
+
 namespace Microsoft.Xna.Framework.Input
 {
     static partial class GamePad
@@ -17,7 +23,10 @@ namespace Microsoft.Xna.Framework.Input
         static bool IndexIsUsed(GCControllerPlayerIndex index)
         {
             foreach (var ctrl in GCController.Controllers)
-                if (ctrl.PlayerIndex == (int)index) return true;
+            {
+                if (ctrl.PlayerIndex == (ControllerIndexType)index)
+                    return true;
+            }
 
             return false;
         }
@@ -28,11 +37,11 @@ namespace Microsoft.Xna.Framework.Input
                 return;
             foreach (var controller in GCController.Controllers)
             {
-                if (controller.PlayerIndex == (int)index)
+                if (controller.PlayerIndex == (ControllerIndexType)index)
                     break;
-                if (controller.PlayerIndex == (int)GCControllerPlayerIndex.Unset)
+                if (controller.PlayerIndex == (ControllerIndexType)GCControllerPlayerIndex.Unset)
                 {
-                    controller.PlayerIndex = (int)index;
+                    controller.PlayerIndex = (ControllerIndexType)index;
                     break;
                 }
             }
@@ -48,7 +57,7 @@ namespace Microsoft.Xna.Framework.Input
             {
                 if (controller == null)
                     continue;
-                if (controller.PlayerIndex == (int)ind)
+                if (controller.PlayerIndex == (ControllerIndexType)ind)
                     return GetCapabilities(controller);
             }
             return new GamePadCapabilities { IsConnected = false };
@@ -121,11 +130,10 @@ namespace Microsoft.Xna.Framework.Input
 
             foreach (var controller in GCController.Controllers)
             {
-
                 if (controller == null)
                     continue;
 
-                if (controller.PlayerIndex != (int)ind)
+                if (controller.PlayerIndex != (ControllerIndexType)ind)
                     continue;
 
                 connected = true;
@@ -153,7 +161,7 @@ namespace Microsoft.Xna.Framework.Input
 
                     if (controller.ExtendedGamepad.ButtonMenu.IsPressed)
                         buttons |= Buttons.Start;
-                    if (controller.ExtendedGamepad.ButtonOptions.IsPressed)
+                    if (controller.ExtendedGamepad.ButtonOptions != null && controller.ExtendedGamepad.ButtonOptions.IsPressed)
                         buttons |= Buttons.Back;
 
                     if (controller.ExtendedGamepad.DPad.Up.IsPressed)
@@ -194,6 +202,11 @@ namespace Microsoft.Xna.Framework.Input
                         buttons |= Buttons.X;
                     if (controller.Gamepad.ButtonY.IsPressed)
                         buttons |= Buttons.Y;
+
+                    if (controller.Gamepad.LeftShoulder.IsPressed)
+                        buttons |= Buttons.LeftShoulder;
+                    if (controller.Gamepad.RightShoulder.IsPressed)
+                        buttons |= Buttons.RightShoulder;
 
                     if (controller.Gamepad.DPad.Up.IsPressed)
                     {

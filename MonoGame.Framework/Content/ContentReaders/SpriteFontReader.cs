@@ -34,6 +34,10 @@ namespace Microsoft.Xna.Framework.Content
                 {
                     input.ReadChar();
                 }
+                if (input.BaseStream.Length > input.BaseStream.Position)
+                {
+                    input.ReadSingle();
+                }
 
                 return existingInstance;
             }
@@ -48,11 +52,16 @@ namespace Microsoft.Xna.Framework.Content
                 float spacing = input.ReadSingle();
                 List<Vector3> kerning = input.ReadObject<List<Vector3>>();
                 char? defaultCharacter = null;
+                float scale = 1f;
                 if (input.ReadBoolean())
                 {
                     defaultCharacter = new char?(input.ReadChar());
                 }
-                return new SpriteFont(texture, glyphs, cropping, charMap, lineSpacing, spacing, kerning, defaultCharacter);
+                if (input.BaseStream.Length > input.BaseStream.Position)
+                {
+                    scale = input.ReadSingle();
+                }
+                return new SpriteFont(texture, glyphs, cropping, charMap, lineSpacing, spacing, kerning, defaultCharacter, scale);
             }
         }
     }
