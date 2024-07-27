@@ -31,18 +31,32 @@ namespace Microsoft.Xna.Framework.Input.Touch
             position.X = e.GetX(e.ActionIndex);
             position.Y = e.GetY(e.ActionIndex);
             UpdateTouchPosition(ref position);
+
             int id = e.GetPointerId(e.ActionIndex);
+            float rotation = e.GetOrientation(e.ActionIndex);
+            float pressure = e.GetPressure(e.ActionIndex);
+
+            DeviceType deviceType = DeviceType.Touch;
+            MotionEvent.PointerProperties properties = new MotionEvent.PointerProperties();
+
+            e.GetPointerProperties(e.ActionIndex, properties);
+
+            if (properties.ToolType == MotionEventToolType.Mouse)
+                deviceType = DeviceType.Mouse;
+            else if (properties.ToolType == MotionEventToolType.Stylus)
+                deviceType = DeviceType.Pen;
+
             switch (e.ActionMasked)
             {
                 // DOWN                
                 case MotionEventActions.Down:
                 case MotionEventActions.PointerDown:
-                    TouchPanel.AddEvent(id, TouchLocationState.Pressed, position);
+                    TouchPanel.AddEvent(id, TouchLocationState.Pressed, position, deviceType, pressure, rotation);
                     break;
                 // UP                
                 case MotionEventActions.Up:
                 case MotionEventActions.PointerUp:
-                    TouchPanel.AddEvent(id, TouchLocationState.Released, position);
+                    TouchPanel.AddEvent(id, TouchLocationState.Released, position, deviceType, pressure, rotation);
                     break;
                 // MOVE                
                 case MotionEventActions.Move:
@@ -52,7 +66,7 @@ namespace Microsoft.Xna.Framework.Input.Touch
                         position.X = e.GetX(i);
                         position.Y = e.GetY(i);
                         UpdateTouchPosition(ref position);
-                        TouchPanel.AddEvent(id, TouchLocationState.Moved, position);
+                        TouchPanel.AddEvent(id, TouchLocationState.Moved, position, deviceType, pressure, rotation);
                     }
                     break;
 
@@ -62,7 +76,7 @@ namespace Microsoft.Xna.Framework.Input.Touch
                     for (int i = 0; i < e.PointerCount; i++)
                     {
                         id = e.GetPointerId(i);
-                        TouchPanel.AddEvent(id, TouchLocationState.Released, position);
+                        TouchPanel.AddEvent(id, TouchLocationState.Released, position, deviceType, pressure, rotation);
                     }
                     break;
             }

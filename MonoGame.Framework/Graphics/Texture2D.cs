@@ -353,7 +353,16 @@ namespace Microsoft.Xna.Framework.Graphics
             for (int i = 0; i < pixelCount; ++i)
             {
                 uint pixel = (uint)pixels[i];
-                pixels[i] = (int)((pixel & 0xFF00FF00) | ((pixel & 0x00FF0000) >> 16) | ((pixel & 0x000000FF) << 16));
+                byte alpha = (byte)(pixel >> 24);
+                byte blue = (byte)(pixel >> 16);
+                byte green = (byte)(pixel >> 8);
+                byte red = (byte)pixel;
+
+                red = (byte)(red * alpha / 255f);
+                green = (byte)(green * alpha / 255f);
+                blue = (byte)(blue * alpha / 255f);
+
+                pixels[i] = alpha << 24 | red << 16 | green << 8 | blue;
             }
         }
 

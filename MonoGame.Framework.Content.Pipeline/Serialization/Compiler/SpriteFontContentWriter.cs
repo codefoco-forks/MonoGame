@@ -27,6 +27,7 @@ namespace Microsoft.Xna.Framework.Content.Pipeline.Serialization.Compiler
             output.Write(hasDefChar);
             if (hasDefChar)
                 output.Write(value.DefaultCharacter.Value);
+            output.Write(value.Scale);
         }
 
         /// <summary>

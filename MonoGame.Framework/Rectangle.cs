@@ -11,7 +11,7 @@ namespace Microsoft.Xna.Framework
     /// <summary>
     /// Describes a 2D-rectangle. 
     /// </summary>
-    [DataContract]
+    //[DataContract]
     [DebuggerDisplay("{DebugDisplayString,nq}")]
     public struct Rectangle : IEquatable<Rectangle>
     {
@@ -26,25 +26,25 @@ namespace Microsoft.Xna.Framework
         /// <summary>
         /// The x coordinate of the top-left corner of this <see cref="Rectangle"/>.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public int X;
 
         /// <summary>
         /// The y coordinate of the top-left corner of this <see cref="Rectangle"/>.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public int Y;
 
         /// <summary>
         /// The width of this <see cref="Rectangle"/>.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public int Width;
 
         /// <summary>
         /// The height of this <see cref="Rectangle"/>.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public int Height;
 
         #endregion
