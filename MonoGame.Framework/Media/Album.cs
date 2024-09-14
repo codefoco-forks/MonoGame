@@ -12,6 +12,7 @@ using CoreGraphics;
 using MediaPlayer;
 using UIKit;
 #elif ANDROID
+using Android.Content;
 using Android.Graphics;
 using Android.Provider;
 #endif
@@ -187,7 +188,13 @@ namespace Microsoft.Xna.Framework.Media
         [CLSCompliant(false)]
         public Bitmap GetAlbumArt(int width = 0, int height = 0)
         {
-            var albumArt = MediaStore.Images.Media.GetBitmap(MediaLibrary.Context.ContentResolver, this.thumbnail);
+            Bitmap albumArt;
+            if (!OperatingSystem.IsAndroidVersionAtLeast (29)) {
+                albumArt = MediaStore.Images.Media.GetBitmap(MediaLibrary.Context.ContentResolver, this.thumbnail);
+            } else {
+                var source = ImageDecoder.CreateSource (MediaLibrary.Context.ContentResolver, this.thumbnail);
+                albumArt = ImageDecoder.DecodeBitmap (source);
+            }
             if (width == 0 || height == 0)
                 return albumArt;
 
