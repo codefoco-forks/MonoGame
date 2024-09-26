@@ -1,4 +1,4 @@
-// MonoGame - Copyright (C) The MonoGame Team
+// MonoGame - Copyright (C) MonoGame Foundation, Inc
 // This file is subject to the terms and conditions defined in
 // file 'LICENSE.txt', which is part of this source code package.
 
@@ -8,11 +8,11 @@ using Android.Content.PM;
 using Android.OS;
 using Android.Views;
 using Microsoft.Xna.Framework.Input.Touch;
+using MonoGame.Framework.Utilities;
 using MonoGame.OpenGL;
 
 namespace Microsoft.Xna.Framework
 {
-    [CLSCompliant(false)]
     public class AndroidGameWindow : GameWindow, IDisposable
     {
         internal MonoGameAndroidGameView GameView { get; private set; }
@@ -37,21 +37,23 @@ namespace Microsoft.Xna.Framework
 
             Point size;
             // GetRealSize() was defined in JellyBeanMr1 / API 17 / Android 4.2
-            if (!OperatingSystem.IsAndroidVersionAtLeast(17))
+            if (!PlatformInfo.IsAndroidVersionAtLeast(17))
             {
                 size.X = activity.Resources.DisplayMetrics.WidthPixels;
                 size.Y = activity.Resources.DisplayMetrics.HeightPixels;
             }
-            else if (OperatingSystem.IsAndroidVersionAtLeast(30)) // API 30 and Above
+            else if (PlatformInfo.IsAndroidVersionAtLeast(30)) // API 30 and Above
             {
                 var rect = activity.WindowManager.CurrentWindowMetrics.Bounds;
-                size.X = rect.Width ();
-                size.Y = rect.Height ();
+                size.X = rect.Width();
+                size.Y = rect.Height();
             }
             else
             {
                 Android.Graphics.Point p = new Android.Graphics.Point();
+#pragma warning disable CS0618 // Type or member is obsolete
                 activity.WindowManager.DefaultDisplay.GetRealSize(p);
+#pragma warning restore CS0618 // Type or member is obsolete
                 size.X = p.X;
                 size.Y = p.Y;
             }
@@ -64,7 +66,7 @@ namespace Microsoft.Xna.Framework
         private void Initialize(Context context, Point size)
         {
             _clientBounds = new Rectangle(0, 0, size.X, size.Y);
-            
+
             GameView = new MonoGameAndroidGameView(context, this, _game);
             GameView.RenderOnUIThread = Game.Activity.RenderOnUIThread;
             GameView.RenderFrame += OnRenderFrame;
@@ -97,7 +99,6 @@ namespace Microsoft.Xna.Framework
                 }
                 else if (_game.GraphicsDevice != null)
                 {
-                    _game.GraphicsDevice.Clear(Color.Black);
                     if (GameView.IsResuming && Resumer != null)
                     {
                         Resumer.Draw();
@@ -190,6 +191,15 @@ namespace Microsoft.Xna.Framework
             }
         }
 
+        public override bool GetDeviceDPI(out float dpi)
+        {
+            float scale = Game.Activity.Resources.DisplayMetrics.Density;
+
+            dpi = DEFAULT_DPI * scale;
+
+            return true;
+        }
+
         internal void ChangeClientBounds(Rectangle bounds)
         {
             if (bounds != _clientBounds)
@@ -238,7 +248,7 @@ namespace Microsoft.Xna.Framework
             }
         }
 
-        
+
         private void SetDisplayOrientation(DisplayOrientation value)
         {
             if (value != _currentOrientation)

@@ -10,6 +10,7 @@ namespace Microsoft.Xna.Framework.Input
     {
         internal static int ScrollX;
         internal static int ScrollY;
+        internal static byte ClickCount;
 
         private static IntPtr PlatformGetWindowHandle()
         {
@@ -35,6 +36,8 @@ namespace Microsoft.Xna.Framework.Input
 
             window.MouseState.HorizontalScrollWheelValue = ScrollX;
             window.MouseState.ScrollWheelValue = ScrollY;
+
+            window.MouseState.ClickCount = ClickCount;
 
             window.MouseState.X = x - clientBounds.X;
             window.MouseState.Y = y - clientBounds.Y;

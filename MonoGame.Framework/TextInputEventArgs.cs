@@ -10,7 +10,7 @@ namespace Microsoft.Xna.Framework
     /// <summary>
     /// This class is used in the <see cref="GameWindow.TextInput"/> event as <see cref="EventArgs"/>.
     /// </summary>
-    public struct TextInputEventArgs
+    public class TextInputEventArgs : EventArgs
     {
         /// <summary>
         /// Creates an instance of <see cref="TextInputEventArgs"/>.
