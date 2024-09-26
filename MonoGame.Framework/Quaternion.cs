@@ -11,7 +11,7 @@ namespace Microsoft.Xna.Framework
     /// <summary>
     /// An efficient mathematical representation for three dimensional rotations.
     /// </summary>
-    [DataContract]
+    //[DataContract]
     [DebuggerDisplay("{DebugDisplayString,nq}")]
     public struct Quaternion : IEquatable<Quaternion>
     {
@@ -26,25 +26,25 @@ namespace Microsoft.Xna.Framework
         /// <summary>
         /// The x coordinate of this <see cref="Quaternion"/>.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public float X;
 
         /// <summary>
         /// The y coordinate of this <see cref="Quaternion"/>.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public float Y;
 
         /// <summary>
         /// The z coordinate of this <see cref="Quaternion"/>.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public float Z;
 
         /// <summary>
         /// The rotation component of this <see cref="Quaternion"/>.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public float W;
 
         #endregion
@@ -1021,26 +1021,9 @@ namespace Microsoft.Xna.Framework
             w = W;
         }
 
-        /// <summary>
-        /// Returns a <see cref="System.Numerics.Quaternion"/>.
-        /// </summary>
-        public System.Numerics.Quaternion ToNumerics()
-        {
-            return new System.Numerics.Quaternion(this.X, this.Y, this.Z, this.W);
-        }
-
         #endregion
 
         #region Operators
-
-        /// <summary>
-        /// Converts a <see cref="System.Numerics.Quaternion"/> to a <see cref="Quaternion"/>.
-        /// </summary>
-        /// <param name="value">The converted value.</param>
-        public static implicit operator Quaternion(System.Numerics.Quaternion value)
-        {
-            return new Quaternion(value.X, value.Y, value.Z, value.W);
-        }
 
         /// <summary>
         /// Adds two quaternions.

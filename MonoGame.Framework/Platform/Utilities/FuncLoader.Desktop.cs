@@ -6,7 +6,7 @@ namespace MonoGame.Framework.Utilities
 {
     internal class FuncLoader
     {
-        private class Windows
+        internal static class Windows
         {
             [DllImport("kernel32", CharSet = CharSet.Ansi, ExactSpelling = true, SetLastError = true)]
             public static extern IntPtr GetProcAddress(IntPtr hModule, string procName);
@@ -15,7 +15,7 @@ namespace MonoGame.Framework.Utilities
             public static extern IntPtr LoadLibraryW(string lpszLib);
         }
 
-        private class Linux
+        private static class Linux
         {
             [DllImport("libdl.so.2")]
             public static extern IntPtr dlopen(string path, int flags);
@@ -32,14 +32,22 @@ namespace MonoGame.Framework.Utilities
             [DllImport("/usr/lib/libSystem.dylib")]
             public static extern IntPtr dlsym(IntPtr handle, string symbol);
         }
-        
+
         private const int RTLD_LAZY = 0x0001;
 
         public static IntPtr LoadLibraryExt(string libname)
         {
             var ret = IntPtr.Zero;
-            var assemblyLocation = Path.GetDirectoryName(typeof(FuncLoader).Assembly.Location) ?? "./";
+            string assemblyLocation;
 
+#if NET6_0_OR_GREATER
+            assemblyLocation = Path.GetDirectoryName(System.AppContext.BaseDirectory);
+
+            if (string.IsNullOrEmpty(assemblyLocation))
+                assemblyLocation = Path.GetDirectoryName(typeof(FuncLoader).Assembly.Location) ?? "./";
+#else
+            assemblyLocation = Path.GetDirectoryName(typeof(FuncLoader).Assembly.Location) ?? "./";
+#endif
             // Try .NET Framework / mono locations
             if (CurrentPlatform.OS == OS.MacOSX)
             {
@@ -51,6 +59,13 @@ namespace MonoGame.Framework.Utilities
             }
             else
             {
+                if (CurrentPlatform.IsARM64)
+                {
+                    ret = LoadLibrary(Path.Combine(assemblyLocation, "ARM64", libname));
+                    if (ret != IntPtr.Zero)
+                        return ret;
+                }
+
                 if (Environment.Is64BitProcess)
                     ret = LoadLibrary(Path.Combine(assemblyLocation, "x64", libname));
                 else
@@ -111,7 +126,7 @@ namespace MonoGame.Framework.Utilities
                 return default(T);
             }
 
-#if NETSTANDARD
+#if NETSTANDARD && !NETFRAMEWORK
             return Marshal.GetDelegateForFunctionPointer<T>(ret);
 #else
             return (T)(object)Marshal.GetDelegateForFunctionPointer(ret, typeof(T));

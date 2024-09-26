@@ -3,6 +3,11 @@
 // file 'LICENSE.txt', which is part of this source code package.
 
 using System;
+
+#if WINDOWS && DIRECTX
+using System.Drawing;
+#endif
+
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Microsoft.Xna.Framework.Input
@@ -71,6 +76,20 @@ namespace Microsoft.Xna.Framework.Input
         /// Gets the hand cursor, usually used for web links.
         /// </summary>
         public static MouseCursor Hand { get; private set; }
+
+#if WINDOWS && DIRECTX
+        /// <summary>
+        /// Load a MouseCursor from System.Drawing Bitmap
+        /// </summary>
+        /// <param name="bitmap"></param>
+        /// <param name="originx"></param>
+        /// <param name="originy"></param>
+        /// <returns></returns>
+        public static MouseCursor FromBitmap(Bitmap bitmap, int originx, int originy)
+        {
+            return PlatformFromBitmap(bitmap, originx, originy);
+        }
+#endif
 
         /// <summary>
         /// Creates a mouse cursor from the specified texture.
