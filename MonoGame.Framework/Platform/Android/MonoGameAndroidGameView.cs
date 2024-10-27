@@ -1171,6 +1171,9 @@ namespace Microsoft.Xna.Framework
 
         public override bool OnKeyDown(Keycode keyCode, KeyEvent e)
         {
+            if (e.RepeatCount != 0)
+                return base.OnKeyDown(keyCode, e);
+
             bool handled = false;
             if (IsGamePad(e.Device) && GamePad.OnKeyDown(keyCode, e))
                 return true;
@@ -1203,6 +1206,10 @@ namespace Microsoft.Xna.Framework
 
         public override bool OnKeyUp(Keycode keyCode, KeyEvent e)
         {
+            var flags = e.Flags;
+            if (e.RepeatCount != 0)
+                return base.OnKeyUp(keyCode, e);
+
             if (keyCode == Keycode.Back)
                 GamePad.Back = false;
             if (IsGamePad(e.Device) && GamePad.OnKeyUp(keyCode, e))

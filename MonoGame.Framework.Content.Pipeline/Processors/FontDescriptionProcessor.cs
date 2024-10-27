@@ -149,7 +149,8 @@ namespace Microsoft.Xna.Framework.Content.Pipeline.Processors
             if (!string.IsNullOrEmpty(fontFile5))
                 fonts.Add(fontFile5);
 
-            var glyphs = ImportFont(input, out lineSpacing, out yOffsetMin, context, fonts.ToArray());
+            Dictionary<char, Dictionary<char, short>> kerning;
+            var glyphs = ImportFont(input, out lineSpacing, out yOffsetMin, out kerning, fonts.ToArray());
 
             var glyphData = new HashSet<GlyphData>(glyphs.Select(x => x.Data));
 
@@ -176,6 +177,7 @@ namespace Microsoft.Xna.Framework.Content.Pipeline.Processors
             lineSpacing += input.Spacing;
             output.VerticalLineSpacing = (int)Math.Round(lineSpacing);
             output.Scale = scale;
+            output.KerningAdvance = kerning;
 
             foreach (Glyph glyph in glyphs)
             {
@@ -184,23 +186,15 @@ namespace Microsoft.Xna.Framework.Content.Pipeline.Processors
                 var texRect = glyph.Data.Subrect;
                 output.Glyphs.Add(texRect);
 
-                int width = (int)glyph.Data.Subrect.Width;
-                int height = (int)glyph.Data.Subrect.Height;
-                int y = (int)Math.Round(glyph.Data.YOffset - yOffsetMin);
+                int width = glyph.Data.Subrect.Width;
+                int height = glyph.Data.Subrect.Height;
+                int y = glyph.Data.OffsetY - yOffsetMin;
 
                 var cropping = new Rectangle(0, y, width, height);
                 output.Cropping.Add(cropping);
 
-                // Set the optional character kerning.
-                if (input.UseKerning)
-                {
-                    ABCFloat widths = glyph.Data.CharacterWidths;
-                    output.Kerning.Add(new Vector3(widths.A, widths.B, widths.C));
-                }
-                else
-                {
-                    output.Kerning.Add(new Vector3(0, texRect.Width, 0));
-                }
+                Vector3 offset = new Vector3(glyph.Data.OffsetX, glyph.Data.OffsetY, glyph.Data.Advance);
+                output.Offsets.Add(offset);
             }
 
             output.Texture.Faces[0].Add(face);
@@ -252,7 +246,7 @@ namespace Microsoft.Xna.Framework.Content.Pipeline.Processors
             return output;
         }
 
-        private static Glyph[] ImportFont(FontDescription options, out float lineSpacing, out int yOffsetMin, ContentProcessorContext context, string[] fontNames)
+        private static Glyph[] ImportFont(FontDescription options, out float lineSpacing, out int yOffsetMin, out Dictionary<char, Dictionary<char, short>> kerning, string[] fontNames)
         {
             // Which importer knows how to read this source font?
             IFontImporter importer;
@@ -281,6 +275,7 @@ namespace Microsoft.Xna.Framework.Content.Pipeline.Processors
 
             lineSpacing = importer.LineSpacing;
             yOffsetMin = importer.YOffsetMin;
+            kerning = importer.Kerning;
 
             // Get all glyphs
             var glyphs = new List<Glyph>(importer.Glyphs);
@@ -293,7 +288,6 @@ namespace Microsoft.Xna.Framework.Content.Pipeline.Processors
 
             // Sort the glyphs
             glyphs.Sort((left, right) => left.Character.CompareTo(right.Character));
-
 
             // Check that the default character is part of the glyphs
             if (options.DefaultCharacter != null)

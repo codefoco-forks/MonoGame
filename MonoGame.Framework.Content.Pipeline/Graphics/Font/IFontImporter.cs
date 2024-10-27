@@ -12,5 +12,7 @@ namespace Microsoft.Xna.Framework.Content.Pipeline.Graphics
 		float LineSpacing { get; }
 
 		int YOffsetMin { get; }
+
+		Dictionary<char, Dictionary<char, short>> Kerning { get; }
 	}
 }
