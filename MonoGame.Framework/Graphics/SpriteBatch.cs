@@ -1086,15 +1086,18 @@ namespace Microsoft.Xna.Framework.Graphics
             if (count == 0)
                 return Array.Empty<SpriteFont.GlyphRect>();
 #endif
-            if (maxLength != 0 && maxLength < count)
+            if (maxLength > 0 && maxLength < count)
                 count = maxLength;
 
             SpriteFont.GlyphRect[] glyphsIndices = new SpriteFont.GlyphRect[count];
 
             float scale = spriteFont.Scale;
-            float lineSpacing = spriteFont.LineSpacing * scale;
+            float lineSpacing = (spriteFont.LineSpacing + 1) * scale;
             float spacing = spriteFont.Spacing * scale;
             float lineOffset = 0f;
+
+            float delta;
+            int startWord = 0;
 
             char prev_char = char.MinValue;
             int kerning = 0;
@@ -1105,16 +1108,17 @@ namespace Microsoft.Xna.Framework.Graphics
                 kerning = spriteFont.GetKerning(text[0], text[1]);
             }
 
-            Vector2 offset = new Vector2((-kerning + 1)* scale, lineSpacing);
+            Vector2 offset = new Vector2((-kerning + 1) * scale, lineSpacing);
 
             fixed (SpriteFont.Glyph* pGlyphs = spriteFont.Glyphs)
             {
-                for (int i = 0; i < count; ++i)
+                for (int i = 0; i < count; i++)
                 {
                     char c = text[i];
 
                     if (c == '\r')
                     {
+                        prev_char = char.MinValue;
                         continue;
                     }
 
@@ -1123,21 +1127,63 @@ namespace Microsoft.Xna.Framework.Graphics
                         offset.X = 0;
                         offset.Y -= lineSpacing;
                         lineOffset += lineSpacing;
+                        prev_char = char.MinValue;
                         continue;
                     }
 
                     int index = spriteFont.GetGlyphIndexOrDefault(c);
 
                     SpriteFont.Glyph* pCurrentGlyph = pGlyphs + index;
-                    SpriteFont.GlyphRect glyphRect;
+
+                    if (c == ' ' || c == '\t')
+                    {
+                        delta = (pCurrentGlyph->Advance + spacing) * scale;
+                        offset.X += delta;
+
+                        // Skip repeated white-spaces and mark beginning of workd
+                        for (int j = i + 1; j < count; j++)
+                        {
+                            c = text[j];
+                            if (c == ' ' || c == '\t')
+                            {
+                                offset.X += delta;
+                                i++;
+                            }
+                            else
+                            {
+                                startWord = j;
+                                break;
+                            }
+                        }
+
+                        prev_char = char.MinValue;
+                        continue;
+                    }
 
                     kerning = spriteFont.GetKerning(prev_char, c);
+
+                    delta = (pCurrentGlyph->Advance + kerning + spacing) * scale;
+
+                    if (preferredWidth > 0 && offset.X + delta > preferredWidth)
+                    {
+                        if (startWord != 0)
+                            i = startWord - 1;
+
+                        offset.X = 0;
+                        offset.Y -= lineSpacing;
+                        lineOffset += lineSpacing;
+                        prev_char = char.MinValue;
+
+                        continue;
+                    }
 
                     Vector2 size = new Vector2(pCurrentGlyph->Cropping.Width * scale,
                                                pCurrentGlyph->Cropping.Height * scale);
 
                     Vector2 pos = new Vector2(offset.X + (pCurrentGlyph->OffsetX + kerning - 1) * scale,
                                               offset.Y - size.Y - (pCurrentGlyph->OffsetY - 2) * scale);
+
+                    SpriteFont.GlyphRect glyphRect;
 
                     glyphRect.pos = pos;
                     glyphRect.size = size;
@@ -1149,16 +1195,19 @@ namespace Microsoft.Xna.Framework.Graphics
 
                     glyphsIndices[i] = glyphRect;
 
-                    offset.X += (pCurrentGlyph->Advance  + kerning + spacing) * scale;
+                    offset.X += delta;
                     prev_char = c;
                 }
             }
 
-            for (int i = 0; i < count; ++i)
+            if (lineOffset > 0f)
             {
-                SpriteFont.GlyphRect rect = glyphsIndices[i];
-                rect.pos = new Vector2(rect.pos.X, lineOffset + rect.pos.Y);
-                glyphsIndices[i] = rect;
+                for (int i = 0; i < count; ++i)
+                {
+                    SpriteFont.GlyphRect rect = glyphsIndices[i];
+                    rect.pos = new Vector2(rect.pos.X, lineOffset + rect.pos.Y);
+                    glyphsIndices[i] = rect;
+                }
             }
 
             return glyphsIndices;

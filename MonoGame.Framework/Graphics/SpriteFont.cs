@@ -291,54 +291,114 @@ namespace Microsoft.Xna.Framework.Graphics
             if (maxLength != 0 && maxLength < count)
                 count = maxLength;
 
+            float delta;
+            int startWord = 1;
+
             char prev_char = char.MinValue;
             char ch = text[0];
             int lineSpacing = LineSpacing + 1;
+            float spacing = Spacing;
+            float lastWidth = 0f;
+            preferredWidth /= scale;
 
             fixed (Glyph* pGlyphs = Glyphs)
             {
-                int currentGlyphIndex = GetGlyphIndexOrDefault(ch);
-                Glyph* pCurrentGlyph = pGlyphs + currentGlyphIndex;
+                int index = GetGlyphIndexOrDefault(ch);
+                Glyph* pCurrentGlyph = pGlyphs + index;
 
-                Vector2 offset = new Vector2(0, lineSpacing);
-                float width = pCurrentGlyph->Advance;
+                Vector2 offset = new Vector2(pCurrentGlyph->Advance, lineSpacing);
+                float width = 0;
 
                 if (ch == '\n')
                 {
                     offset.Y += lineSpacing;
+                    prev_char = char.MinValue;
                 }
 
-                for (int i = 1; i < count; ++i)
+                for (int i = 1; i < count; i++)
                 {
                     ch = text[i];
 
                     if (ch == '\r')
-                        continue;
-
-                    if (ch == '\n')
                     {
-                        if (offset.X < width)
-                            offset.X = width;
-
-                        width = 0;
-                        offset.Y += lineSpacing;
+                        prev_char = char.MinValue;
                         continue;
                     }
 
-                    currentGlyphIndex = GetGlyphIndexOrDefault(ch);
-                    Debug.Assert(currentGlyphIndex >= 0 && currentGlyphIndex < Glyphs.Length, "currentGlyphIndex was outside the bounds of the array.");
-                    pCurrentGlyph = pGlyphs + currentGlyphIndex;
+                    if (ch == '\n')
+                    {
+                        if (width < offset.X)
+                            width = offset.X;
+
+                        offset.X = 0;
+                        offset.Y += lineSpacing;
+                        prev_char = char.MinValue;
+                        continue;
+                    }
+
+                    index = GetGlyphIndexOrDefault(ch);
+                    Debug.Assert(index >= 0 && index < Glyphs.Length, "currentGlyphIndex was outside the bounds of the array.");
+
+                    pCurrentGlyph = pGlyphs + index;
+
+                    if (ch == ' ' || ch == '\t')
+                    {
+                        delta = pCurrentGlyph->Advance + spacing;
+                        lastWidth = offset.X;
+                        offset.X += delta;
+
+                        // Skip repeated white-spaces and mark beginning of workd
+                        for (int j = i + 1; j < count; j++)
+                        {
+                            ch = text[j];
+                            if (ch == ' ' || ch == '\t')
+                            {
+                                offset.X += delta;
+                                i++;
+                            }
+                            else
+                            {
+                                startWord = j;
+                                break;
+                            }
+                        }
+
+                        prev_char = char.MinValue;
+                        continue;
+                    }
 
                     int kerning = GetKerning(prev_char, ch);
-                    width += pCurrentGlyph->Advance + kerning + Spacing;
+                    delta = pCurrentGlyph->Advance + kerning + spacing;
+
+                    if (preferredWidth > 0 && offset.X + delta > preferredWidth)
+                    {
+                        if (startWord > 1)
+                        {
+                            i = startWord - 1;
+                            offset.X = lastWidth;
+                            lastWidth = 0f;
+                        }
+
+                        if (width < offset.X)
+                            width = offset.X;
+
+                        offset.X = 0;
+                        offset.Y += lineSpacing;
+                        
+
+                        prev_char = char.MinValue;
+                        continue;
+                    }
+
+                    offset.X += delta;
 
                     prev_char = ch;
                 }
 
-                if (offset.X < width)
-                    offset.X = width;
+                if (width < offset.X)
+                    width = offset.X;
 
-                size.X = (offset.X + 4) * scale;
+                size.X = (width + 4) * scale;
                 size.Y = (offset.Y + 4) * scale;
             }
         }
@@ -405,7 +465,6 @@ namespace Microsoft.Xna.Framework.Graphics
         /// <param name="prev_char"></param>
         /// <param name="c"></param>
         /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
         public int GetKerning(char prev_char, char c)
         {
             if (prev_char == char.MinValue || c == char.MinValue)
