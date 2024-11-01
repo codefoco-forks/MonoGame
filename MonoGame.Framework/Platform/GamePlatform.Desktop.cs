@@ -8,6 +8,10 @@ using System;
 using Windows.UI.ViewManagement;
 #endif
 
+#if WINDOWS && DIRECTX
+using System.Windows.Forms;
+#endif
+
 namespace Microsoft.Xna.Framework
 {
     partial class GamePlatform
@@ -22,5 +26,13 @@ namespace Microsoft.Xna.Framework
             return new UAPGamePlatform(game);
 #endif
         }
-   }
+
+#if WINDOWS && DIRECTX
+        internal static GamePlatform PlatformCreate(Game game, Control gameView)
+        {
+            return new MonoGame.Framework.WinFormsGamePlatform(game, gameView);
+        }
+#endif
+
+    }
 }

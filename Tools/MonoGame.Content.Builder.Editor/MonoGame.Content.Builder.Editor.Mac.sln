@@ -1,0 +1,43 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 25.0.1706.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonoGame.Content.Builder.Editor.Mac", "MonoGame.Content.Builder.Editor.Mac.csproj", "{3936E171-FAB8-413B-88C7-3D0D98367A01}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonoGame.Framework.Content.Pipeline", "..\..\MonoGame.Framework.Content.Pipeline\MonoGame.Framework.Content.Pipeline.csproj", "{6DE17A89-14DF-4FB1-90EE-53B6113AAF31}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonoGame.Content.Builder", "..\MonoGame.Content.Builder\MonoGame.Content.Builder.csproj", "{24180C58-4E19-43AB-8ADF-E08E9016C44D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonoGame.Framework.DesktopGL", "..\..\MonoGame.Framework\MonoGame.Framework.DesktopGL.csproj", "{B16ED5CF-D545-40C2-A16A-1D7470898DF3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3936E171-FAB8-413B-88C7-3D0D98367A01}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3936E171-FAB8-413B-88C7-3D0D98367A01}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3936E171-FAB8-413B-88C7-3D0D98367A01}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3936E171-FAB8-413B-88C7-3D0D98367A01}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6DE17A89-14DF-4FB1-90EE-53B6113AAF31}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6DE17A89-14DF-4FB1-90EE-53B6113AAF31}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6DE17A89-14DF-4FB1-90EE-53B6113AAF31}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6DE17A89-14DF-4FB1-90EE-53B6113AAF31}.Release|Any CPU.Build.0 = Release|Any CPU
+		{24180C58-4E19-43AB-8ADF-E08E9016C44D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{24180C58-4E19-43AB-8ADF-E08E9016C44D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{24180C58-4E19-43AB-8ADF-E08E9016C44D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{24180C58-4E19-43AB-8ADF-E08E9016C44D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B16ED5CF-D545-40C2-A16A-1D7470898DF3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B16ED5CF-D545-40C2-A16A-1D7470898DF3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B16ED5CF-D545-40C2-A16A-1D7470898DF3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B16ED5CF-D545-40C2-A16A-1D7470898DF3}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B5AD6B44-8B93-4842-81AA-D1CBA439311A}
+	EndGlobalSection
+EndGlobal

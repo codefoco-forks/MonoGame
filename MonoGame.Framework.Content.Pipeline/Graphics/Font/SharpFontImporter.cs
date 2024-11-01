@@ -2,9 +2,13 @@
 // This file is subject to the terms and conditions defined in
 // file 'LICENSE.txt', which is part of this source code package.
 
-using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
+
+using Microsoft.Xna.Framework.Content.Pipeline.Graphics.Font;
+using Microsoft.Xna.Framework.Graphics;
+
 using SharpFont;
 
 namespace Microsoft.Xna.Framework.Content.Pipeline.Graphics
@@ -19,49 +23,70 @@ namespace Microsoft.Xna.Framework.Content.Pipeline.Graphics
 
         public int YOffsetMin { get; private set; }
 
-        // Size of the temp surface used for GDI+ rasterization.
-        const int MaxGlyphSize = 1024;
+        public Dictionary<char, Dictionary<char, short>> Kerning { get; private set; }
+
+        private Dictionary<uint, char> CharMap;
 
         Library lib = null;
 
-        public void Import(FontDescription options, string fontName)
+        public void Import(FontDescription options, string[] fontNames)
         {
             lib = new Library();
+            CharMap = new Dictionary<uint, char>();
             // Create a bunch of GDI+ objects.
-            var face = CreateFontFace(options, fontName);
+            FontFaceCache[] faces = CreateFontFaces(options, fontNames);
             try
             {
                 // Which characters do we want to include?
                 var characters = options.Characters;
 
                 var glyphList = new List<Glyph>();
-                var glyphMaps = new Dictionary<uint, GlyphData>();
 
                 // Rasterize each character in turn.
                 foreach (char character in characters)
                 {
-                    uint glyphIndex = face.GetCharIndex(character);
-                    if (!glyphMaps.TryGetValue(glyphIndex, out GlyphData glyphData))
+                    foreach (FontFaceCache faceCache in faces)
                     {
-                        glyphData = ImportGlyph(glyphIndex, face);
-                        glyphMaps.Add(glyphIndex, glyphData);
-                    }
+                        Face face = faceCache.FontFace;
+                        Dictionary<uint, GlyphData> glyphMaps = faceCache.GlyphMaps;
 
-                    var glyph = new Glyph(character, glyphData);
-                    glyphList.Add(glyph);
+                        uint glyphIndex = face.GetCharIndex(character);
+                        if (glyphIndex == 0)
+                            continue;
+
+                        if (!glyphMaps.TryGetValue(glyphIndex, out GlyphData glyphData))
+                        {
+                            glyphData = ImportGlyph(glyphIndex, face);
+                            glyphMaps.Add(glyphIndex, glyphData);
+                            CharMap[glyphIndex] = character;
+                        }
+
+                        var glyph = new Glyph(character, glyphData);
+                        glyphList.Add(glyph);
+                        break;
+                    }
                 }
                 Glyphs = glyphList;
 
+                Face firstFace = faces[0].FontFace;
+
                 // Store the font height.
-                LineSpacing = face.Size.Metrics.Height >> 6;
+                LineSpacing = firstFace.Size.Metrics.Height >> 6;
 
                 // The height used to calculate the Y offset for each character.
-                YOffsetMin = -face.Size.Metrics.Ascender >> 6;
+                YOffsetMin = -firstFace.Size.Metrics.Ascender >> 6;
+
+                if (options.UseKerning)
+                    ImportGlyphKerningPairs(faces);
             }
             finally
             {
-                if (face != null)
-                    face.Dispose();
+                foreach (FontFaceCache face in faces)
+                {
+                    if (face != null)
+                        face.FontFace.Dispose();
+                }
+
                 if (lib != null)
                 {
                     lib.Dispose();
@@ -70,21 +95,83 @@ namespace Microsoft.Xna.Framework.Content.Pipeline.Graphics
             }
         }
 
+        /// <summary>
+        /// Cache FreeType Kerning distance for each char pairs
+        /// </summary>
+        /// <param name="faces"></param>
+        private void ImportGlyphKerningPairs(FontFaceCache[] faces)
+        {
+            Dictionary<char, Dictionary<char, short>> kerning = new Dictionary<char, Dictionary<char, short>>();
+
+            foreach (FontFaceCache faceCache in faces)
+            {
+                Face face = faceCache.FontFace;
+                uint [] indices = faceCache.GlyphMaps.Keys.ToArray();
+
+                foreach (uint left_index in indices)
+                {
+                    char left = CharMap[left_index];
+
+                    // We only care about letter-to-letter kerning
+                    if (!char.IsLetter(left))
+                        continue;
+
+                    Dictionary<char, short> rightDistance = new Dictionary<char, short>();
+
+                    foreach (uint right_index in indices)
+                    {
+                        char right = CharMap[right_index];
+                        if (!char.IsLetter(right) && right != '.' && right != ',' && right != '?')
+                            continue;
+
+                        FTVector delta = face.GetKerning(left_index, right_index, KerningMode.Default);
+                        short kerningDistance = (short)(delta.X >> 6);
+                        if (kerningDistance == 0)
+                            continue;
+
+                        rightDistance[right] = kerningDistance;
+                        System.Diagnostics.Debug.WriteLine($"{left} : {right} = {kerningDistance}");
+                    }
+
+                    if (rightDistance.Count > 0)
+                        kerning[left] = rightDistance;
+                }
+            }
+
+            this.Kerning = kerning;
+        }
+
+        private FontFaceCache[] CreateFontFaces(FontDescription options, string[] fontNames)
+        {
+            int count = fontNames.Length;
+            FontFaceCache[] faces = new FontFaceCache[count];
+            for (int i = 0; i < count; i++)
+            {
+                faces[i] = CreateFontFace(options, fontNames[i]);
+            }
+            return faces;
+        }
+
 
         // Attempts to instantiate the requested GDI+ font object.
-        private Face CreateFontFace(FontDescription options, string fontName)
+        private FontFaceCache CreateFontFace(FontDescription options, string fontName)
         {
             try
             {
-                const uint dpi = 96;
+                uint height = ((uint)options.Size);
+
+                if (options.Scale != 1.0f && options.Scale != 0.0f)
+                {
+                    height = (uint)(height * options.Scale);
+                }
+
                 var face = lib.NewFace(fontName, 0);
-                var fixedSize = ((int)options.Size) << 6;
-                face.SetCharSize(0, fixedSize, dpi, dpi);
+                face.SetPixelSizes(0, height);
 
                 if (face.FamilyName == "Microsoft Sans Serif" && options.FontName != "Microsoft Sans Serif")
                     throw new PipelineException(string.Format("Font {0} is not installed on this computer.", options.FontName));
 
-                return face;
+                return new FontFaceCache(face);
 
                 // A font substitution must have occurred.
                 //throw new Exception(string.Format("Can't find font '{0}'.", options.FontName));
@@ -98,7 +185,8 @@ namespace Microsoft.Xna.Framework.Content.Pipeline.Graphics
         // Rasterizes a single character glyph.
         private GlyphData ImportGlyph(uint glyphIndex, Face face)
         {
-            face.LoadGlyph(glyphIndex, LoadFlags.Default, LoadTarget.Normal);
+            face.LoadGlyph(glyphIndex, LoadFlags.NoBitmap , LoadTarget.Normal);
+            face.Glyph.Outline.Embolden(48);
             face.Glyph.RenderGlyph(RenderMode.Normal);
 
             // Render the character.
@@ -148,21 +236,12 @@ namespace Microsoft.Xna.Framework.Content.Pipeline.Graphics
                 glyphBitmap = new PixelBitmapContent<byte>(gHA, gVA);
             }
 
-            // not sure about this at all
-            var abc = new ABCFloat();
-            abc.A = face.Glyph.Metrics.HorizontalBearingX >> 6;
-            abc.B = face.Glyph.Metrics.Width >> 6;
-            abc.C = (face.Glyph.Metrics.HorizontalAdvance >> 6) - (abc.A + abc.B);
-            abc.A -= face.Glyph.BitmapLeft;
-            abc.B += face.Glyph.BitmapLeft;
-
             // Construct the output Glyph object.
             return new GlyphData(glyphIndex, glyphBitmap)
             {
-                XOffset = -(face.Glyph.Advance.X >> 6),
-                XAdvance = face.Glyph.Metrics.HorizontalAdvance >> 6,
-                YOffset = -(face.Glyph.Metrics.HorizontalBearingY >> 6),
-                CharacterWidths = abc
+                OffsetX = face.Glyph.BitmapLeft,
+                OffsetY = (face.Size.Metrics.Ascender >> 6) - face.Glyph.BitmapTop,
+                Advance = face.Glyph.Advance.X >> 6,
             };
         }
 
