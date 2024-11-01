@@ -6,14 +6,6 @@ using System.Runtime.InteropServices;
 
 namespace Microsoft.Xna.Framework.Content.Pipeline.Graphics
 {
-    [StructLayout(LayoutKind.Sequential)]
-    public struct ABCFloat
-    {
-        public float A;
-        public float B;
-        public float C;
-    }
-
     // Represents a single character within a font.
     internal class Glyph
     {
@@ -34,11 +26,11 @@ namespace Microsoft.Xna.Framework.Content.Pipeline.Graphics
     internal class GlyphData
     {
         // Constructor.
-        public GlyphData(uint glyphIndex, BitmapContent bitmap, Rectangle? subrect = null)
+        public GlyphData(uint glyphIndex, BitmapContent bitmap)
         {
             GlyphIndex = glyphIndex;
             Bitmap = bitmap;
-            Subrect = subrect.GetValueOrDefault(new Rectangle(0, 0, bitmap.Width, bitmap.Height));
+            Subrect = new Rectangle(0, 0, bitmap.Width, bitmap.Height);
             Width = bitmap.Width;
             Height = bitmap.Height;
         }
@@ -51,13 +43,11 @@ namespace Microsoft.Xna.Framework.Content.Pipeline.Graphics
         public Rectangle Subrect;
 
         // Layout information.
-        public float XOffset;
-        public float YOffset;
+        public int OffsetX;
+        public int OffsetY;
+        public int Advance;
+
         public int Width;
         public int Height;
-
-        public float XAdvance;
-
-        public ABCFloat CharacterWidths;
     }
 }

@@ -96,7 +96,6 @@ namespace Microsoft.Xna.Framework.Graphics
         }
 
 #if WINDOWS_UAP
-        [CLSCompliant(false)]
         public SwapChainPanel SwapChainPanel { get; set; }
 #endif
 
