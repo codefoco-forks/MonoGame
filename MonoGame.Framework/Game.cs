@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading;
 #if WINDOWS_UAP
 using System.Threading.Tasks;
 using Windows.ApplicationModel.Activation;
@@ -14,6 +15,9 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input.Touch;
 
+#if WINDOWS && DIRECTX
+using System.Windows.Forms;
+#endif
 
 namespace Microsoft.Xna.Framework
 {
@@ -84,8 +88,35 @@ namespace Microsoft.Xna.Framework
 
             // Allow some optional per-platform construction to occur too.
             PlatformConstruct();
-
         }
+
+#if WINDOWS && DIRECTX
+        /// <summary>
+        /// Create a Game object that renders the content to an external embeded control
+        /// </summary>
+        /// <param name="embededGameView"></param>
+        public Game(Control embededGameView)
+        {
+            _instance = this;
+
+            LaunchParameters = new LaunchParameters();
+            _services = new GameServiceContainer();
+            _components = new GameComponentCollection();
+            _content = new ContentManager(_services);
+
+            Platform = GamePlatform.PlatformCreate(this, embededGameView);
+            Platform.Activated += OnActivated;
+            Platform.Deactivated += OnDeactivated;
+            _services.AddService(typeof(GamePlatform), Platform);
+
+            // Calling Update() for first time initializes some systems
+            FrameworkDispatcher.Update();
+
+            // Allow some optional per-platform construction to occur too.
+            PlatformConstruct();
+        }
+#endif 
+
 
         ~Game()
         {
@@ -174,7 +205,6 @@ namespace Microsoft.Xna.Framework
         #region Properties
 
 #if ANDROID
-        [CLSCompliant(false)]
         public static AndroidGameActivity Activity { get; internal set; }
 #endif
         private static Game _instance = null;
@@ -318,7 +348,7 @@ namespace Microsoft.Xna.Framework
                         Services.GetService(typeof(IGraphicsDeviceService));
 
                     if (_graphicsDeviceService == null)
-                        throw new InvalidOperationException("No Graphics Device Service");
+                        return null;
                 }
                 return _graphicsDeviceService.GraphicsDevice;
             }
@@ -370,7 +400,6 @@ namespace Microsoft.Xna.Framework
         public event EventHandler<EventArgs> Exiting;
 
 #if WINDOWS_UAP
-        [CLSCompliant(false)]
         public ApplicationExecutionState PreviousExecutionState { get; internal set; }
 #endif
 
@@ -490,6 +519,49 @@ namespace Microsoft.Xna.Framework
                     "Handling for the run behavior {0} is not implemented.", runBehavior));
             }
         }
+
+#if WINDOWS && DIRECTX
+        /// <summary>
+        /// Run the game loop using external Form
+        /// (used when you embed a game view)
+        /// </summary>
+        /// <param name="applicationForm"></param>
+        public void Run(Form applicationForm)
+        {
+            AssertNotDisposed();
+            if (!Platform.BeforeRun())
+            {
+                BeginRun();
+                _gameTimer = Stopwatch.StartNew();
+                return;
+            }
+
+            if (!_initialized)
+            {
+                DoInitialize();
+                _initialized = true;
+            }
+
+            BeginRun();
+            _gameTimer = Stopwatch.StartNew();
+
+            DoUpdate(new GameTime());
+            
+            Platform.RunLoop(applicationForm);
+            EndRun();
+            DoExiting();
+        }
+
+        /// <summary>
+        /// WinForms proc integration
+        /// </summary>
+        /// <param name="m"></param>
+        public void WndProc(ref Message m)
+        {
+            Platform.WndProc(ref m);
+        }
+#endif
+
 
         private TimeSpan _accumulatedElapsedTime;
         private readonly GameTime _gameTime = new GameTime();
@@ -674,9 +746,11 @@ namespace Microsoft.Xna.Framework
         {
             // TODO: This should be removed once all platforms use the new GraphicsDeviceManager
 #if !(WINDOWS && DIRECTX)
-            applyChanges(graphicsDeviceManager);
+            ApplyChanges(graphicsDeviceManager);
 #endif
-
+#if DESKTOPGL
+            RegisterSyncronizationContext();
+#endif
             // According to the information given on MSDN (see link below), all
             // GameComponents in Components at the time Initialize() is called
             // are initialized.
@@ -693,6 +767,40 @@ namespace Microsoft.Xna.Framework
                 LoadContent();
             }
         }
+
+#if DESKTOPGL
+        /// <summary>
+        /// Make SynchronizationContext available on DesktopGL
+        /// </summary>
+        internal class DesktopGLSynchronizationContext : SynchronizationContext
+        {
+            public override SynchronizationContext CreateCopy()
+            {
+                return new DesktopGLSynchronizationContext();
+            }
+
+            public override void Post(SendOrPostCallback d, object state)
+            {
+                var action = new Action<object>(d);
+                Threading.BlockOnUIThread(action, state);
+            }
+
+            public override void Send(SendOrPostCallback d, object state)
+            {
+                var action = new Action<object>(d);
+                Threading.BlockOnUIThread(action, state);
+            }
+        }
+
+        private void RegisterSyncronizationContext()
+        {
+            // Don't change if there is a current SynchronizationContext already
+            if (SynchronizationContext.Current != null)
+                return;
+
+            SynchronizationContext.SetSynchronizationContext(new DesktopGLSynchronizationContext());
+        }
+#endif
 
         private static readonly Action<IDrawable, GameTime> DrawAction =
             (drawable, gameTime) => drawable.Draw(gameTime);
@@ -795,20 +903,35 @@ namespace Microsoft.Xna.Framework
         //        be added by third parties without changing MonoGame itself.
 
 #if !(WINDOWS && DIRECTX)
-        internal void applyChanges(GraphicsDeviceManager manager)
+        internal void ApplyChanges(GraphicsDeviceManager manager)
         {
+            if (GraphicsDevice == null)
+                return;
+
 			Platform.BeginScreenDeviceChange(GraphicsDevice.PresentationParameters.IsFullScreen);
 
             if (GraphicsDevice.PresentationParameters.IsFullScreen)
                 Platform.EnterFullScreen();
             else
                 Platform.ExitFullScreen();
-            var viewport = new Viewport(0, 0,
-			                            GraphicsDevice.PresentationParameters.BackBufferWidth,
-			                            GraphicsDevice.PresentationParameters.BackBufferHeight);
+
+            int renderTargetWidth;
+            int renderTargetHeight;
+            int yoffset;
+
+            GraphicsDevice.PlatformGetDefaultRenderTargetSize(out renderTargetWidth, out renderTargetHeight, out yoffset);
+
+            var viewport = new Viewport(0,
+                                        yoffset,
+                                        renderTargetWidth,
+                                        renderTargetHeight);
 
             GraphicsDevice.Viewport = viewport;
-			Platform.EndScreenDeviceChange(string.Empty, viewport.Width, viewport.Height);
+
+            int clientWidth = GraphicsDevice.PresentationParameters.BackBufferWidth;
+            int clientHeight = GraphicsDevice.PresentationParameters.BackBufferHeight;
+
+            Platform.EndScreenDeviceChange(string.Empty, clientWidth, clientHeight);
         }
 #endif
 

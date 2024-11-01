@@ -7,7 +7,10 @@ using System;
 
 namespace MonoGame.Framework.Utilities
 {
-    internal enum OS
+    /// <summary>
+    /// Runtime OS identifier
+    /// </summary>
+    public enum OS
     {
         Windows,
         Linux,
@@ -15,13 +18,77 @@ namespace MonoGame.Framework.Utilities
         Unknown
     }
 
-    internal static class CurrentPlatform
+    /// <summary>
+    /// Current runtime Platform
+    /// </summary>
+    public static class CurrentPlatform
     {
         private static bool _init = false;
         private static OS _os;
 
+        private static bool _isARM64;
+
         [DllImport("libc")]
         static extern int uname(IntPtr buf);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern bool IsWow64Process2(
+            IntPtr process, 
+            out ushort processMachine, 
+            out ushort nativeMachine
+        );
+
+        private static bool CheckIsARM64Windows()
+        {
+            ushort processMachine;
+            ushort nativeMachine;
+
+            // IsWow64Process2 is only available on Windows 10
+            if (Environment.OSVersion.Version.Major < 10 || Environment.OSVersion.Version.Build < 1511)
+                return false;
+
+            IntPtr handle = System.Diagnostics.Process.GetCurrentProcess().Handle;
+
+            IsWow64Process2(handle, out processMachine, out nativeMachine);
+
+            return nativeMachine == 0xaa64;
+        }
+
+        private static bool CheckIsARM64(OS os, IntPtr utsname)
+        {
+            string arch = Environment.GetEnvironmentVariable("HOSTTYPE");
+            if (!string.IsNullOrEmpty(arch))
+            {
+                return arch.StartsWith("aarch64", StringComparison.OrdinalIgnoreCase) ||
+                       arch.StartsWith("arm64", StringComparison.OrdinalIgnoreCase);
+            }
+
+            // On linux each field on utsname is equal do char[65]
+            long offset = 260;
+
+            if (os == OS.MacOSX)
+            {
+                // utsname struct isn't standard on macOS each field have 256 chars on Ubuntu 64
+                // so machine field will be on 4 * 256
+                offset = 1024;
+            }
+
+            // https://pubs.opengroup.org/onlinepubs/009696899/basedefs/sys/utsname.h.html
+            // Read machine field from uname to get the CPU arch
+            IntPtr m = new IntPtr(utsname.ToInt64() + offset);
+            string machine = Marshal.PtrToStringAnsi(m);
+
+            return machine.StartsWith("arm64", StringComparison.OrdinalIgnoreCase) ||
+                   machine.StartsWith("aarch64", StringComparison.OrdinalIgnoreCase);
+        }
+
+        internal static bool IsARM64
+        {
+            get
+            {
+                return _isARM64;
+            }
+        }
 
         private static void Init()
         {
@@ -37,6 +104,7 @@ namespace MonoGame.Framework.Utilities
                 case PlatformID.Win32Windows:
                 case PlatformID.WinCE:
                     _os = OS.Windows;
+                    _isARM64 = CheckIsARM64Windows();
                     break;
                 case PlatformID.MacOSX:
                     _os = OS.MacOSX;
@@ -44,22 +112,27 @@ namespace MonoGame.Framework.Utilities
                 case PlatformID.Unix:
                     _os = OS.MacOSX;
 
-                    var buf = IntPtr.Zero;
+                    var utsname = IntPtr.Zero;
                     
                     try
                     {
-                        buf = Marshal.AllocHGlobal(8192);
+                        utsname = Marshal.AllocHGlobal(8192);
 
-                        if (uname(buf) == 0 && Marshal.PtrToStringAnsi(buf) == "Linux")
-                            _os = OS.Linux;
+                        if (uname(utsname) == 0)
+                        {
+                            if (Marshal.PtrToStringAnsi(utsname) == "Linux")
+                                _os = OS.Linux;
+
+                            _isARM64 = CheckIsARM64(_os, utsname);
+                        }
                     }
                     catch
                     {
                     }
                     finally
                     {
-                        if (buf != IntPtr.Zero)
-                            Marshal.FreeHGlobal(buf);
+                        if (utsname != IntPtr.Zero)
+                            Marshal.FreeHGlobal(utsname);
                     }
 
                     break;
@@ -84,13 +157,21 @@ namespace MonoGame.Framework.Utilities
         {
             get
             {
-                if (CurrentPlatform.OS == OS.Windows && Environment.Is64BitProcess)
-                    return "win-x64";
-                else if (CurrentPlatform.OS == OS.Windows && !Environment.Is64BitProcess)
+                if (CurrentPlatform.OS == OS.Windows)
+                {
+                    if (CurrentPlatform.IsARM64)
+                        return "win-arm64";
+                    if (Environment.Is64BitProcess)
+                        return "win-x64";
                     return "win-x86";
-                else if (CurrentPlatform.OS == OS.Linux)
+                }
+                if (CurrentPlatform.OS == OS.Linux)
+                {
+                    if (CurrentPlatform.IsARM64)
+                        return "linux-arm64";
                     return "linux-x64";
-                else if (CurrentPlatform.OS == OS.MacOSX)
+                }
+                if (CurrentPlatform.OS == OS.MacOSX)
                     return "osx";
                 else
                     return "unknown";

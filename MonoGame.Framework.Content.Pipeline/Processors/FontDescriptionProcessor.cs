@@ -1,4 +1,4 @@
-﻿// MonoGame - Copyright (C) The MonoGame Team
+// MonoGame - Copyright (C) The MonoGame Team
 // This file is subject to the terms and conditions defined in
 // file 'LICENSE.txt', which is part of this source code package.
 
@@ -29,40 +29,74 @@ namespace Microsoft.Xna.Framework.Content.Pipeline.Processors
             TextureFormat = TextureProcessorOutputFormat.Compressed;
         }
 
-        public override SpriteFontContent Process(FontDescription input, ContentProcessorContext context)
+        private static string GetFontPath(string fontName, string sourceDirectory)
         {
-            var output = new SpriteFontContent(input);
-            var fontFile = FindFont(input.FontName, input.Style.ToString());
+            var directories = new List<string> { sourceDirectory };
+            var extensions = new string[] { "", ".ttf", ".ttc", ".otf" };
 
-            if (string.IsNullOrWhiteSpace(fontFile))
+            // Add special per platform directories
+            if (CurrentPlatform.OS == OS.Windows)
+                directories.Add(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Fonts"));
+            else if (CurrentPlatform.OS == OS.MacOSX)
             {
-                var directories = new List<string> { Path.GetDirectoryName(input.Identity.SourceFilename) };
-                var extensions = new string[] { "", ".ttf", ".ttc", ".otf" };
+                directories.Add(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Library", "Fonts"));
+                directories.Add("/Library/Fonts");
+                directories.Add("/System/Library/Fonts/Supplemental");
+            }
 
-                // Add special per platform directories
-                if (CurrentPlatform.OS == OS.Windows)
-                    directories.Add(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Fonts"));
-                else if (CurrentPlatform.OS == OS.MacOSX)
-                {
-                    directories.Add(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Library", "Fonts"));
-                    directories.Add("/Library/Fonts");
-                    directories.Add("/System/Library/Fonts/Supplemental");
-                }
+            string fontFile = string.Empty;
 
-                foreach (var dir in directories)
+            foreach (var dir in directories)
+            {
+                foreach (var ext in extensions)
                 {
-                    foreach (var ext in extensions)
-                    {
-                        fontFile = Path.Combine(dir, input.FontName + ext);
-                        if (File.Exists(fontFile))
-                            break;
-                    }
+                    fontFile = Path.Combine(dir, fontName + ext);
                     if (File.Exists(fontFile))
                         break;
                 }
+
+                if (!string.IsNullOrEmpty(fontFile) && File.Exists(fontFile))
+                    break;
             }
 
-            if (!File.Exists(fontFile))
+            return fontFile;
+        }
+
+        public override SpriteFontContent Process(FontDescription input, ContentProcessorContext context)
+        {
+            var output = new SpriteFontContent(input);
+            string fontFile = FindFont(input.FontName, input.Style.ToString());
+            string fontFile2 = null;
+            string fontFile3 = null;
+            string fontFile4 = null;
+            string fontFile5 = null;
+
+            if (input.FontName2 != null)
+                fontFile2 = FindFont(input.FontName2, input.Style.ToString());
+
+            if (input.FontName3 != null)
+                fontFile3 = FindFont(input.FontName3, input.Style.ToString());
+
+            if (input.FontName4 != null)
+                fontFile4 = FindFont(input.FontName4, input.Style.ToString());
+
+            if (input.FontName5 != null)
+                fontFile5 = FindFont(input.FontName5, input.Style.ToString());
+
+            string sourceDirectory = Path.GetDirectoryName(input.Identity.SourceFilename);
+
+            if (fontFile == string.Empty)
+                fontFile = GetFontPath(input.FontName, sourceDirectory);
+            if (fontFile2 == string.Empty)
+                fontFile2 = GetFontPath(input.FontName2, sourceDirectory);
+            if (fontFile3 == string.Empty)
+                fontFile3 = GetFontPath(input.FontName3, sourceDirectory);
+            if (fontFile4 == string.Empty)
+                fontFile4 = GetFontPath(input.FontName4, sourceDirectory);
+            if (fontFile5 == string.Empty)
+                fontFile5 = GetFontPath(input.FontName5, sourceDirectory);
+
+            if (string.IsNullOrEmpty(fontFile) || !File.Exists(fontFile))
                 throw new FileNotFoundException("Could not find \"" + input.FontName + "\" font file.");
 
             context.Logger.LogMessage("Building Font {0}", fontFile);
@@ -70,57 +104,100 @@ namespace Microsoft.Xna.Framework.Content.Pipeline.Processors
             // Get the platform specific texture profile.
             var texProfile = TextureProfile.ForPlatform(context.TargetPlatform);
 
+            if (!File.Exists(fontFile))
             {
-                if (!File.Exists(fontFile))
-                {
-                    throw new Exception(string.Format("Could not load {0}", fontFile));
-                }
-                var lineSpacing = 0f;
-                int yOffsetMin = 0;
-                var glyphs = ImportFont(input, out lineSpacing, out yOffsetMin, context, fontFile);
-
-                var glyphData = new HashSet<GlyphData>(glyphs.Select(x => x.Data));
-
-                // Optimize.
-                foreach (GlyphData glyph in glyphData)
-                {
-                    GlyphCropper.Crop(glyph);
-                }
-
-                // We need to know how to pack the glyphs.
-                bool requiresPot, requiresSquare;
-                texProfile.Requirements(context, TextureFormat, out requiresPot, out requiresSquare);
-
-                var face = GlyphPacker.ArrangeGlyphs(glyphData.ToArray(), requiresPot, requiresSquare);
-
-                // Adjust line and character spacing.
-                lineSpacing += input.Spacing;
-                output.VerticalLineSpacing = (int)lineSpacing;
-
-                foreach (Glyph glyph in glyphs)
-                {
-                    output.CharacterMap.Add(glyph.Character);
-
-                    var texRect = glyph.Data.Subrect;
-                    output.Glyphs.Add(texRect);
-
-                    var cropping = new Rectangle(0, (int)(glyph.Data.YOffset - yOffsetMin), (int)glyph.Data.XAdvance, output.VerticalLineSpacing);
-                    output.Cropping.Add(cropping);
-
-                    // Set the optional character kerning.
-                    if (input.UseKerning)
-                    {
-                        ABCFloat widths = glyph.Data.CharacterWidths;
-                        output.Kerning.Add(new Vector3(widths.A, widths.B, widths.C));
-                    }
-                    else
-                    {
-                        output.Kerning.Add(new Vector3(0, texRect.Width, 0));
-                    }
-                }
-
-                output.Texture.Faces[0].Add(face);
+                throw new Exception(string.Format("Could not load {0}", fontFile));
             }
+
+            if (!string.IsNullOrEmpty(fontFile3) && !File.Exists(fontFile2))
+            {
+                throw new Exception(string.Format("Could not load {0}", fontFile2));
+            }
+
+            if (!string.IsNullOrEmpty(fontFile3) && !File.Exists(fontFile3))
+            {
+                throw new Exception(string.Format("Could not load {0}", fontFile3));
+            }
+
+            if (!string.IsNullOrEmpty(fontFile4) && !File.Exists(fontFile4))
+            {
+                throw new Exception(string.Format("Could not load {0}", fontFile4));
+            }
+
+            if (!string.IsNullOrEmpty(fontFile5) && !File.Exists(fontFile5))
+            {
+                throw new Exception(string.Format("Could not load {0}", fontFile5));
+            }
+
+            var lineSpacing = 0f;
+            int yOffsetMin = 0;
+
+            List<string> fonts = new List<string>
+            {
+                fontFile
+            };
+
+            if (!string.IsNullOrEmpty(fontFile2))
+                fonts.Add(fontFile2);
+
+            if (!string.IsNullOrEmpty(fontFile3))
+                fonts.Add(fontFile3);
+
+            if (!string.IsNullOrEmpty(fontFile4))
+                fonts.Add(fontFile4);
+
+            if (!string.IsNullOrEmpty(fontFile5))
+                fonts.Add(fontFile5);
+
+            Dictionary<char, Dictionary<char, short>> kerning;
+            var glyphs = ImportFont(input, out lineSpacing, out yOffsetMin, out kerning, fonts.ToArray());
+
+            var glyphData = new HashSet<GlyphData>(glyphs.Select(x => x.Data));
+
+            // Optimize.
+            foreach (GlyphData glyph in glyphData)
+            {
+                GlyphCropper.Crop(glyph);
+            }
+
+            // We need to know how to pack the glyphs.
+            bool requiresPot, requiresSquare;
+            texProfile.Requirements(context, TextureFormat, out requiresPot, out requiresSquare);
+
+            var face = GlyphPacker.ArrangeGlyphs(glyphData.ToArray(), requiresPot, requiresSquare);
+
+            float scale = 1.0f;
+
+            if (input.Scale != 0.0f)
+            {
+                scale = 1f / input.Scale;
+            }
+
+            // Adjust line and character spacing.
+            lineSpacing += input.Spacing;
+            output.VerticalLineSpacing = (int)Math.Round(lineSpacing);
+            output.Scale = scale;
+            output.KerningAdvance = kerning;
+
+            foreach (Glyph glyph in glyphs)
+            {
+                output.CharacterMap.Add(glyph.Character);
+
+                var texRect = glyph.Data.Subrect;
+                output.Glyphs.Add(texRect);
+
+                int width = glyph.Data.Subrect.Width;
+                int height = glyph.Data.Subrect.Height;
+                int y = glyph.Data.OffsetY - yOffsetMin;
+
+                var cropping = new Rectangle(0, y, width, height);
+                output.Cropping.Add(cropping);
+
+                Vector3 offset = new Vector3(glyph.Data.OffsetX, glyph.Data.OffsetY, glyph.Data.Advance);
+                output.Offsets.Add(offset);
+            }
+
+            output.Texture.Faces[0].Add(face);
 
             if (PremultiplyAlpha)
             {
@@ -169,7 +246,7 @@ namespace Microsoft.Xna.Framework.Content.Pipeline.Processors
             return output;
         }
 
-        private static Glyph[] ImportFont(FontDescription options, out float lineSpacing, out int yOffsetMin, ContentProcessorContext context, string fontName)
+        private static Glyph[] ImportFont(FontDescription options, out float lineSpacing, out int yOffsetMin, out Dictionary<char, Dictionary<char, short>> kerning, string[] fontNames)
         {
             // Which importer knows how to read this source font?
             IFontImporter importer;
@@ -177,24 +254,28 @@ namespace Microsoft.Xna.Framework.Content.Pipeline.Processors
             var TrueTypeFileExtensions = new List<string> { ".ttf", ".ttc", ".otf" };
             //var BitmapFileExtensions = new List<string> { ".bmp", ".png", ".gif" };
 
-            string fileExtension = Path.GetExtension(fontName).ToLowerInvariant();
+            foreach (string fontName in fontNames)
+            {
+                string fileExtension = Path.GetExtension(fontName).ToLowerInvariant();
 
-            //			if (BitmapFileExtensions.Contains(fileExtension))
-            //			{
-            //				importer = new BitmapImporter();
-            //			}
-            //			else
-            //			{
-            if (!TrueTypeFileExtensions.Contains(fileExtension))
-                throw new PipelineException("Unknown file extension " + fileExtension);
+                //			if (BitmapFileExtensions.Contains(fileExtension))
+                //			{
+                //				importer = new BitmapImporter();
+                //			}
+                //			else
+                //			{
+                if (!TrueTypeFileExtensions.Contains(fileExtension))
+                    throw new PipelineException("Unknown file extension " + fileExtension);
+            }
 
             importer = new SharpFontImporter();
 
             // Import the source font data.
-            importer.Import(options, fontName);
+            importer.Import(options, fontNames);
 
             lineSpacing = importer.LineSpacing;
             yOffsetMin = importer.YOffsetMin;
+            kerning = importer.Kerning;
 
             // Get all glyphs
             var glyphs = new List<Glyph>(importer.Glyphs);
@@ -207,7 +288,6 @@ namespace Microsoft.Xna.Framework.Content.Pipeline.Processors
 
             // Sort the glyphs
             glyphs.Sort((left, right) => left.Character.CompareTo(right.Character));
-
 
             // Check that the default character is part of the glyphs
             if (options.DefaultCharacter != null)
