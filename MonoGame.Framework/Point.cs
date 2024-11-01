@@ -12,7 +12,7 @@ namespace Microsoft.Xna.Framework
     /// <summary>
     /// Describes a 2D-point.
     /// </summary>
-    [DataContract]
+    //[DataContract]
     [DebuggerDisplay("{DebugDisplayString,nq}")]
     public struct Point : IEquatable<Point>
     {
@@ -27,13 +27,13 @@ namespace Microsoft.Xna.Framework
         /// <summary>
         /// The x coordinate of this <see cref="Point"/>.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public int X;
 
         /// <summary>
         /// The y coordinate of this <see cref="Point"/>.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public int Y;
 
         #endregion
@@ -212,7 +212,9 @@ namespace Microsoft.Xna.Framework
         /// Gets a <see cref="Vector2"/> representation for this object.
         /// </summary>
         /// <returns>A <see cref="Vector2"/> representation for this object.</returns>
+#if !NET_4_0
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
         public Vector2 ToVector2()
         {
             return new Vector2(X, Y);
