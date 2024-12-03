@@ -6,7 +6,7 @@ namespace Microsoft.Xna.Framework.Input
     public static partial class KeyboardInput
     {
         public static bool IsVisible { get; private set; }
-
+#if !NET_4_0
         /// <summary>
         /// Displays the keyboard input interface asynchronously.
         /// </summary>
@@ -34,6 +34,7 @@ namespace Microsoft.Xna.Framework.Input
 
             return result;
         }
+#endif
 
         /// <summary>
         /// Hides the keyboard input interface and returns the parameter as the result of <see cref="Show"/>

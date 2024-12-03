@@ -3,6 +3,7 @@
 // file 'LICENSE.txt', which is part of this source code package.
 
 using Microsoft.Xna.Framework.Graphics;
+using MonoGame.Framework.Utilities;
 
 namespace Microsoft.Xna.Framework
 {
@@ -49,7 +50,15 @@ namespace Microsoft.Xna.Framework
                 Sdl.GL.SetAttribute(Sdl.GL.Attribute.MultiSampleSamples, presentationParameters.MultiSampleCount);
             }
 
-            ((SdlGameWindow)SdlGameWindow.Instance).CreateWindow();
+            int clientWidth = presentationParameters.BackBufferWidth;
+            int clientHeight = presentationParameters.BackBufferHeight;
+
+            SdlGameWindow window = (SdlGameWindow)SdlGameWindow.Instance;
+
+            bool fullScreen = presentationParameters.IsFullScreen;
+            bool hardwareFullScreen = presentationParameters.HardwareModeSwitch;
+
+            window.CreateWindow(clientWidth, clientHeight, fullScreen, hardwareFullScreen);
         }
     }
 }
