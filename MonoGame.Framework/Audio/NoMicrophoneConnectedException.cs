@@ -11,7 +11,7 @@ namespace Microsoft.Xna.Framework.Audio
     /// <summary>
     /// The exception thrown when no audio hardware is present, or driver issues are detected.
     /// </summary>
-    [DataContract]
+    //[DataContract]
     public sealed class NoMicrophoneConnectedException : Exception
     {
         /// <param name="msg">A message describing the error.</param>

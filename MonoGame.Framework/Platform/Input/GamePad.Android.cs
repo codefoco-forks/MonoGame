@@ -6,6 +6,8 @@ using System;
 using Android.OS;
 using Android.Views;
 
+using MonoGame.Framework.Utilities;
+
 namespace Microsoft.Xna.Framework.Input
 {
     internal class AndroidGamePad
@@ -37,10 +39,13 @@ namespace Microsoft.Xna.Framework.Input
             var capabilities = new GamePadCapabilities();
             capabilities.IsConnected = true;
             capabilities.GamePadType = GamePadType.GamePad;
+
+#pragma warning disable CS0618 // Type or member is obsolete
             capabilities.HasLeftVibrationMotor = capabilities.HasRightVibrationMotor =
-                !OperatingSystem.IsAndroidVersionAtLeast (31) ?
+                !PlatformInfo.IsAndroidVersionAtLeast (31) ?
                     device.Vibrator.HasVibrator :
                     device.VibratorManager.DefaultVibrator.HasVibrator;
+#pragma warning restore CS0618 // Type or member is obsolete
 
             // build out supported inputs from what the gamepad exposes
             int[] keyMap = new int[16];
@@ -68,7 +73,7 @@ namespace Microsoft.Xna.Framework.Input
             // get a bool[] with indices matching the keyMap
             bool[] hasMap = new bool[16];
             // HasKeys() was defined in Kitkat / API19 / Android 4.4
-            if (!OperatingSystem.IsAndroidVersionAtLeast(19))
+            if (!PlatformInfo.IsAndroidVersionAtLeast(19))
             {
                 var keyMap2 = new Keycode[keyMap.Length];
                 for(int i=0; i<keyMap.Length;i++)
@@ -183,10 +188,11 @@ namespace Microsoft.Xna.Framework.Input
             if (gamePad == null)
                 return false;
 
-            var vibrator = !OperatingSystem.IsAndroidVersionAtLeast (31) ? gamePad._device.Vibrator : gamePad._device.VibratorManager.DefaultVibrator;
+#pragma warning disable CS0618 // Type or member is obsolete
+            var vibrator = !PlatformInfo.IsAndroidVersionAtLeast (31) ? gamePad._device.Vibrator : gamePad._device.VibratorManager.DefaultVibrator;
             if (!vibrator.HasVibrator)
                 return false;
-            if (!OperatingSystem.IsAndroidVersionAtLeast (26))
+            if (!PlatformInfo.IsAndroidVersionAtLeast (26))
             {
                 vibrator.Vibrate(500);
             }
@@ -195,6 +201,7 @@ namespace Microsoft.Xna.Framework.Input
                 vibrator.Vibrate (VibrationEffect.CreateOneShot(500, VibrationEffect.DefaultAmplitude));
             }
             return true;
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         internal static AndroidGamePad GetGamePad(InputDevice device)

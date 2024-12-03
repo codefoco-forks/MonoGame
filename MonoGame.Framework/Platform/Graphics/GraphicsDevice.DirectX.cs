@@ -955,8 +955,9 @@ namespace Microsoft.Xna.Framework.Graphics
                 // Clear the diffuse render buffer.
                 if ((options & ClearOptions.Target) == ClearOptions.Target)
                 {
-                    foreach (var view in _currentRenderTargets)
+                    for (int i = 0; i < _currentRenderTargets.Length; i++)
                     {
+                        RenderTargetView view = _currentRenderTargets[i];
                         if (view != null)
 							_d3dContext.ClearRenderTargetView(view, new RawColor4(color.X, color.Y, color.Z, color.W));
                     }
@@ -1128,6 +1129,13 @@ namespace Microsoft.Xna.Framework.Graphics
                 _tempRenderTargetBinding[0] = new RenderTargetBinding(renderTarget, arraySlice);
                 SetRenderTargets(_tempRenderTargetBinding);
             }
+        }
+
+        internal void PlatformGetDefaultRenderTargetSize(out int renderTargetWidth, out int renderTargetHeight, out int yoffset)
+        {
+            renderTargetWidth = PresentationParameters.BackBufferWidth;
+            renderTargetHeight = PresentationParameters.BackBufferHeight;
+            yoffset = 0;
         }
 
         private void PlatformApplyDefaultRenderTarget()

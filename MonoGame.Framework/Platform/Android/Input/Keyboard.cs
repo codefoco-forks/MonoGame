@@ -52,25 +52,27 @@ namespace Microsoft.Xna.Framework.Input
 
         private static readonly IDictionary<Keycode, Keys> KeyMap = LoadKeyMap();
 
-        internal static bool KeyDown(Keycode keyCode)
+        internal static bool KeyDown(Keycode keyCode, GameWindow window)
         {
             Keys key;
             if (KeyMap.TryGetValue(keyCode, out key) && key != Keys.None)
             {
-                if (!keys.Contains(key))
-                    keys.Add(key);
+                keys.Add(key);
+                window.OnKeyDown(new InputKeyEventArgs(key));
+
                 return true;
             }
             return false;
         }
 
-        internal static bool KeyUp(Keycode keyCode)
+        internal static bool KeyUp(Keycode keyCode, GameWindow window)
         {
             Keys key;
             if (KeyMap.TryGetValue(keyCode, out key) && key != Keys.None)
             {
-                if (keys.Contains(key))
-                    keys.Remove(key);
+                keys.Remove(key);
+                window.OnKeyUp(new InputKeyEventArgs(key));
+
                 return true;
             }
             return false;
