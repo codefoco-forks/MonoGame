@@ -20,6 +20,7 @@ namespace Microsoft.Xna.Framework.Input
         private int _scrollWheelValue;
         private int _horizontalScrollWheelValue;
         private byte _buttons;
+        private byte _clickCount;
 
         /// <summary>
         /// Initializes a new instance of the MouseState.
@@ -54,6 +55,7 @@ namespace Microsoft.Xna.Framework.Input
                 (xButton2 == ButtonState.Pressed ? XButton2Flag : 0)
             );
             _horizontalScrollWheelValue = 0;
+            _clickCount = 0;
         }
 
         /// <summary>
@@ -91,6 +93,7 @@ namespace Microsoft.Xna.Framework.Input
                 (xButton2 == ButtonState.Pressed ? XButton2Flag : 0)
             );
             _horizontalScrollWheelValue = horizontalScrollWheel;
+            _clickCount = 0;
         }
 
         /// <summary>
@@ -161,10 +164,7 @@ namespace Microsoft.Xna.Framework.Input
                 buttons = string.Empty;
                 if ((_buttons & LeftButtonFlag) == LeftButtonFlag)
                 {
-                    if (buttons.Length > 0)
-                        buttons += " Left";
-                    else
-                        buttons += "Left";
+                    buttons = "Left";
                 }
                 if ((_buttons & RightButtonFlag) == RightButtonFlag)
                 {
@@ -251,7 +251,7 @@ namespace Microsoft.Xna.Framework.Input
             {
                 return ((_buttons & LeftButtonFlag) > 0) ? ButtonState.Pressed : ButtonState.Released;
             }
-            internal set
+            set
             {
                 if (value == ButtonState.Pressed)
                 {
@@ -374,6 +374,18 @@ namespace Microsoft.Xna.Framework.Input
                     _buttons = (byte)(_buttons & (~XButton2Flag));
                 }
             }
+        }
+
+        /// <summary>
+        /// Return the number of click of last mouse button event.
+        /// </summary>
+        public byte ClickCount
+        {
+            get
+            {
+                return _clickCount;
+            }
+            internal set { _clickCount = value; }
         }
     }
 }
