@@ -18,7 +18,6 @@ namespace Microsoft.Xna.Framework.Input.Touch
     /// </summary>
     public struct TouchPanelCapabilities
     {
-        private bool hasPressure;
         private bool isConnected;
         private int maximumTouchCount;
         private bool initialized;
@@ -28,10 +27,6 @@ namespace Microsoft.Xna.Framework.Input.Touch
             if (!initialized)
             {
                 initialized = true;
-
-                // There does not appear to be a way of finding out if a touch device supports pressure.
-                // XNA does not expose a pressure value, so let's assume it doesn't support it.
-                hasPressure = false;
 
 #if WINDOWS_UAP
                 // Is a touch device present?
@@ -65,18 +60,21 @@ namespace Microsoft.Xna.Framework.Input.Touch
                     maximumTouchCount = 5;
                 else //Pad
                     maximumTouchCount = 11;
+#elif DESKTOPGL
+                if (MonoGame.Framework.Utilities.CurrentPlatform.OS != MonoGame.Framework.Utilities.OS.Windows)
+                {
+                    maximumTouchCount = 5;
+                    isConnected = Sdl.Touch.GetNumTouchDevices() > 0;
+                }
+                else
+                {
+                    maximumTouchCount = GetSystemMetrics(SM_MAXIMUMTOUCHES);
+                    isConnected = (maximumTouchCount > 0);
+                }
 #else
                 //Touch isn't implemented in OpenTK, so no linux or mac https://github.com/opentk/opentk/issues/80
                 isConnected = false;
 #endif
-            }
-        }
-
-        public bool HasPressure
-        {
-            get
-            {
-                return hasPressure;
             }
         }
 
@@ -102,7 +100,7 @@ namespace Microsoft.Xna.Framework.Input.Touch
             }
         }
 
-#if WINDOWS
+#if WINDOWS || DESKTOPGL
         [System.Runtime.InteropServices.DllImport("user32.dll", CharSet = System.Runtime.InteropServices.CharSet.Auto, ExactSpelling = true)]
         static extern int GetSystemMetrics(int nIndex);
 

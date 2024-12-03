@@ -18,7 +18,6 @@ using Microsoft.Xna.Framework.Input.Touch;
 
 namespace Microsoft.Xna.Framework
 {
-    [CLSCompliant(false)]
     public class MonoGameAndroidGameView : SurfaceView, ISurfaceHolderCallback, View.IOnTouchListener
     {
         // What is the state of the app, for tracking surface recreation inside this class.
@@ -1172,11 +1171,14 @@ namespace Microsoft.Xna.Framework
 
         public override bool OnKeyDown(Keycode keyCode, KeyEvent e)
         {
+            if (e.RepeatCount != 0)
+                return base.OnKeyDown(keyCode, e);
+
             bool handled = false;
             if (IsGamePad(e.Device) && GamePad.OnKeyDown(keyCode, e))
                 return true;
 
-            handled = IsKeyboard(e.Device) && Keyboard.KeyDown(keyCode);
+            handled = IsKeyboard(e.Device) && Keyboard.KeyDown(keyCode, _gameWindow);
 
             // we need to handle the Back key here because it doesn't work any other way
             if (keyCode == Keycode.Back)
@@ -1204,11 +1206,15 @@ namespace Microsoft.Xna.Framework
 
         public override bool OnKeyUp(Keycode keyCode, KeyEvent e)
         {
+            var flags = e.Flags;
+            if (e.RepeatCount != 0)
+                return base.OnKeyUp(keyCode, e);
+
             if (keyCode == Keycode.Back)
                 GamePad.Back = false;
             if (IsGamePad(e.Device) && GamePad.OnKeyUp(keyCode, e))
                 return true;
-            return IsKeyboard(e.Device) && Keyboard.KeyUp(keyCode);
+            return IsKeyboard(e.Device) && Keyboard.KeyUp(keyCode, _gameWindow);
         }
 
         public override bool OnGenericMotionEvent(MotionEvent e)
