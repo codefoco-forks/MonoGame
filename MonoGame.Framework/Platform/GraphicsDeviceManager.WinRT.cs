@@ -10,7 +10,6 @@ namespace Microsoft.Xna.Framework
 {
     partial class GraphicsDeviceManager
     {
-        [CLSCompliant(false)] 
         public SwapChainPanel SwapChainPanel { get; set; }
 
         partial void PlatformPreparePresentationParameters(PresentationParameters presentationParameters)
@@ -32,7 +31,9 @@ namespace Microsoft.Xna.Framework
 
         partial void PlatformApplyChanges()
         {
-            ((UAPGameWindow)_game.Window).SetClientSize(_preferredBackBufferWidth, _preferredBackBufferHeight);
+            UAPGameWindow window = ((UAPGameWindow)_game.Window);
+            window.SetClientSize(_preferredBackBufferWidth, _preferredBackBufferHeight);
+            window.TrySetFullScreen(IsFullScreen);
         }
     }
 }

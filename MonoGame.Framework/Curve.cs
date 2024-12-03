@@ -12,7 +12,7 @@ namespace Microsoft.Xna.Framework
     /// Contains a collection of <see cref="CurveKey"/> points in 2D space and provides methods for evaluating features of the curve they define.
     /// </summary>
     // TODO : [TypeConverter(typeof(ExpandableObjectConverter))]
-    [DataContract]
+    // [DataContract]
     public class Curve : ICurveEvaluator<float>
     {
         #region Private Fields
@@ -28,7 +28,7 @@ namespace Microsoft.Xna.Framework
         /// <summary>
         /// Returns <c>true</c> if this curve is constant (has zero or one points); <c>false</c> otherwise.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public bool IsConstant
         {
             get { return this._keys.Count <= 1; }
@@ -37,7 +37,7 @@ namespace Microsoft.Xna.Framework
         /// <summary>
         /// Defines how to handle weighting values that are less than the first control point in the curve.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public CurveLoopType PreLoop
         {
             get { return this._preLoop; }
@@ -47,7 +47,7 @@ namespace Microsoft.Xna.Framework
         /// <summary>
         /// Defines how to handle weighting values that are greater than the last control point in the curve.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public CurveLoopType PostLoop
         {
             get { return this._postLoop; }
@@ -57,7 +57,7 @@ namespace Microsoft.Xna.Framework
         /// <summary>
         /// The collection of curve keys.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public CurveKeyCollection Keys
         {
             get { return this._keys; }
@@ -311,30 +311,21 @@ namespace Microsoft.Xna.Framework
             CurveKey next = _keys[nextIndex];
             if (prev.Continuity == CurveContinuity.Step)
             {
-                next = this.Keys[i];
-                if (next.Position >= position)
+                if (position >= 1f)
                 {
-                    if (prev.Continuity == CurveContinuity.Step)
-                    {
-                        if (position >= 1f)
-                        {
-                            return next.Value;
-                        }
-                        return prev.Value;
-                    }
-                    float t = (position - prev.Position) / (next.Position - prev.Position);//to have t in [0,1]
-                    float ts = t * t;
-                    float tss = ts * t;
-                    //After a lot of search on internet I have found all about spline function
-                    // and bezier (phi'sss ancien) but finaly use hermite curve 
-                    //http://en.wikipedia.org/wiki/Cubic_Hermite_spline
-                    //P(t) = (2*t^3 - 3t^2 + 1)*P0 + (t^3 - 2t^2 + t)m0 + (-2t^3 + 3t^2)P1 + (t^3-t^2)m1
-                    //with P0.value = prev.value , m0 = prev.tangentOut, P1= next.value, m1 = next.TangentIn
-                    return (2 * tss - 3 * ts + 1f) * prev.Value + (tss - 2 * ts + t) * prev.TangentOut + (3 * ts - 2 * tss) * next.Value + (tss - ts) * next.TangentIn;
+                    return next.Value;
                 }
-                prev = next;
+                return prev.Value;
             }
-            return 0f;
+            float t = (position - prev.Position) / (next.Position - prev.Position);//to have t in [0,1]
+            float ts = t * t;
+            float tss = ts * t;
+            //After a lot of search on internet I have found all about spline function
+            // and bezier (phi'sss ancien) but finaly use hermite curve 
+            //http://en.wikipedia.org/wiki/Cubic_Hermite_spline
+            //P(t) = (2*t^3 - 3t^2 + 1)*P0 + (t^3 - 2t^2 + t)m0 + (-2t^3 + 3t^2)P1 + (t^3-t^2)m1
+            //with P0.value = prev.value , m0 = prev.tangentOut, P1= next.value, m1 = next.TangentIn
+            return (2 * tss - 3 * ts + 1f) * prev.Value + (tss - 2 * ts + t) * prev.TangentOut + (3 * ts - 2 * tss) * next.Value + (tss - ts) * next.TangentIn;
         }
 
         #endregion

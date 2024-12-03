@@ -58,5 +58,21 @@ namespace MonoGame.Framework.Utilities
 #endif
             }
         }
+
+#if ANDROID
+        /// <summary>
+        /// Check if Android version is at least version
+        /// </summary>
+        /// <param name="version"></param>
+        /// <returns></returns>
+        public static bool IsAndroidVersionAtLeast(int version)
+        {
+#if NET
+            return System.OperatingSystem.IsAndroidVersionAtLeast (version);
+#else
+            return Android.OS.Build.VERSION.SdkInt >= (Android.OS.BuildVersionCodes)version;
+#endif
+        }
+#endif
     }
 }

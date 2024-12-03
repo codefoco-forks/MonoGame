@@ -6,14 +6,14 @@ using System;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
-using Microsoft.Xna.Framework.Input.Touch;
+using Microsoft.Xna.Framework.Platform.Windows;
 using MonoGame.Framework;
 
 
 namespace Microsoft.Xna.Framework.Windows
 {
     internal static class MessageExtensions
-    {     
+    {
         public static int GetPointerId(this Message msg)
         {
             return (short)msg.WParam;
@@ -24,22 +24,19 @@ namespace Microsoft.Xna.Framework.Windows
             var lowword = msg.LParam.ToInt32();
 
             return new System.Drawing.Point()
-                       {
-                           X = (short)(lowword),
-                           Y = (short)(lowword >> 16),
-                       };
+            {
+                X = (short)(lowword),
+                Y = (short)(lowword >> 16),
+            };
         }
     }
 
     [System.ComponentModel.DesignerCategory("Code")]
-    internal class WinFormsGameForm : Form
+    internal sealed class WinFormsGameForm : Form
     {
         private readonly WinFormsGameWindow _window;
 
         public const int WM_MOUSEHWHEEL = 0x020E;
-        public const int WM_POINTERUP = 0x0247;
-        public const int WM_POINTERDOWN = 0x0246;
-        public const int WM_POINTERUPDATE = 0x0245;
         public const int WM_KEYDOWN = 0x0100;
         public const int WM_KEYUP = 0x0101;
         public const int WM_SYSKEYDOWN = 0x0104;
@@ -51,39 +48,66 @@ namespace Microsoft.Xna.Framework.Windows
         public const int WM_DROPFILES = 0x0233;
 
         public const int WM_SYSCOMMAND = 0x0112;
+        public const int WM_DPICHANGED = 0x02E0;
 
         public const int WM_SETTING­CHANGE = 0x001A;
-
-        public bool AllowAltF4 = true;
 
         internal bool IsResizing { get; set; }
 
         #region Events
 
-        public event EventHandler<HorizontalMouseWheelEventArgs> MouseHorizontalWheel;
-        public event EventHandler<EventArgs> SettingChanged;
 
         #endregion
 
-        public WinFormsGameForm(WinFormsGameWindow window)
+        const uint SWP_NOACTIVATE = 0x0010;
+        const uint SWP_NOZORDER = 0x0004;
+
+        public WinFormsGameForm(WinFormsGameWindow window, Control gameView)
         {
             _window = window;
+            gameView.Dock = DockStyle.Fill;
+            Controls.Add(gameView);
         }
 
-        public void CenterOnPrimaryMonitor()
+        public static void CenterOnPrimaryMonitor(Form self)
         {
-             Location = new System.Drawing.Point(
-                 (Screen.PrimaryScreen.WorkingArea.Width  - Width ) / 2,
-                 (Screen.PrimaryScreen.WorkingArea.Height - Height) / 2);
+            self.Location = new System.Drawing.Point(
+                 (Screen.PrimaryScreen.WorkingArea.Width - self.Width) / 2,
+                 (Screen.PrimaryScreen.WorkingArea.Height - self.Height) / 2);
         }
 
-        [System.Security.Permissions.PermissionSet(System.Security.Permissions.SecurityAction.Demand, Name = "FullTrust")]
         protected override void WndProc(ref Message m)
         {
-            var state = TouchLocationState.Invalid;
+            WndProc(ref m, _window);
+            base.WndProc(ref m);
+        }
+
+        public static void WndProc(ref Message m, WinFormsGameWindow window)
+        {
+            Control gameView = window.GameView;
+            Form form = window.GameForm;
 
             switch (m.Msg)
             {
+                case WM_DPICHANGED:
+                    {
+#if NET_4_0
+                        RECT suggestedRect = (RECT)Marshal.PtrToStructure(m.LParam, typeof(RECT));
+#else
+                        RECT suggestedRect = Marshal.PtrToStructure<RECT>(m.LParam);
+#endif
+
+                        SetWindowPos(window.Handle,
+                                     IntPtr.Zero,
+                                     suggestedRect.left,
+                                     suggestedRect.top,
+                                     suggestedRect.right - suggestedRect.left,
+                                     suggestedRect.bottom - suggestedRect.top,
+                                     SWP_NOZORDER | SWP_NOACTIVATE);
+
+                        m.Result = IntPtr.Zero;
+                    }
+                    break;
                 case WM_TABLET_QUERYSYSTEMGESTURESTA:
                     {
                         // This disables the windows touch helpers, popups, and 
@@ -102,39 +126,39 @@ namespace Microsoft.Xna.Framework.Windows
                     }
 #if (WINDOWS && DIRECTX)
                 case WM_KEYDOWN:
-                    HandleKeyMessage(ref m);
+                    HandleKeyMessage(ref m, window);
                     switch (m.WParam.ToInt32())
                     {
                         case 0x5B:  // Left Windows Key
                         case 0x5C: // Right Windows Key
 
-                            if (_window.IsFullScreen && _window.HardwareModeSwitch)
-                                this.WindowState = FormWindowState.Minimized;
+                            if (window.IsFullScreen && window.HardwareModeSwitch && form != null)
+                                form.WindowState = FormWindowState.Minimized;
 
                             break;
                     }
                     break;
                 case WM_SYSKEYDOWN:
-                    HandleKeyMessage(ref m);
+                    HandleKeyMessage(ref m, window);
                     break;
                 case WM_KEYUP:
                 case WM_SYSKEYUP:
-                    HandleKeyMessage(ref m);
+                    HandleKeyMessage(ref m, window);
                     break;
 
                 case WM_DROPFILES:
-                    HandleDropMessage(ref m);
+                    HandleDropMessage(ref m, window);
                     break;
 
                 case WM_SETTING­CHANGE:
-                    HandleSettingChange();
+                    HandleSettingChange(window);
                 break;
 #endif
                 case WM_SYSCOMMAND:
 
                     var wParam = m.WParam.ToInt32();
 
-                    if (!AllowAltF4 && wParam == 0xF060 && m.LParam.ToInt32() == 0 && Focused)
+                    if (!window.AllowAltF4 && wParam == 0xF060 && m.LParam.ToInt32() == 0 && gameView.Focused)
                     {
                         m.Result = IntPtr.Zero;
                         return;
@@ -149,56 +173,36 @@ namespace Microsoft.Xna.Framework.Windows
                     }
                     break;
 
-                case WM_POINTERUP:
-                    state = TouchLocationState.Released;
-                    break;
-                case WM_POINTERDOWN:
-                    state = TouchLocationState.Pressed;
-                    break;
-                case WM_POINTERUPDATE:
-                    state = TouchLocationState.Moved;
-                    break;
                 case WM_MOUSEHWHEEL:
                     var delta = (short)(((ulong)m.WParam >> 16) & 0xffff); ;
-                    var handler = MouseHorizontalWheel;
+                    var handler = window.MouseHorizontalWheel;
 
                     if (handler != null)
-                        handler(this, new HorizontalMouseWheelEventArgs(delta));
+                        handler(window, new HorizontalMouseWheelEventArgs(delta));
                     break;
                 case WM_ENTERSIZEMOVE:
-                    IsResizing = true;
+                    window.IsResizing = true;
                     break;
                 case WM_EXITSIZEMOVE:
-                    IsResizing = false;
+                    window.IsResizing = false;
                     break;
             }
-
-            if (state != TouchLocationState.Invalid)
-            {
-                var id = m.GetPointerId();
-
-                var position = m.GetPointerLocation();
-                position = PointToClient(position);
-                var vec = new Vector2(position.X, position.Y);
-
-                _window.TouchPanelState.AddEvent(id, state, vec, false);
-            }
-
-            base.WndProc(ref m);
         }
 
-        private void HandleSettingChange()
+        private static void HandleSettingChange(WinFormsGameWindow window)
         {
-            EventHelpers.Raise(this, SettingChanged, EventArgs.Empty);
+            EventHandler<EventArgs> handler = window.SettingChanged;
+            if (handler != null)
+                handler(window, EventArgs.Empty);
         }
 
-        void HandleKeyMessage(ref Message m)
+        public static void HandleKeyMessage(ref Message m, GameWindow window)
         {
             long virtualKeyCode = m.WParam.ToInt64();
             bool extended = (m.LParam.ToInt64() & 0x01000000) != 0;
             long scancode = (m.LParam.ToInt64() & 0x00ff0000) >> 16;
             var key = KeyCodeTranslate(
-                (System.Windows.Forms.Keys)virtualKeyCode,
+                (Keys)virtualKeyCode,
                 extended,
                 scancode);
             if (Input.KeysHelper.IsKey((int)key))
@@ -207,11 +211,11 @@ namespace Microsoft.Xna.Framework.Windows
                 {
                     case WM_KEYDOWN:
                     case WM_SYSKEYDOWN:
-                        _window.OnKeyDown(new InputKeyEventArgs(key));
+                        window.OnKeyDown(new InputKeyEventArgs(key));
                         break;
                     case WM_KEYUP:
                     case WM_SYSKEYUP:
-                        _window.OnKeyUp(new InputKeyEventArgs(key));
+                        window.OnKeyUp(new InputKeyEventArgs(key));
                         break;
                     default:
                         break;
@@ -220,11 +224,14 @@ namespace Microsoft.Xna.Framework.Windows
 
         }
 
+        [DllImport("user32.dll")]
+        private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
+
         [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
         private static extern uint DragQueryFile(IntPtr hDrop, uint iFile,
             [Out] StringBuilder lpszFile, uint cch);
 
-        void HandleDropMessage(ref Message m)
+        private static void HandleDropMessage(ref Message m, WinFormsGameWindow window)
         {
             IntPtr hdrop = m.WParam;
 
@@ -239,35 +246,35 @@ namespace Microsoft.Xna.Framework.Windows
                 files[i] = builder.ToString();
             }
 
-            _window.OnFileDrop(new FileDropEventArgs(files));
+            window.OnFileDrop(new FileDropEventArgs(files));
             m.Result = IntPtr.Zero;
         }
 
-        private static Microsoft.Xna.Framework.Input.Keys KeyCodeTranslate(
-            System.Windows.Forms.Keys keyCode, bool extended, long scancode)
+        private static Input.Keys KeyCodeTranslate(
+            Keys keyCode, bool extended, long scancode)
         {
             switch (keyCode)
             {
                 // WinForms does not distinguish between left/right keys
                 // We have to check for special keys such as control/shift/alt/ etc
-                case System.Windows.Forms.Keys.ControlKey:
+                case Keys.ControlKey:
                     return extended
-                        ? Microsoft.Xna.Framework.Input.Keys.RightControl
-                        : Microsoft.Xna.Framework.Input.Keys.LeftControl;
-                case System.Windows.Forms.Keys.ShiftKey:
+                        ? Input.Keys.RightControl
+                        : Input.Keys.LeftControl;
+                case Keys.ShiftKey:
                     // left shift is 0x2A, right shift is 0x36. IsExtendedKey is always false.
                     return ((scancode & 0x1FF) == 0x36)
-                               ? Microsoft.Xna.Framework.Input.Keys.RightShift
-                                : Microsoft.Xna.Framework.Input.Keys.LeftShift;
+                               ? Input.Keys.RightShift
+                                : Input.Keys.LeftShift;
                 // Note that the Alt key is now refered to as Menu.
-                case System.Windows.Forms.Keys.Menu:
-                case System.Windows.Forms.Keys.Alt:
+                case Keys.Menu:
+                case Keys.Alt:
                     return extended
-                        ? Microsoft.Xna.Framework.Input.Keys.RightAlt
-                        : Microsoft.Xna.Framework.Input.Keys.LeftAlt;
+                        ? Input.Keys.RightAlt
+                        : Input.Keys.LeftAlt;
 
                 default:
-                    return (Microsoft.Xna.Framework.Input.Keys)keyCode;
+                    return (Input.Keys)keyCode;
             }
         }
     }
