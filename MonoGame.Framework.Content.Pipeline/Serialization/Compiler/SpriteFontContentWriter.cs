@@ -22,11 +22,26 @@ namespace Microsoft.Xna.Framework.Content.Pipeline.Serialization.Compiler
             output.WriteObject(value.CharacterMap);
             output.Write(value.VerticalLineSpacing);
             output.Write(value.HorizontalSpacing);
-            output.WriteObject(value.Kerning);
+
+            List<char> leftKerningChars = value.KerningAdvance.Keys.OrderBy(c => c).ToList();
+            output.WriteObject(leftKerningChars);
+
+            foreach (char left in leftKerningChars)
+            {
+                Dictionary<char, short> rightDistance = value.KerningAdvance[left];
+                List<char> rightChars = rightDistance.Keys.ToList();
+                List<short> distances = rightDistance.Values.ToList();
+
+                output.WriteObject(rightChars);
+                output.WriteObject(distances);
+            }
+
+            output.WriteObject(value.Offsets);
             var hasDefChar = value.DefaultCharacter.HasValue;
             output.Write(hasDefChar);
             if (hasDefChar)
                 output.Write(value.DefaultCharacter.Value);
+            output.Write(value.Scale);
         }
 
         /// <summary>

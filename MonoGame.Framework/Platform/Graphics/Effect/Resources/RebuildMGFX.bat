@@ -9,6 +9,8 @@ SET MGFXC="..\..\..\..\..\Artifacts\MonoGame.Effect.Compiler\Release\mgfxc.exe"
 
   call %MGFXC% %%~nf.fx %%~nf.dx11.mgfxo /Profile:DirectX_11
 
+  call %MGFXC% %%~nf.fx %%~nf.ogles.mgfxo /Profile:OpenGLES
+
 )
 
 endlocal
