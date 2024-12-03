@@ -7,7 +7,6 @@ namespace Microsoft.Xna.Framework.Graphics
     /// The exception that is thrown when the device has been lost, but cannot be reset at this time.
     /// Therefore, rendering is not possible.
     /// </summary>
-    [DataContract]
     public sealed class DeviceLostException : Exception
     {
         /// <summary>

@@ -6,7 +6,6 @@ namespace Microsoft.Xna.Framework.Graphics
     /// <summary>
     /// The exception that is thrown when the device has been lost, but can be reset at this time.
     /// </summary>
-    [DataContract]
     public sealed class DeviceNotResetException : Exception
     {
         /// <summary>

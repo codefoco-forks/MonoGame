@@ -15,8 +15,8 @@ namespace Microsoft.Xna.Framework
 #if XNADESIGNPROVIDED
     [System.ComponentModel.TypeConverter(typeof(Microsoft.Xna.Framework.Design.Vector2TypeConverter))]
 #endif
-    [DataContract]
-    [DebuggerDisplay("{DebugDisplayString,nq}")]
+    //[DataContract]
+    // DebuggerDisplay("{DebugDisplayString,nq}")]
     public struct Vector2 : IEquatable<Vector2>
     {
         #region Private Fields
@@ -33,13 +33,13 @@ namespace Microsoft.Xna.Framework
         /// <summary>
         /// The x coordinate of this <see cref="Vector2"/>.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public float X;
 
         /// <summary>
         /// The y coordinate of this <see cref="Vector2"/>.
         /// </summary>
-        [DataMember]
+        //[DataMember]
         public float Y;
 
         #endregion
@@ -121,15 +121,6 @@ namespace Microsoft.Xna.Framework
         #endregion
 
         #region Operators
-
-        /// <summary>
-        /// Converts a <see cref="System.Numerics.Vector2"/> to a <see cref="Vector2"/>.
-        /// </summary>
-        /// <param name="value">The converted value.</param>
-        public static implicit operator Vector2(System.Numerics.Vector2 value)
-        {
-            return new Vector2(value.X, value.Y);
-        }
 
         /// <summary>
         /// Inverts values in the specified <see cref="Vector2"/>.
@@ -214,7 +205,9 @@ namespace Microsoft.Xna.Framework
         /// <param name="value1">Source <see cref="Vector2"/> on the left of the div sign.</param>
         /// <param name="value2">Divisor <see cref="Vector2"/> on the right of the div sign.</param>
         /// <returns>The result of dividing the vectors.</returns>
+#if !NET_4_0
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
         public static Vector2 operator /(Vector2 value1, Vector2 value2)
         {
             value1.X /= value2.X;
@@ -228,7 +221,9 @@ namespace Microsoft.Xna.Framework
         /// <param name="value1">Source <see cref="Vector2"/> on the left of the div sign.</param>
         /// <param name="divider">Divisor scalar on the right of the div sign.</param>
         /// <returns>The result of dividing a vector by a scalar.</returns>
+#if !NET_4_0
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
         public static Vector2 operator /(Vector2 value1, float divider)
         {
             float factor = 1 / divider;
@@ -704,7 +699,7 @@ namespace Microsoft.Xna.Framework
         /// <param name="amount">Weighting value(between 0.0 and 1.0).</param>
         /// <param name="result">The result of linear interpolation of the specified vectors as an output parameter.</param>
         public static void LerpPrecise(ref Vector2 value1, ref Vector2 value2, float amount, out Vector2 result)
-        { 
+        {
             result.X = MathHelper.LerpPrecise(value1.X, value2.X, amount);
             result.Y = MathHelper.LerpPrecise(value1.Y, value2.Y, amount);
         }
@@ -993,7 +988,7 @@ namespace Microsoft.Xna.Framework
         /// <returns>A <see cref="Point"/> representation for this object.</returns>
         public Point ToPoint()
         {
-            return new Point((int) X,(int) Y);
+            return new Point((int)X, (int)Y);
         }
 
         /// <summary>
@@ -1044,8 +1039,8 @@ namespace Microsoft.Xna.Framework
             var rot1 = new Vector3(rotation.X + rotation.X, rotation.Y + rotation.Y, rotation.Z + rotation.Z);
             var rot2 = new Vector3(rotation.X, rotation.X, rotation.W);
             var rot3 = new Vector3(1, rotation.Y, rotation.Z);
-            var rot4 = rot1*rot2;
-            var rot5 = rot1*rot3;
+            var rot4 = rot1 * rot2;
+            var rot5 = rot1 * rot3;
 
             var v = new Vector2();
             v.X = (float)((double)value.X * (1.0 - (double)rot5.Y - (double)rot5.Z) + (double)value.Y * ((double)rot4.Y - (double)rot4.Z));
@@ -1124,7 +1119,7 @@ namespace Microsoft.Xna.Framework
                 var destination = destinationArray[destinationIndex + x];
 
                 Vector2 v;
-                Transform(ref position,ref rotation,out v); 
+                Transform(ref position, ref rotation, out v);
 
                 destination.X = v.X;
                 destination.Y = v.Y;
@@ -1171,7 +1166,7 @@ namespace Microsoft.Xna.Framework
         /// <returns>Transformed normal.</returns>
         public static Vector2 TransformNormal(Vector2 normal, Matrix matrix)
         {
-            return new Vector2((normal.X * matrix.M11) + (normal.Y * matrix.M21),(normal.X * matrix.M12) + (normal.Y * matrix.M22));
+            return new Vector2((normal.X * matrix.M11) + (normal.Y * matrix.M21), (normal.X * matrix.M12) + (normal.Y * matrix.M22));
         }
 
         /// <summary>
@@ -1187,7 +1182,7 @@ namespace Microsoft.Xna.Framework
             result.X = x;
             result.Y = y;
         }
-        
+
         /// <summary>
         /// Apply transformation on normals within array of <see cref="Vector2"/> by the specified <see cref="Matrix"/> and places the results in an another array.
         /// </summary>
@@ -1267,8 +1262,13 @@ namespace Microsoft.Xna.Framework
         /// </remarks>
         public static Vector2 Rotate(Vector2 value, float radians)
         {
+#if NET
             float cos = MathF.Cos(radians);
             float sin = MathF.Sin(radians);
+#else
+            float cos = (float)Math.Cos(radians);
+            float sin = (float)Math.Sin(radians);
+#endif
 
             return new Vector2(value.X * cos - value.Y * sin, value.X * sin + value.Y * cos);
         }
@@ -1284,8 +1284,13 @@ namespace Microsoft.Xna.Framework
         /// </remarks>
         public void Rotate(float radians)
         {
+#if NET
             float cos = MathF.Cos(radians);
             float sin = MathF.Sin(radians);
+#else
+            float cos = (float)Math.Cos(radians);
+            float sin = (float)Math.Sin(radians);
+#endif
 
             float oldx = X;
 
@@ -1336,14 +1341,6 @@ namespace Microsoft.Xna.Framework
         {
             x = X;
             y = Y;
-        }
-
-        /// <summary>
-        /// Returns a <see cref="System.Numerics.Vector2"/>.
-        /// </summary>
-        public System.Numerics.Vector2 ToNumerics()
-        {
-            return new System.Numerics.Vector2(this.X, this.Y);
         }
 
         #endregion

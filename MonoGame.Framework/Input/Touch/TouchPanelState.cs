@@ -155,11 +155,12 @@ namespace Microsoft.Xna.Framework.Input.Touch
 
         internal void AddEvent(int id, TouchLocationState state, Vector2 position)
         {
-            AddEvent(id, state, position, false);
+            AddEvent(id, state, position, DeviceType.Touch, 0f, 0f);
         }
 
-        internal void AddEvent(int id, TouchLocationState state, Vector2 position, bool isMouse)
+        internal void AddEvent(int id, TouchLocationState state, Vector2 position, DeviceType deviceType, float pressure, float rotation)
         {
+            bool isMouse = deviceType == DeviceType.Mouse;
             // Different platforms return different touch identifiers
             // based on the specifics of their implementation and the
             // system drivers.
@@ -199,7 +200,15 @@ namespace Microsoft.Xna.Framework.Input.Touch
             {
                 // Add the new touch event keeping the list from getting
                 // too large if no one happens to be requesting the state.
-                var evt = new TouchLocation(touchId, state, position * _touchScale, CurrentTimestamp);
+                var evt = new TouchLocation(touchId,
+                                            state,
+                                            position * _touchScale,
+                                            TouchLocationState.Invalid,
+                                            Vector2.Zero,
+                                            CurrentTimestamp,
+                                            deviceType,
+                                            pressure,
+                                            rotation);
 
                 if (!isMouse || EnableMouseTouchPoint)
                 {
@@ -319,9 +328,6 @@ namespace Microsoft.Xna.Framework.Input.Touch
         {
             get
             {
-                // Process the pending gesture events. (May cause hold events)
-                UpdateGestures(false);
-
                 return GestureList.Count > 0;
             }
         }
@@ -398,7 +404,6 @@ namespace Microsoft.Xna.Framework.Input.Touch
             // points are released.
             if (heldLocations > 1)
             {
-                _tapDisabled = true;
                 _holdDisabled = true;
             }
 
@@ -500,10 +505,20 @@ namespace Microsoft.Xna.Framework.Input.Touch
                             if (_dragGestureStarted != GestureType.None)
                             {
                                 if (GestureIsEnabled(GestureType.DragComplete))
+                                {
+                                    TouchLocation prevTouch = TouchLocation.Invalid;
+                                    Vector2 delta = Vector2.Zero;
+
+                                    if (touch.TryGetPreviousLocation(ref prevTouch))
+                                    {
+                                        delta = touch.Position - prevTouch.Position;
+                                    }
+
                                     GestureList.Enqueue(new GestureSample(
                                                             GestureType.DragComplete, touch.Timestamp,
-                                                            Vector2.Zero, Vector2.Zero,
-                                                            Vector2.Zero, Vector2.Zero));
+                                                            touch.Position, Vector2.Zero,
+                                                            delta, touch.Velocity));
+                                }
 
                                 _dragGestureStarted = GestureType.None;
                                 break;
@@ -523,8 +538,8 @@ namespace Microsoft.Xna.Framework.Input.Touch
 
             // If we have two pinch points then update the pinch state.
             if (GestureIsEnabled(GestureType.Pinch) &&
-                    _pinchTouch[0].State != TouchLocationState.Invalid &&
-                    _pinchTouch[1].State != TouchLocationState.Invalid)
+                    _pinchTouch[0].State == TouchLocationState.Moved &&
+                    _pinchTouch[1].State == TouchLocationState.Moved)
                 ProcessPinch(_pinchTouch);
             else
             {
@@ -637,8 +652,8 @@ namespace Microsoft.Xna.Framework.Input.Touch
 
             // Make sure this is a move event and that we have
             // a previous touch location.
-            TouchLocation prevTouch;
-            if (touch.State != TouchLocationState.Moved || !touch.TryGetPreviousLocation(out prevTouch))
+            TouchLocation prevTouch = new TouchLocation();
+            if (touch.State != TouchLocationState.Moved || !touch.TryGetPreviousLocation(ref prevTouch))
                 return;
 
             var delta = touch.Position - prevTouch.Position;
@@ -678,7 +693,7 @@ namespace Microsoft.Xna.Framework.Input.Touch
             }
 
             // If the drag could not be classified then no gesture.
-            if (_dragGestureStarted == GestureType.None || _dragGestureStarted == GestureType.DragComplete)
+            if (_dragGestureStarted == GestureType.DragComplete)
                 return;
 
             _tapDisabled = true;
@@ -687,18 +702,18 @@ namespace Microsoft.Xna.Framework.Input.Touch
             GestureList.Enqueue(new GestureSample(
                                     _dragGestureStarted, touch.Timestamp,
                                     touch.Position, Vector2.Zero,
-                                    delta, Vector2.Zero));
+                                    delta, touch.Velocity));
         }
 
         private void ProcessPinch(TouchLocation[] touches)
         {
-            TouchLocation prevPos0;
-            TouchLocation prevPos1;
+            TouchLocation prevPos0 = TouchLocation.Invalid;
+            TouchLocation prevPos1 = TouchLocation.Invalid;
 
-            if (!touches[0].TryGetPreviousLocation(out prevPos0))
+            if (!touches[0].TryGetPreviousLocation(ref prevPos0))
                 prevPos0 = touches[0];
 
-            if (!touches[1].TryGetPreviousLocation(out prevPos1))
+            if (!touches[1].TryGetPreviousLocation(ref prevPos1))
                 prevPos1 = touches[1];
 
             var delta0 = touches[0].Position - prevPos0.Position;

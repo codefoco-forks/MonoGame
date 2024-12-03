@@ -15,7 +15,7 @@ namespace Microsoft.Xna.Framework.Content.Pipeline.Graphics
 				glyph.Subrect.Y++;
 				glyph.Subrect.Height--;
 
-				glyph.YOffset++;
+				glyph.OffsetY++;
 			}
 
 			// Crop the bottom.
@@ -30,7 +30,7 @@ namespace Microsoft.Xna.Framework.Content.Pipeline.Graphics
 				glyph.Subrect.X++;
 				glyph.Subrect.Width--;
 
-				glyph.XOffset++;
+				glyph.OffsetX++;
 			}
 
 			// Crop the right.
@@ -38,7 +38,7 @@ namespace Microsoft.Xna.Framework.Content.Pipeline.Graphics
 			{
 				glyph.Subrect.Width--;
 
-				glyph.XAdvance++;
+				glyph.Advance++;
 			}
 		}
 	}
