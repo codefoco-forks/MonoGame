@@ -14,6 +14,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Input.Touch;
+using Microsoft.Xna.Framework.Platform.Windows;
 using Microsoft.Xna.Framework.Windows;
 using Microsoft.Xna.Framework.Windows.Accessibility;
 using ButtonState = Microsoft.Xna.Framework.Input.ButtonState;
@@ -26,7 +27,8 @@ namespace MonoGame.Framework
 {
     class WinFormsGameWindow : GameWindow, IDisposable
     {
-        internal WinFormsGameForm Form;
+        private Form form;
+        private Control gameView;
 
         static private ReaderWriterLockSlim _allWindowsReaderWriterLockSlim = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
         static private List<WinFormsGameWindow> _allWindows = new List<WinFormsGameWindow>();
@@ -37,6 +39,7 @@ namespace MonoGame.Framework
         private bool _isBorderless;
         private bool _isMouseHidden;
         private bool _isMouseInBounds;
+        private byte _clickCount;
 
         private Point _locationBeforeFullScreen;
         // flag to indicate that we're switching to/from full screen and should ignore resize events
@@ -56,11 +59,34 @@ namespace MonoGame.Framework
 
         internal Game Game { get; private set; }
 
+        internal Control GameView
+        {
+            get
+            {
+                return gameView;
+            }
+        }
+
+        internal Form GameForm
+        {
+            get
+            {
+                return form;
+            }
+        }
+
+        #endregion
+
+        #region Events
+
+        public EventHandler<HorizontalMouseWheelEventArgs> MouseHorizontalWheel;
+        public EventHandler<EventArgs> SettingChanged;
+
         #endregion
 
         #region Public Properties
 
-        public override IntPtr Handle { get { return Form.Handle; } }
+        public override IntPtr Handle { get { return gameView.Handle; } }
 
         public override string ScreenDeviceName { get { return String.Empty; } }
 
@@ -68,8 +94,8 @@ namespace MonoGame.Framework
         {
             get
             {
-                var position = Form.PointToScreen(Point.Empty);
-                var size = Form.ClientSize;
+                var position = gameView.PointToScreen(Point.Empty);
+                var size = gameView.ClientSize;
                 return new Rectangle(position.X, position.Y, size.Width, size.Height);
             }
         }
@@ -79,28 +105,24 @@ namespace MonoGame.Framework
             get { return _isResizable; }
             set
             {
-                if (_isResizable != value)
-                {
-                    _isResizable = value;
-                    Form.MaximizeBox = _isResizable;
-                }
-                else
+                if (_isResizable == value)
                     return;
+
+                _isResizable = value;
+                if (form == null)
+                    return;
+
+                form.MaximizeBox = _isResizable;
+
                 if (_isBorderless)
                     return;
-                Form.FormBorderStyle = _isResizable ? FormBorderStyle.Sizable : FormBorderStyle.FixedSingle;
+
+                form.FormBorderStyle = _isResizable ? FormBorderStyle.Sizable : FormBorderStyle.FixedSingle;
             }
         }
 
-        public override bool AllowAltF4
-        {
-             get { return base.AllowAltF4; }
-             set
-             {
-                 Form.AllowAltF4 = value;
-                 base.AllowAltF4 = value;
-             }
-        }
+
+        internal bool IsResizing { get; set; }
 
         public override DisplayOrientation CurrentOrientation
         {
@@ -109,11 +131,20 @@ namespace MonoGame.Framework
 
         public override XnaPoint Position
         {
-            get { return new XnaPoint(Form.Location.X, Form.Location.Y); }
+            get
+            {
+                if (form == null)
+                    return XnaPoint.Zero;
+
+                return new XnaPoint(form.Location.X, form.Location.Y);
+            }
             set
             {
+                if (form == null)
+                    return;
+
                 _wasMoved = true;
-                Form.Location = new Point(value.X, value.Y);
+                form.Location = new Point(value.X, value.Y);
                 RefreshAdapter();
             }
         }
@@ -127,14 +158,18 @@ namespace MonoGame.Framework
             get { return _isBorderless; }
             set
             {
-                if (_isBorderless != value)
-                    _isBorderless = value;
-                else
+                if (_isBorderless == value)
                     return;
+
+                _isBorderless = value;
+
+                if (form == null)
+                    return;
+
                 if (_isBorderless)
-                    Form.FormBorderStyle = FormBorderStyle.None;
+                    form.FormBorderStyle = FormBorderStyle.None;
                 else
-                    Form.FormBorderStyle = _isResizable ? FormBorderStyle.Sizable : FormBorderStyle.FixedSingle;
+                    form.FormBorderStyle = _isResizable ? FormBorderStyle.Sizable : FormBorderStyle.FixedSingle;
             }
         }
 
@@ -143,42 +178,71 @@ namespace MonoGame.Framework
 
         #endregion
 
-        internal WinFormsGameWindow(WinFormsGamePlatform platform)
+        internal WinFormsGameWindow(WinFormsGamePlatform platform, Control externalControl)
         {
             _platform = platform;
             Game = platform.Game;
 
-            Form = new WinFormsGameForm(this);
-            ChangeClientSize(new Size(GraphicsDeviceManager.DefaultBackBufferWidth, GraphicsDeviceManager.DefaultBackBufferHeight));
+            MouseHorizontalWheel = OnMouseHorizontalScroll;
+
+            if (externalControl == null)
+            {
+                gameView = new GameControl(this);
+                form = new WinFormsGameForm(this, gameView);
+            }
+            else
+            {
+                gameView = externalControl;
+            }
+
+            int width = GraphicsDeviceManager.DefaultBackBufferWidth;
+            int height = GraphicsDeviceManager.DefaultBackBufferHeight;
+
+            width = (int)(width * ScreenScale);
+            height = (int)(height * ScreenScale);
+
+            ChangeClientSize(new Size(width, height));
 
             SetIcon();
-            Title = MonoGame.Framework.Utilities.AssemblyHelper.GetDefaultWindowTitle();
-
-            Form.MaximizeBox = false;
-            Form.FormBorderStyle = FormBorderStyle.FixedSingle;
-            Form.StartPosition = FormStartPosition.Manual;
+            Title = Utilities.AssemblyHelper.GetDefaultWindowTitle();
 
             // Capture mouse events.
-            Mouse.WindowHandle = Form.Handle;
-            Form.MouseWheel += OnMouseScroll;
-            Form.MouseHorizontalWheel += OnMouseHorizontalScroll;
-            Form.MouseEnter += OnMouseEnter;
-            Form.MouseLeave += OnMouseLeave;            
+            Mouse.WindowHandle = gameView.Handle;
+            gameView.MouseWheel += OnMouseScroll;
+            gameView.MouseEnter += OnMouseEnter;
+            gameView.MouseLeave += OnMouseLeave;
+            gameView.MouseDoubleClick += OnMouseDoubleClick;
+            gameView.MouseClick += OnMouseClick;
 
-            _resizeTickTimer = new System.Timers.Timer(1) { SynchronizingObject = Form, AutoReset = false };
+            _resizeTickTimer = new System.Timers.Timer(1) { SynchronizingObject = gameView, AutoReset = false };
             _resizeTickTimer.Elapsed += OnResizeTick;
 
-            Form.Activated += OnActivated;
-            Form.Deactivate += OnDeactivate;
-            Form.Resize += OnResize;
-            Form.ResizeBegin += OnResizeBegin;
-            Form.ResizeEnd += OnResizeEnd;
+            if (form != null)
+            {
+                form.MaximizeBox = false;
 
-            Form.KeyPress += OnKeyPress;
+                form.FormBorderStyle = FormBorderStyle.FixedSingle;
+                form.StartPosition = FormStartPosition.Manual;
+
+                form.Activated += OnActivated;
+                form.Deactivate += OnDeactivate;
+
+                form.ResizeBegin += OnResizeBegin;
+                form.ResizeEnd += OnResizeEnd;
+
+                form.KeyPress += OnKeyPress;
+            }
+            else
+            {
+                gameView.GotFocus += OnActivated;
+                gameView.LostFocus += OnDeactivate;
+            }
+
+            gameView.Resize += OnResize;
 
             UpdateMouseKeys();
 
-            Form.SettingChanged += Form_SettingChanged;
+            SettingChanged += Form_SettingChanged;
 
             RegisterToAllWindows();
         }
@@ -191,8 +255,8 @@ namespace MonoGame.Framework
             {
                 if (!_subscribedToMouseKeyEvents)
                 {
-                    Form.MouseDown += Form_MouseDown;
-                    Form.MouseUp += Form_MouseUp;
+                    form.MouseDown += Form_MouseDown;
+                    form.MouseUp += Form_MouseUp;
                     _subscribedToMouseKeyEvents = true;
                 }
             }
@@ -200,8 +264,8 @@ namespace MonoGame.Framework
             {
                 if (_subscribedToMouseKeyEvents)
                 {
-                    Form.MouseDown -= Form_MouseDown;
-                    Form.MouseUp -= Form_MouseUp;
+                    form.MouseDown -= Form_MouseDown;
+                    form.MouseUp -= Form_MouseUp;
                     _subscribedToMouseKeyEvents = false;
                 }
             }
@@ -224,10 +288,7 @@ namespace MonoGame.Framework
         {
             if (e.Button == MouseButtons.Left)
             {
-                Task.Delay(100).ContinueWith((x) =>
-                {
-                    _isleftMouseButtonDown = false;
-                });
+                _isleftMouseButtonDown = false;
             }
         }
 
@@ -240,26 +301,29 @@ namespace MonoGame.Framework
 
         [DllImport("shell32.dll", CharSet = CharSet.Auto, BestFitMapping = false)]
         private static extern IntPtr ExtractIcon(IntPtr hInst, string exeFileName, int iconIndex);
-        
-        [DllImport("user32.dll", ExactSpelling=true, CharSet=CharSet.Auto)]
-        [return: MarshalAsAttribute(System.Runtime.InteropServices.UnmanagedType.Bool)]
-        internal static extern bool GetCursorPos(out POINTSTRUCT pt);
-        
-        [DllImport("user32.dll", ExactSpelling=true, CharSet=CharSet.Auto)]
-        internal static extern int MapWindowPoints(HandleRef hWndFrom, HandleRef hWndTo, out POINTSTRUCT pt, int cPoints);
+
+        [DllImport("user32.dll", ExactSpelling = true, CharSet = CharSet.Auto)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool GetCursorPos(out POINT pt);
+
+        [DllImport("user32.dll", ExactSpelling = true, CharSet = CharSet.Auto)]
+        internal static extern int MapWindowPoints(HandleRef hWndFrom, HandleRef hWndTo, ref POINT pt, int cPoints);
 
         [DllImport("shell32.dll")]
         private static extern void DragAcceptFiles(IntPtr hwnd, bool fAccept);
 
         private void SetIcon()
         {
+            if (form == null)
+                return;
+
             // When running unit tests this can return null.
             var assembly = Assembly.GetEntryAssembly();
             if (assembly == null)
                 return;
             var handle = ExtractIcon(IntPtr.Zero, assembly.Location, 0);
             if (handle != IntPtr.Zero)
-                Form.Icon = Icon.FromHandle(handle);
+                form.Icon = Icon.FromHandle(handle);
         }
 
         ~WinFormsGameWindow()
@@ -306,11 +370,12 @@ namespace MonoGame.Framework
         private void OnDeactivate(object sender, EventArgs eventArgs)
         {
             // If in exclusive mode full-screen, force it out of exclusive mode and minimize the window
-			if( IsFullScreen && _platform.Game.GraphicsDevice.PresentationParameters.HardwareModeSwitch ) {			
-				// This is true when the user presses the Windows key while game window has focus
-				if( Form.WindowState == FormWindowState.Minimized )
-					MinimizeFullScreen();				
-			}
+            if (IsFullScreen && _platform.Game.GraphicsDevice.PresentationParameters.HardwareModeSwitch)
+            {
+                // This is true when the user presses the Windows key while game window has focus
+                if (form.WindowState == FormWindowState.Minimized)
+                    MinimizeFullScreen();
+            }
             _platform.IsActive = false;
             Keyboard.SetActive(false);
         }
@@ -330,14 +395,14 @@ namespace MonoGame.Framework
             // If we call the form client functions before the form has
             // been made visible it will cause the wrong window size to
             // be applied at startup.
-            if (!Form.Visible)
+            if (!gameView.Visible)
                 return;
 
-            POINTSTRUCT pos;
+            POINT pos;
             GetCursorPos(out pos);
-            MapWindowPoints(new HandleRef(null, IntPtr.Zero), new HandleRef(Form, Form.Handle), out pos, 1);
-            var clientPos = new System.Drawing.Point(pos.X, pos.Y);
-            var withinClient = Form.ClientRectangle.Contains(clientPos);
+            MapWindowPoints(new HandleRef(null, IntPtr.Zero), new HandleRef(gameView, gameView.Handle), ref pos, 1);
+            var clientPos = new Point(pos.x, pos.y);
+            var withinClient = gameView.ClientRectangle.Contains(clientPos);
             var buttons = Control.MouseButtons;
 
             var previousState = MouseState.LeftButton;
@@ -349,21 +414,21 @@ namespace MonoGame.Framework
             MouseState.RightButton = (buttons & MouseButtons.Right) == MouseButtons.Right ? ButtonState.Pressed : ButtonState.Released;
             MouseState.XButton1 = (buttons & MouseButtons.XButton1) == MouseButtons.XButton1 ? ButtonState.Pressed : ButtonState.Released;
             MouseState.XButton2 = (buttons & MouseButtons.XButton2) == MouseButtons.XButton2 ? ButtonState.Pressed : ButtonState.Released;
-
+            MouseState.ClickCount = _clickCount;
             // Don't process touch state if we're not active 
             // and the mouse is within the client area.
             if (!_platform.IsActive || !withinClient)
-            {                
+            {
                 if (MouseState.LeftButton == ButtonState.Pressed)
                 {
                     // Release mouse TouchLocation
-                    var touchX = MathHelper.Clamp(MouseState.X, 0, Form.ClientRectangle.Width-1);
-                    var touchY = MathHelper.Clamp(MouseState.Y, 0, Form.ClientRectangle.Height-1);
-                    TouchPanelState.AddEvent(0, TouchLocationState.Released, new Vector2(touchX, touchY), true);
+                    var touchX = MathHelper.Clamp(MouseState.X, 0, gameView.ClientRectangle.Width - 1);
+                    var touchY = MathHelper.Clamp(MouseState.Y, 0, gameView.ClientRectangle.Height - 1);
+                    TouchPanelState.AddEvent(0, TouchLocationState.Released, new Vector2(touchX, touchY), DeviceType.Mouse, 0f, 0f);
                 }
                 return;
             }
-            
+
             TouchLocationState? touchState = null;
             if (MouseState.LeftButton == ButtonState.Pressed)
                 if (previousState == ButtonState.Released)
@@ -374,17 +439,20 @@ namespace MonoGame.Framework
                 touchState = TouchLocationState.Released;
 
             if (touchState.HasValue)
-                TouchPanelState.AddEvent(0, touchState.Value, new Vector2(MouseState.X, MouseState.Y), true);
+                TouchPanelState.AddEvent(0, touchState.Value, new Vector2(MouseState.X, MouseState.Y), DeviceType.Mouse, 0f, 0f);
 
-            if (_isleftMouseButtonDown)
-            {                
-                MouseState.LeftButton = ButtonState.Pressed;
-            }
-            else
+            if (_isMouseKeysEnabled)
             {
-                MouseState.LeftButton = ButtonState.Released;
+                if (_isleftMouseButtonDown)
+                {
+                    MouseState.LeftButton = ButtonState.Pressed;
+                }
+                else
+                {
+                    MouseState.LeftButton = ButtonState.Released;
+                }
             }
-        } 
+        }
 
         private void OnMouseEnter(object sender, EventArgs e)
         {
@@ -405,13 +473,22 @@ namespace MonoGame.Framework
                 Cursor.Show();
             }
         }
+        private void OnMouseClick(object sender, MouseEventArgs e)
+        {
+            _clickCount = 1;
+        }
+
+        private void OnMouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            _clickCount = 2;
+        }
 
         [DllImport("user32.dll")]
         private static extern short VkKeyScanEx(char ch, IntPtr dwhkl);
 
         private void OnKeyPress(object sender, KeyPressEventArgs e)
         {
-            var key = (Keys) (VkKeyScanEx(e.KeyChar, InputLanguage.CurrentInputLanguage.Handle) & 0xff);
+            var key = (Keys)(VkKeyScanEx(e.KeyChar, InputLanguage.CurrentInputLanguage.Handle) & 0xff);
             OnTextInput(new TextInputEventArgs(e.KeyChar, key));
         }
 
@@ -422,7 +499,10 @@ namespace MonoGame.Framework
 
         internal void Initialize(PresentationParameters pp)
         {
-            ChangeClientSize(new Size(pp.BackBufferWidth, pp.BackBufferHeight));
+            int width = pp.BackBufferWidth;
+            int height = pp.BackBufferHeight;
+
+            ChangeClientSize(new Size(width, height));
 
             if (pp.IsFullScreen)
             {
@@ -436,22 +516,34 @@ namespace MonoGame.Framework
 
         private void OnResize(object sender, EventArgs eventArgs)
         {
-            if (_switchingFullScreen || Form.IsResizing)
+            if (form == null && !_isResizeTickEnabled)
+            {
+                _isResizeTickEnabled = true;
+                _resizeTickTimer.Enabled = true;
+            }
+
+            if (_switchingFullScreen || IsResizing)
                 return;
+
 
             // this event can be triggered when moving the window through Windows hotkeys
             // in that case we should no longer center the window after resize
-            if (_lastFormState == Form.WindowState)
+            if (form != null && _lastFormState == form.WindowState)
                 _wasMoved = true;
 
-            if (Game.Window == this && Form.WindowState != FormWindowState.Minimized) {
+            if (Game.Window == this && form != null && (form.WindowState != FormWindowState.Minimized || form == null))
+            {
                 // we may need to restore full screen when coming back from a minimized window
                 if (_lastFormState == FormWindowState.Minimized)
                     _platform.Game.GraphicsDevice.SetHardwareFullscreen();
+                if (!IsClientSizeChanged())
+                    return;
+
                 UpdateBackBufferSize();
             }
 
-            _lastFormState = Form.WindowState;
+            if (form != null)
+                _lastFormState = form.WindowState;
             OnClientSizeChanged();
         }
 
@@ -465,9 +557,18 @@ namespace MonoGame.Framework
         {
             if (!_isResizeTickEnabled)
                 return;
+
             UpdateWindows();
             Game.Tick();
-            _resizeTickTimer.Enabled = true;
+
+            if (form != null)
+            {
+                _resizeTickTimer.Enabled = true;
+            }
+            else
+            {
+                OnResizeEnd(this, EventArgs.Empty);
+            }
         }
 
         private void OnResizeEnd(object sender, EventArgs eventArgs)
@@ -478,6 +579,9 @@ namespace MonoGame.Framework
             _wasMoved = true;
             if (Game.Window == this)
             {
+                if (!IsClientSizeChanged())
+                    return;
+
                 UpdateBackBufferSize();
                 RefreshAdapter();
             }
@@ -493,13 +597,24 @@ namespace MonoGame.Framework
                 Game.GraphicsDevice.RefreshAdapter();
         }
 
+        private bool IsClientSizeChanged()
+        {
+            var manager = Game.graphicsDeviceManager;
+            if (manager.GraphicsDevice == null)
+                return false;
+
+            Size newSize = gameView.ClientSize;
+            return newSize.Width != manager.PreferredBackBufferWidth
+                || newSize.Height != manager.PreferredBackBufferHeight;
+        }
+
         private void UpdateBackBufferSize()
         {
             var manager = Game.graphicsDeviceManager;
             if (manager.GraphicsDevice == null)
                 return;
 
-            var newSize = Form.ClientSize;
+            Size newSize = gameView.ClientSize;
             if (newSize.Width == manager.PreferredBackBufferWidth
                 && newSize.Height == manager.PreferredBackBufferHeight)
                 return;
@@ -512,13 +627,104 @@ namespace MonoGame.Framework
 
         protected override void SetTitle(string title)
         {
-            Form.Text = title;
+            if (form == null)
+                return;
+
+            form.Text = title;
         }
 
-        internal void RunLoop()
+        /// <summary>
+        /// Identifies the dots per inch (dpi) setting for a monitor.
+        /// </summary>
+        enum MONITOR_DPI_TYPE
+        {
+            /// <summary>
+            /// The effective DPI. This value should be used when determining the correct scale factor for scaling UI elements. This incorporates the scale factor set by the user for this specific display.
+            /// </summary>
+            MDT_EFFECTIVE_DPI = 0,
+            /// <summary>
+            /// The angular DPI. This DPI ensures rendering at a compliant angular resolution on the screen. This does not include the scale factor set by the user for this specific display.
+            /// </summary>
+            MDT_ANGULAR_DPI = 1,
+            /// <summary>
+            /// The raw DPI. This value is the linear DPI of the screen as measured on the screen itself. Use this value when you want to read the pixel density and not the recommended scaling setting. This does not include the scale factor set by the user for this specific display and is not guaranteed to be a supported DPI value.
+            /// </summary>
+            MDT_RAW_DPI = 2,
+            /// <summary>
+            /// Same as <see cref="MDT_EFFECTIVE_DPI"/>.
+            /// </summary>
+            MDT_DEFAULT = MDT_EFFECTIVE_DPI
+        }
+
+        [System.Security.SuppressUnmanagedCodeSecurity]
+        [DllImport("Shcore.dll")]
+        static extern int GetDpiForMonitor(IntPtr hmonitor, MONITOR_DPI_TYPE dpiType, out uint dpiX, out uint dpiY);
+
+        enum MonitorFlags : uint
+        {
+            MONITOR_DEFAULTTONULL = 0,
+            MONITOR_DEFAULTTOPRIMARY = 1,
+            MONITOR_DEFAULTTONEAREST = 2
+        }
+
+        [System.Security.SuppressUnmanagedCodeSecurity]
+        [DllImport("user32.dll")]
+        static extern IntPtr MonitorFromWindow(IntPtr hwnd, MonitorFlags dwFlags);
+
+        [System.Security.SuppressUnmanagedCodeSecurity]
+        [DllImport("user32.dll")]
+        static extern IntPtr GetDC(IntPtr hwnd);
+
+        [System.Security.SuppressUnmanagedCodeSecurity]
+        [DllImport("user32.dll")]
+        static extern int ReleaseDC(IntPtr hWnd, IntPtr hDC);
+
+        enum DeviceCap
+        {
+            /// <summary>
+            /// Logical pixels inch in X
+            /// </summary>
+            LOGPIXELSX = 88,
+        }
+
+
+        [System.Security.SuppressUnmanagedCodeSecurity]
+        [DllImport("gdi32.dll")]
+        static extern int GetDeviceCaps(IntPtr hdc, DeviceCap nIndex);
+
+        public override bool GetDeviceDPI(out float dpi)
+        {
+            dpi = 0;
+            uint dpiX;
+            uint dpiY;
+
+            if (Environment.OSVersion.Version >= new Version(6, 3))
+            {
+                IntPtr hmonitor = MonitorFromWindow(Handle, MonitorFlags.MONITOR_DEFAULTTOPRIMARY);
+                if (hmonitor == IntPtr.Zero)
+                    return false;
+                if (GetDpiForMonitor(hmonitor, MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI, out dpiX, out dpiY) != 0)
+                    return false;
+                dpi = dpiX;
+                return true;
+            }
+
+            IntPtr hdc = GetDC(IntPtr.Zero);
+
+            if (hdc == IntPtr.Zero)
+                return false;
+
+            dpiX = (uint)GetDeviceCaps(hdc, DeviceCap.LOGPIXELSX);
+            dpi = dpiX;
+
+            ReleaseDC(IntPtr.Zero, hdc);
+            return dpi != 0;
+        }
+
+        internal void RunLoop(Form applicationForm)
         {
             Application.Idle += TickOnIdle;
-            Application.Run(Form);
+            Application.Run(applicationForm);
             Application.Idle -= TickOnIdle;
 
             // We need to remove the WM_QUIT message in the message 
@@ -535,8 +741,13 @@ namespace MonoGame.Framework
                     break;
 
                 Thread.Sleep(100);
-            } 
+            }
             while (PeekMessage(out msg, IntPtr.Zero, 0, 1 << 5, 1));
+        }
+
+        public void WndProc(ref Message m)
+        {
+            WinFormsGameForm.WndProc(ref m, this);
         }
 
         // Run game loop when the app becomes Idle.
@@ -548,7 +759,7 @@ namespace MonoGame.Framework
                 UpdateWindows();
                 Game.Tick();
             }
-            while (!PeekMessage(out nativeMsg, IntPtr.Zero, 0, 0, 0) && Form != null && Form.IsDisposed == false);
+            while (!PeekMessage(out nativeMsg, IntPtr.Zero, 0, 0, 0));
         }
 
         internal void UpdateWindows()
@@ -578,27 +789,31 @@ namespace MonoGame.Framework
             public IntPtr wParam;
             public IntPtr lParam;
             public uint time;
-            public System.Drawing.Point p;
+            public Point p;
         }
 
         internal void ChangeClientSize(Size clientBounds)
         {
-            var prevIsResizing = Form.IsResizing;
-            // make sure we don't see the events from this as a user resize
-            Form.IsResizing = true;
+            if (form == null)
+                return;
 
-            if(this.Form.ClientSize != clientBounds)
-                this.Form.ClientSize = clientBounds;
+            var prevIsResizing = IsResizing;
+            // make sure we don't see the events from this as a user resize
+            IsResizing = true;
+
+            if (form.ClientSize != clientBounds)
+                form.ClientSize = clientBounds;
 
             // if the window wasn't moved manually and it's resized, it should be centered
             if (!_wasMoved)
-                Form.CenterOnPrimaryMonitor();
+                WinFormsGameForm.CenterOnPrimaryMonitor(form);
 
-            Form.IsResizing = prevIsResizing;
+            IsResizing = prevIsResizing;
         }
 
         [System.Security.SuppressUnmanagedCodeSecurity] // We won't use this maliciously
         [DllImport("User32.dll", CharSet = CharSet.Auto)]
+        [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool PeekMessage(out NativeMessage msg, IntPtr hWnd, uint messageFilterMin, uint messageFilterMax, uint flags);
 
         #region Public Methods
@@ -613,11 +828,11 @@ namespace MonoGame.Framework
         {
             if (disposing)
             {
-                if (Form != null)
+                if (form != null)
                 {
-                    UnregisterFromAllWindows(); 
-                    Form.Dispose();
-                    Form = null;
+                    UnregisterFromAllWindows();
+                    form.Dispose();
+                    form = null;
                 }
             }
             _platform = null;
@@ -655,14 +870,17 @@ namespace MonoGame.Framework
             var raiseClientSizeChanged = false;
             if (pp.IsFullScreen && pp.HardwareModeSwitch && IsFullScreen && HardwareModeSwitch)
             {
-                if( _platform.IsActive ) {
-					// stay in hardware full screen, need to call ResizeTargets so the displaymode can be switched
-					_platform.Game.GraphicsDevice.ResizeTargets();
-				} else {
-					// This needs to be called in case the user presses the Windows key while the focus is on the second monitor,
-					//	which (sometimes) causes the window to exit fullscreen mode, but still keeps it visible
-					MinimizeFullScreen();
-				}
+                if (_platform.IsActive)
+                {
+                    // stay in hardware full screen, need to call ResizeTargets so the displaymode can be switched
+                    _platform.Game.GraphicsDevice.ResizeTargets();
+                }
+                else
+                {
+                    // This needs to be called in case the user presses the Windows key while the focus is on the second monitor,
+                    //	which (sometimes) causes the window to exit fullscreen mode, but still keeps it visible
+                    MinimizeFullScreen();
+                }
             }
             else if (pp.IsFullScreen && (!IsFullScreen || pp.HardwareModeSwitch != HardwareModeSwitch))
             {
@@ -689,7 +907,12 @@ namespace MonoGame.Framework
 
             // store the location of the window so we can restore it later
             if (!IsFullScreen)
-                _locationBeforeFullScreen = Form.Location;
+            {
+                if (form == null)
+                    _locationBeforeFullScreen = Point.Empty;
+                else
+                    _locationBeforeFullScreen = form.Location;
+            }
 
             _platform.Game.GraphicsDevice.SetHardwareFullscreen();
 
@@ -698,9 +921,14 @@ namespace MonoGame.Framework
                 // FIXME: setting the WindowState to Maximized when the form is not shown will not update the ClientBounds
                 // this causes the back buffer to be the wrong size when initializing in soft full screen
                 // we show the form to bypass the issue
-                Form.Show();
                 IsBorderless = true;
-                Form.WindowState = FormWindowState.Maximized;
+
+                if (form != null)
+                {
+                    form.Show();
+                    form.WindowState = FormWindowState.Maximized;
+                }
+
                 _lastFormState = FormWindowState.Maximized;
             }
 
@@ -712,6 +940,7 @@ namespace MonoGame.Framework
 
 
         [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
         static extern bool RedrawWindow(IntPtr hWnd, IntPtr lprcUpdate, IntPtr hrgnUpdate, uint flags);
 
         private void ExitFullScreen()
@@ -721,9 +950,14 @@ namespace MonoGame.Framework
             _platform.Game.GraphicsDevice.ClearHardwareFullscreen();
 
             IsBorderless = false;
-            Form.WindowState = FormWindowState.Normal;
             _lastFormState = FormWindowState.Normal;
-            Form.Location = _locationBeforeFullScreen;
+
+            if (form != null)
+            {
+                form.WindowState = FormWindowState.Normal;
+                form.Location = _locationBeforeFullScreen;
+            }
+
             IsFullScreen = false;
 
             // Windows does not always correctly redraw the desktop when exiting soft full screen, so force a redraw
@@ -740,9 +974,14 @@ namespace MonoGame.Framework
             _platform.Game.GraphicsDevice.ClearHardwareFullscreen();
 
             IsBorderless = false;
-            Form.WindowState = FormWindowState.Minimized;
             _lastFormState = FormWindowState.Minimized;
-            Form.Location = _locationBeforeFullScreen;
+
+            if (form != null)
+            {
+                form.WindowState = FormWindowState.Minimized;
+                form.Location = _locationBeforeFullScreen;
+            }
+
             IsFullScreen = false;
 
             // Windows does not always correctly redraw the desktop when exiting soft full screen, so force a redraw
