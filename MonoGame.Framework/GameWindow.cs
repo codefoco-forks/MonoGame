@@ -61,7 +61,39 @@ namespace Microsoft.Xna.Framework
 	    /// </summary>
 		public abstract string ScreenDeviceName { get; }
 
-		private string _title;
+        /// <summary>
+        /// Default DPI (96)
+        /// </summary>
+		protected const float DEFAULT_DPI = 96f;
+        /// <summary>
+        /// Get current screen scale factor
+        /// (Only works on Windows/Mac)
+        /// </summary>
+        public float ScreenScale
+        {
+            get
+            {
+                float dpi;
+                if (!GetDeviceDPI(out dpi))
+                    return 1f;
+
+                float scale = dpi / DEFAULT_DPI;
+                return scale;
+            }
+        }
+
+        /// <summary>
+        /// Get the DPI the window is being displayed
+        /// </summary>
+        /// <param name="dpi"></param>
+        /// <returns></returns>
+        public virtual bool GetDeviceDPI(out float dpi)
+        {
+            dpi = 0f;
+            return false;
+        }
+
+        private string _title;
         /// <summary>
         /// Gets or sets the title of the game window.
         /// </summary>
@@ -128,7 +160,7 @@ namespace Microsoft.Xna.Framework
 	    /// </summary>
 		public event EventHandler<EventArgs> ScreenDeviceNameChanged;
 
-#if WINDOWS || WINDOWS_UAP || DESKTOPGL|| ANGLE
+#if WINDOWS || WINDOWS_UAP || DESKTOPGL || ANGLE
 
         /// <summary>
 		/// Use this event to user text input.
@@ -142,10 +174,12 @@ namespace Microsoft.Xna.Framework
 		public event EventHandler<TextInputEventArgs> TextInput;
 
         internal bool IsTextInputHandled { get { return TextInput != null; } }
+#endif
 
-        /// <summary>
-        /// Buffered keyboard KeyDown event.
-        /// </summary>
+#if WINDOWS || WINDOWS_UAP || DESKTOPGL || ANGLE || ANDROID
+		/// <summary>
+		/// Buffered keyboard KeyDown event.
+		/// </summary>
 		public event EventHandler<InputKeyEventArgs> KeyDown;
 
         /// <summary>
@@ -155,15 +189,16 @@ namespace Microsoft.Xna.Framework
 
 #endif
 
-        /// <summary>
-        /// This event is raised when user drops a file into the game window
-        /// </summary>
-        /// <remarks>
-        /// This event is only supported on desktop platforms.
-        /// </remarks>
-        public event EventHandler<FileDropEventArgs> FileDrop;
 
-        #endregion Events
+		/// <summary>
+		/// This event is raised when user drops a file into the game window
+		/// </summary>
+		/// <remarks>
+		/// This event is only supported on desktop platforms.
+		/// </remarks>
+		public event EventHandler<FileDropEventArgs> FileDrop;
+
+#endregion Events
 
         /// <summary>
         /// Called before a game switches from windowed to full screen mode or vice versa.
@@ -218,6 +253,9 @@ namespace Microsoft.Xna.Framework
             EventHelpers.Raise(this, OrientationChanged, EventArgs.Empty);
 		}
 
+        /// <summary>
+        /// OnPaint
+        /// </summary>
 		protected void OnPaint ()
 		{
 		}
@@ -239,14 +277,19 @@ namespace Microsoft.Xna.Framework
 		{
             EventHelpers.Raise(this, TextInput, e);
 		}
-        internal void OnKeyDown(InputKeyEventArgs e)
-	    {
-            EventHelpers.Raise(this, KeyDown, e);
-	    }
-        internal void OnKeyUp(InputKeyEventArgs e)
-	    {
-            EventHelpers.Raise(this, KeyUp, e);
-	    }
+#endif
+
+#if WINDOWS || WINDOWS_UAP || DESKTOPGL || ANGLE || ANDROID
+
+		internal void OnKeyDown(InputKeyEventArgs e)
+		{
+			EventHelpers.Raise(this, KeyDown, e);
+		}
+
+		internal void OnKeyUp(InputKeyEventArgs e)
+		{
+			EventHelpers.Raise(this, KeyUp, e);
+		}
 #endif
 
         internal void OnFileDrop(FileDropEventArgs e)
@@ -261,15 +304,5 @@ namespace Microsoft.Xna.Framework
 	    /// </summary>
 	    /// <param name="title">The new title of the window.</param>
 		protected abstract void SetTitle (string title);
-
-#if DIRECTX && WINDOWS
-        public static GameWindow Create(Game game, int width, int height)
-        {
-            var window = new MonoGame.Framework.WinFormsGameWindow((MonoGame.Framework.WinFormsGamePlatform)game.Platform);
-            window.Initialize(width, height);
-
-            return window;
-        }
-#endif
     }
 }

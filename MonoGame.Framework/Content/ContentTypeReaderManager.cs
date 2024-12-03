@@ -21,7 +21,11 @@ namespace Microsoft.Xna.Framework.Content
 
         private static readonly string _assemblyName;
 
+#if NET6_0_OR_GREATER
+        private static readonly bool _isRunningOnNetCore = true;
+#else
         private static readonly bool _isRunningOnNetCore = Type.GetType("System.Private.CoreLib") != null;
+#endif
 
         static ContentTypeReaderManager()
         {
@@ -43,13 +47,12 @@ namespace Microsoft.Xna.Framework.Content
         }
 
         // Trick to prevent the linker removing the code, but not actually execute the code
-        static bool falseflag = false;
 
         internal ContentTypeReader[] LoadAssetReaders(ContentReader reader)
         {
 #pragma warning disable 0219, 0649
             // Trick to prevent the linker removing the code, but not actually execute the code
-            if (falseflag)
+            if (Environment.GetEnvironmentVariable("DUMMYVAR") == "DUMMYVAR")
             {
                 // Dummy variables required for it to work on iDevices ** DO NOT DELETE ** 
                 // This forces the classes not to be optimized out when deploying to iDevices
@@ -60,12 +63,13 @@ namespace Microsoft.Xna.Framework.Content
                 var hBoundingSphereReader = new BoundingSphereReader();
                 var hBoundingFrustumReader = new BoundingFrustumReader();
                 var hRayReader = new RayReader();
-                var hCharListReader = new ListReader<Char>();
+                var hCharListReader = new ListReader<char>();
                 var hRectangleListReader = new ListReader<Rectangle>();
                 var hRectangleArrayReader = new ArrayReader<Rectangle>();
                 var hVector3ListReader = new ListReader<Vector3>();
                 var hStringListReader = new ListReader<StringReader>();
-                var hIntListReader = new ListReader<Int32>();
+                var hIntListReader = new ListReader<int>();
+                var hShortListReader = new ListReader<short>();
                 var hSpriteFontReader = new SpriteFontReader();
                 var hTexture2DReader = new Texture2DReader();
                 var hCharReader = new CharReader();
@@ -94,6 +98,7 @@ namespace Microsoft.Xna.Framework.Content
                 var hSongReader = new SongReader();
                 var hModelReader = new ModelReader();
                 var hInt32Reader = new Int32Reader();
+                var hInt16Reader = new Int16Reader();
                 var hEffectReader = new EffectReader();
                 var hSingleReader = new SingleReader();
 
@@ -102,6 +107,57 @@ namespace Microsoft.Xna.Framework.Content
 #if ANDROID || (IOS && !TVOS) || MONOMAC || (WINDOWS && !OPENGL) || WINDOWS_UAP
                 var hVideoReader = new VideoReader();
 #endif
+                string types = hByteReader.GetType() + " " +
+                hSByteReader.GetType() + " " +
+                hDateTimeReader.GetType() + " " +
+                hDecimalReader.GetType() + " " +
+                hBoundingSphereReader.GetType() + " " +
+                hBoundingFrustumReader.GetType() + " " +
+                hRayReader.GetType() + " " +
+                hCharListReader.GetType() + " " +
+                hRectangleListReader.GetType() + " " +
+                hRectangleArrayReader.GetType() + " " +
+                hVector3ListReader.GetType() + " " +
+                hStringListReader.GetType() + " " +
+                hIntListReader.GetType() + " " +
+                hShortListReader.GetType() + " " +
+                hSpriteFontReader.GetType() + " " +
+                hTexture2DReader.GetType() + " " +
+                hCharReader.GetType() + " " +
+                hRectangleReader.GetType() + " " +
+                hStringReader.GetType() + " " +
+                hVector2Reader.GetType() + " " +
+                hVector3Reader.GetType() + " " +
+                hVector4Reader.GetType() + " " +
+                hCurveReader.GetType() + " " +
+                hIndexBufferReader.GetType() + " " +
+                hBoundingBoxReader.GetType() + " " +
+                hMatrixReader.GetType() + " " +
+                hBasicEffectReader.GetType() + " " +
+                hVertexBufferReader.GetType() + " " +
+                hAlphaTestEffectReader.GetType() + " " +
+                hEnumSpriteEffectsReader.GetType() + " " +
+                hArrayFloatReader.GetType() + " " +
+                hArrayVector2Reader.GetType() + " " +
+                hListVector2Reader.GetType() + " " +
+                hArrayMatrixReader.GetType() + " " +
+                hEnumBlendReader.GetType() + " " +
+                hNullableRectReader.GetType() + " " +
+                hEffectMaterialReader.GetType() + " " +
+                hExternalReferenceReader.GetType() + " " +
+                hSoundEffectReader.GetType() + " " +
+                hSongReader.GetType() + " " +
+                hModelReader.GetType() + " " +
+                hInt32Reader.GetType() + " " +
+                hInt16Reader.GetType() + " " +
+                hEffectReader.GetType() + " " +
+
+#if ANDROID || (IOS && !TVOS) || MONOMAC || (WINDOWS && !OPENGL) || WINDOWS_UAP
+                hVideoReader.GetType() + " " +
+#endif
+                hSingleReader.GetType();
+
+                Console.WriteLine(types);
             }
 #pragma warning restore 0219, 0649
 
@@ -139,7 +195,9 @@ namespace Microsoft.Xna.Framework.Content
 
                         readerTypeString = PrepareType(readerTypeString);
 
-                        var l_readerType = Type.GetType(readerTypeString);
+#pragma warning disable IL2057 // Unrecognized value passed to the parameter of method. It's not possible to guarantee the availability of the target type.
+                        Type l_readerType = Type.GetType(readerTypeString);
+#pragma warning restore IL2057 // Unrecognized value passed to the parameter of method. It's not possible to guarantee the availability of the target type.
                         if (l_readerType != null)
                         {
                             ContentTypeReader typeReader;
