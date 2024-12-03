@@ -10,14 +10,12 @@ namespace Microsoft.Xna.Framework.Graphics
     /// <summary>
     /// Describes a custom vertex format structure that contains position.
     /// </summary>
-    [DataContract]
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-	public struct VertexPosition : IVertexType
-	{
+    public struct VertexPosition : IVertexType
+    {
         /// <summary>
         /// The XYZ vertex position.
         /// </summary>
-        [DataMember]
 		public Vector3 Position;
         /// <inheritdoc cref="IVertexType.VertexDeclaration"/>
 		public static readonly VertexDeclaration VertexDeclaration;
@@ -27,29 +25,29 @@ namespace Microsoft.Xna.Framework.Graphics
         /// </summary>
         /// <param name="position">Position of the vertex.</param>
         public VertexPosition(Vector3 position)
-		{
-			Position = position;
-		}
-
-		VertexDeclaration IVertexType.VertexDeclaration
         {
-			get { return VertexDeclaration; }
-		}
+            Position = position;
+        }
+
+        VertexDeclaration IVertexType.VertexDeclaration
+        {
+            get { return VertexDeclaration; }
+        }
 
         /// <inheritdoc/>
         public override int GetHashCode()
-	    {
-	        return Position.GetHashCode();
-	    }
+        {
+            return Position.GetHashCode();
+        }
 
         /// <summary>
         /// Retrieves a string representation of this object.
         /// </summary>
         /// <returns>String representation of this object.</returns>
         public override string ToString()
-		{
+        {
             return "{{Position:" + Position + "}}";
-		}
+        }
 
         /// <summary>
         /// Returns a value that indicates whether two <see cref="VertexPosition"/> are equal
@@ -59,10 +57,10 @@ namespace Microsoft.Xna.Framework.Graphics
         /// <returns>
         /// <see langword="true"/> if the vertices are the same; <see langword="false"/> otherwise.
         /// </returns>
-        public static bool operator == (VertexPosition left, VertexPosition right)
-		{
-			return left.Position == right.Position;
-		}
+        public static bool operator ==(VertexPosition left, VertexPosition right)
+        {
+            return left.Position == right.Position;
+        }
 
         /// <summary>
         /// Returns a value that indicates whether two <see cref="VertexPosition"/> are different
@@ -72,10 +70,10 @@ namespace Microsoft.Xna.Framework.Graphics
         /// <returns>
         /// <see langword="true"/> if the vertices are different; <see langword="false"/> otherwise.
         /// </returns>
-        public static bool operator != (VertexPosition left, VertexPosition right)
-		{
-			return !(left == right);
-		}
+        public static bool operator !=(VertexPosition left, VertexPosition right)
+        {
+            return !(left == right);
+        }
 
         /// <summary>
         /// Compares an object with the vertex.
@@ -94,14 +92,14 @@ namespace Microsoft.Xna.Framework.Graphics
             {
                 return false;
             }
-            return this == (VertexPosition) obj;
+            return this == (VertexPosition)obj;
         }
 
         static VertexPosition()
-		{
-			VertexElement[] elements = { new VertexElement (0, VertexElementFormat.Vector3, VertexElementUsage.Position, 0) };
+        {
+            VertexElement[] elements = { new VertexElement(0, VertexElementFormat.Vector3, VertexElementUsage.Position, 0) };
             VertexDeclaration declaration = new VertexDeclaration(elements);
-			VertexDeclaration = declaration;
-		}
-	}
+            VertexDeclaration = declaration;
+        }
+    }
 }

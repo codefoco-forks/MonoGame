@@ -9,8 +9,8 @@ using System.Threading;
 using System.Runtime.InteropServices;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework.Input.Touch;
 using MonoGame.Framework.Utilities;
-using System.Text;
 
 namespace Microsoft.Xna.Framework
 {
@@ -36,15 +36,13 @@ namespace Microsoft.Xna.Framework
             _keys = new List<Keys>();
             Keyboard.SetKeys(_keys);
 
-            Sdl.GetVersion(out Sdl.version);
+            Sdl.GetVersion(out Sdl.CurrentVersion);
 
-            var minVersion = new Sdl.Version() { Major = 2, Minor = 0, Patch = 5 };
-
-            if (Sdl.version < minVersion)
-                Debug.WriteLine("Please use SDL " + minVersion + " or higher.");
+            if (Sdl.CurrentVersion < Sdl.Version.Sdl204Version)
+                Debug.WriteLine("Please use SDL " + Sdl.Version.Sdl204Version + " or higher.");
 
             // Needed so VS can debug the project on Windows
-            if (Sdl.version >= minVersion && CurrentPlatform.OS == OS.Windows && Debugger.IsAttached)
+            if (Sdl.CurrentVersion >= Sdl.Version.Sdl204Version && CurrentPlatform.OS == OS.Windows && Debugger.IsAttached)
                 Sdl.SetHint("SDL_WINDOWS_DISABLE_THREAD_NAMING", "1");
 
             _dropList = new List<string>();
@@ -102,6 +100,8 @@ namespace Microsoft.Xna.Framework
         {
             Sdl.Event ev;
 
+            Mouse.ClickCount = 0;
+
             while (Sdl.PollEvent(out ev) == 1)
             {
                 switch (ev.Type)
@@ -128,24 +128,27 @@ namespace Microsoft.Xna.Framework
                         Mouse.ScrollY += ev.Wheel.Y * wheelDelta;
                         Mouse.ScrollX += ev.Wheel.X * wheelDelta;
                         break;
+                    case Sdl.EventType.MouseButtonUp:
+                        Mouse.ClickCount = ev.MouseButton.Clicks;
+                        break;
                     case Sdl.EventType.KeyDown:
-                    {
-                        var key = KeyboardUtil.ToXna(ev.Key.Keysym.Sym);
-                        if (!_keys.Contains(key))
-                            _keys.Add(key);
-                        char character = (char)ev.Key.Keysym.Sym;
-                        _view.OnKeyDown(new InputKeyEventArgs(key));
-                        if (char.IsControl(character))
-                            _view.OnTextInput(new TextInputEventArgs(character, key));
-                        break;
-                    }
+                        {
+                            var key = KeyboardUtil.ToXna(ev.Key.Keysym.Sym);
+                            if (!_keys.Contains(key))
+                                _keys.Add(key);
+                            char character = (char)ev.Key.Keysym.Sym;
+                            _view.OnKeyDown(new InputKeyEventArgs(key));
+                            if (char.IsControl(character))
+                                _view.OnTextInput(new TextInputEventArgs(character, key));
+                            break;
+                        }
                     case Sdl.EventType.KeyUp:
-                    {
-                        var key = KeyboardUtil.ToXna(ev.Key.Keysym.Sym);
-                        _keys.Remove(key);
-                        _view.OnKeyUp(new InputKeyEventArgs(key));
-                        break;
-                    }
+                        {
+                            var key = KeyboardUtil.ToXna(ev.Key.Keysym.Sym);
+                            _keys.Remove(key);
+                            _view.OnKeyUp(new InputKeyEventArgs(key));
+                            break;
+                        }
                     case Sdl.EventType.TextInput:
                         if (_view.IsTextInputHandled)
                         {
@@ -213,6 +216,8 @@ namespace Microsoft.Xna.Framework
                         {
                             case Sdl.Window.EventId.Resized:
                             case Sdl.Window.EventId.SizeChanged:
+                                TouchPanel.DisplayWidth = _view.ClientBounds.Width;
+                                TouchPanel.DisplayHeight = _view.ClientBounds.Height;
                                 _view.ClientResize(ev.Window.Data1, ev.Window.Data2);
                                 break;
                             case Sdl.Window.EventId.FocusGained:
@@ -251,8 +256,50 @@ namespace Microsoft.Xna.Framework
                         }
 
                         break;
+                    case Sdl.EventType.FingerDown:
+                        {
+                            int id = ev.Touch.TouchFingerId.GetHashCode();
+                            Vector2 position = new Vector2(ev.Touch.X * _view.ClientBounds.Width,
+                                                           ev.Touch.Y * _view.ClientBounds.Height);
+                            DeviceType device = GetTouchDevice(ev.Touch.TouchId);
+                            float pressure = ev.Touch.pressure;
+                            TouchPanel.AddEvent(id, TouchLocationState.Pressed, position, device, pressure, 0f);
+                        }
+                        break;
+                    case Sdl.EventType.FingerMotion:
+                        {
+                            int id = ev.Touch.TouchFingerId.GetHashCode();
+                            Vector2 position = new Vector2(ev.Touch.X * _view.ClientBounds.Width,
+                                                           ev.Touch.Y * _view.ClientBounds.Height);
+                            DeviceType device = GetTouchDevice(ev.Touch.TouchId);
+                            float pressure = ev.Touch.pressure;
+                            TouchPanel.AddEvent(id, TouchLocationState.Moved, position, device, pressure, 0f);
+                        }
+                        break;
+                    case Sdl.EventType.FingerUp:
+                        {
+                            int id = ev.Touch.TouchFingerId.GetHashCode();
+                            Vector2 position = new Vector2(ev.Touch.X * _view.ClientBounds.Width,
+                                                           ev.Touch.Y * _view.ClientBounds.Height);
+                            DeviceType device = GetTouchDevice(ev.Touch.TouchId);
+                            float pressure = ev.Touch.pressure;
+                            TouchPanel.AddEvent(id, TouchLocationState.Released, position, device, pressure, 0f);
+                        }
+                        break;
                 }
             }
+        }
+
+        private DeviceType GetTouchDevice(long touchId)
+        {
+            int index = Sdl.Touch.GetTouchIndex(touchId);
+            if (index == -1)
+                return DeviceType.Touch;
+            string name = Sdl.Touch.GetTouchName(index);
+            if (name != null && name == "pen")
+                return DeviceType.Pen;
+
+            return DeviceType.Touch;
         }
 
         private int UTF8ToUnicode(int utf8)
