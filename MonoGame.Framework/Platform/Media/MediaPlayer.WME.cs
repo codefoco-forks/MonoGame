@@ -7,13 +7,14 @@ using SharpDX.MediaFoundation;
 using SharpDX.Multimedia;
 using Windows.UI.Core;
 using Windows.ApplicationModel.Core;
+using System.IO;
 
 namespace Microsoft.Xna.Framework.Media
 {
     public static partial class MediaPlayer
     {
         // RAYB: This needs to be turned back into a readonly.
-        private static MediaEngine _mediaEngineEx;
+        private static MediaEngineEx _mediaEngineEx;
         private static CoreDispatcher _dispatcher;
 
         private enum SessionState { Stopped, Started, Paused }
@@ -126,9 +127,29 @@ namespace Microsoft.Xna.Framework.Media
             _mediaEngineEx.Pause();
         }
 
+        private static string TempPathForUri(Stream stream)
+        {
+            var path = Path.GetTempFileName();
+            using (var file = File.OpenWrite(path))
+            {
+                stream.CopyTo(file);
+            }
+            return path;
+        }
+
         private static void PlatformPlaySong(Song song, TimeSpan? startPosition)
         {
-            _mediaEngineEx.Source = song.FilePath;
+            Stream stream = song.Stream;
+            if (stream != null)
+            {
+                string tempPath = TempPathForUri(stream);
+                ByteStream byteStream = new ByteStream(stream);
+                _mediaEngineEx.SetSourceFromByteStream(byteStream, tempPath);
+            }
+            else
+            {
+                _mediaEngineEx.Source = song.FileName;
+            }
             _mediaEngineEx.Load();
             _desiredPosition = startPosition;
             _sessionState = SessionState.Started;

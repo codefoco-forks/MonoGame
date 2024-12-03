@@ -9,6 +9,9 @@ using MonoGame.Framework.Utilities;
 
 namespace Microsoft.Xna.Framework.Graphics
 {
+    /// <summary>
+    /// Effect base class
+    /// </summary>
 	public class Effect : GraphicsResource
     {
         struct MGFXHeader 

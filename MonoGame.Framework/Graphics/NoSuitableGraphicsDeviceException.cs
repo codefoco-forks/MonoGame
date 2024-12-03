@@ -6,7 +6,6 @@ namespace Microsoft.Xna.Framework.Graphics
     /// <summary>
     /// Thrown when no available graphics device fits the given device preferences.
     /// </summary>
-    [DataContract]
     public sealed class NoSuitableGraphicsDeviceException : Exception
     {
         /// <summary>
